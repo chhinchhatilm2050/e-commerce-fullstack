@@ -1,6 +1,2 @@
 .env
-.env.dev
-.env.prod
-.env.production
-.env.local
-.env.*    
+.env.* 
