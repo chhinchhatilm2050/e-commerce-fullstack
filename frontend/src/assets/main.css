@@ -1,1 +1,181 @@
 @import "tailwindcss";
+@import 'remixicon/fonts/remixicon.css';
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-primary-50:  #f0f4ff;
+  --color-primary-100: #dbe4ff;
+  --color-primary-200: #bac8ff;
+  --color-primary-300: #91a7ff;
+  --color-primary-400: #748ffc;
+  --color-primary-500: #5c7cfa;
+  --color-primary-600: #4c6ef5;
+  --color-primary-700: #4263eb;
+  --color-primary-800: #3b5bdb;
+  --color-primary-900: #364fc7;
+  --color-primary-950: #1e3a8a;
+
+  --color-accent-400: #ffd43b;
+  --color-accent-500: #fcc419;
+  --color-accent-600: #fab005;
+
+  --color-surface-50:  #f8fafc;
+  --color-surface-100: #2a2a2a;
+  --color-surface-200: #e2e8f0;
+  --color-surface-700: #333333;
+  --color-surface-750: #2a3a50;
+  --color-surface-800: #212121;
+  --color-surface-900: #1a1a1a;
+  --color-surface-950: #020617;
+
+  --font-logo: "Dancing Script", Georgia, serif;
+  --font-sans: "Roboto", "Kantumruy Pro", system-ui, sans-serif;
+  --font-display: "Roboto", "Kantumruy Pro";
+  --font-home: "Righteous", "Kantumruy Pro";
+
+  --shadow-card:    0 2px 20px -4px rgba(0,0,0,.12), 0 1px 4px -2px rgba(0,0,0,.08);
+  --shadow-card-lg: 0 8px 40px -8px rgba(0,0,0,.18), 0 2px 8px -2px rgba(0,0,0,.10);
+  --shadow-glow: 0 0 20px rgba(255, 255, 255, 0.08);
+
+  --animate-fade-in:    fadeIn    0.4s ease-out;
+  --animate-slide-up:   slideUp   0.4s ease-out;
+  --animate-slide-down: slideDown 0.3s ease-out;
+  --animate-spin-slow:  spin      3s   linear    infinite;
+  --animate-bounce-sm:  bounceSm  2s ease       infinite;
+  --animate-pulse-soft: pulseSoft 2s   ease-in-out infinite;
+}
+
+@keyframes fadeIn    { from { opacity: 0 }                           to { opacity: 1 } }
+@keyframes slideUp   { from { opacity: 0; translate: 0 20px }        to { opacity: 1; translate: 0 0 } }
+@keyframes slideDown { from { opacity: 0; translate: 0 -10px }       to { opacity: 1; translate: 0 0 } }
+@keyframes bounceSm  { 0%,100% { translate: 0 0 }                   50% { translate: 0 -4px } }
+@keyframes pulseSoft { 0%,100% { opacity: 1 }                       50% { opacity: .6 } }
+@keyframes shimmer   { 0% { background-position: -200% 0 }          100% { background-position: 200% 0 } }
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    font-family: var(--font-sans);
+  }
+
+  body {
+    background-color: var(--color-surface-50);
+    color: theme(--color-gray-800);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3 {
+    font-family: var(--font-display);
+  }
+
+  * {
+    transition-property: color, background-color, border-color, box-shadow;
+    transition-duration: 200ms;
+  }
+}
+
+@layer components {
+
+  .btn-primary {
+    @apply bg-primary-600 hover:bg-primary-700 active:bg-primary-800
+    text-white font-semibold px-3 py-2 rounded-sm cursor-pointer
+    transition-all duration-200 shadow-sm hover:shadow-glow
+    disabled:opacity-50 disabled:cursor-not-allowed
+    focus:outline-none focus:ring-1 focus:ring-primary-500 focus:ring-offset-2
+    inline-flex items-center justify-center;
+  }
+
+
+  .default-button {
+    @apply bg-gray-200 text-gray-800 dark:bg-surface-100 dark:text-gray-200 hover:bg-gray-300
+    dark:hover:bg-surface-900
+    font-medium px-2 py-2 rounded-sm cursor-pointer transition-all dark:hover:shadow-glow
+    duration-200 shadow-sm  disabled:opacity-50 disabled:cursor-not-allowed
+    focus:outline-none
+    inline-flex items-center justify-center
+  }
+
+  .btn-outline {
+    @apply border-2 border-primary-500 text-primary-600
+    hover:bg-gray-200 font-semibold px-3 py-2 rounded-md cursor-pointer
+    transition-all duration-200
+    focus:outline-none focus:ring-primary-500 focus:ring-offset-2
+    inline-flex items-center justify-center;
+  }
+
+  .btn-ghost {
+    @apply text-gray-600 hover:text-gray-900 hover:bg-gray-200
+    font-medium px-2 py-2 rounded-lg transition-all duration-200 cursor-pointer;
+  }
+
+  .btn-danger {
+    @apply bg-red-700 hover:bg-red-600 text-white font-semibold
+    px-3 py-2 rounded-sm transition-all duration-200 cursor-pointer
+    inline-flex items-center justify-center;
+  }
+
+  .card {
+    @apply bg-white rounded-none overflow-hidden transition-all duration-300;
+    box-shadow: var(--shadow-card);
+    &:hover { box-shadow: var(--shadow-card-lg); }
+  }
+
+  .input {
+    @apply w-full px-3 py-2  border border-gray-200 rounded-sm
+    bg-white text-gray-800 placeholder:text-gray-400 placeholder:text-sm dark:placeholder:text-gray-500
+    focus:outline-none focus:ring-1 focus:ring-gray-600 focus:border-transparent
+    transition-all duration-200;
+  }
+
+  .input-error {
+    @apply border-red-400 focus:ring-red-400;
+  }
+
+  .label {
+    @apply block text-sm  text-gray-900 mb-1.5 dark:text-gray-200;
+  }
+
+  .error-msg {
+    @apply text-red-500 text-xs mt-1;
+  }
+
+  .badge {
+    @apply flex items-center justify-center px-2 py-1 rounded-sm text-xs font-semibold;
+  }
+
+  .container-xl {
+    @apply max-w-[1380px] mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .section-title {
+    @apply font-display text-3xl font-bold text-gray-800 dark:text-gray-200;
+  }
+}
+
+@layer utilities {
+  .shimmer {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  .dark .shimmer {
+    background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
+    background-size: 200% 100%;
+  }
+}
+
+::-webkit-scrollbar        { width: 6px; }
+::-webkit-scrollbar-track  { background: #f1f5f9; }
+::-webkit-scrollbar-thumb  { background: #cbd5e1; border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+.dark body  { background-color: #1a1a1a; color: #f1f5f9; }
+.dark .card { background-color: #1f1e1e; border: 1px solid #333333; box-shadow: none; }
+.dark .input {
+  background-color: #2a2a2a;
+  border-color: #333333;
+  color: #f1f5f9;
+}
+.dark ::-webkit-scrollbar-track { background: #1e293b; }
+.dark ::-webkit-scrollbar-thumb { background: #475569; }
