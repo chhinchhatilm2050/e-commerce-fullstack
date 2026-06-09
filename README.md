@@ -1,3 +1,5 @@
+# CI/Pepline 
+[![CI Pipeline](https://github.com/chhinchhatilm2050/e-commerce-fullstack/actions/workflows/ci.yml/badge.svg)](https://github.com/chhinchhatilm2050/e-commerce-fullstack/actions/workflows/ci.yml)
 # e-commerce-fullstack
 
 This template should help get you started developing with Vue 3 in Vite.
