@@ -8,7 +8,7 @@
   <p>
     Visit
     <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to
-    read the documentation test chhat
+    read the documentation test chhat fix roles and more.
   </p>
 </template>
 
