@@ -16,20 +16,19 @@ app.use(cookieParser());
 app.use(requestLogger);
 app.use(globalLimiter);
 app.use((req: Request, res: Response, next: NextFunction) => {
-    req.body = mongoSanitize.sanitize(req.body, { replaceWith: '_' });
-    req.params = mongoSanitize.sanitize(req.params, { replaceWith: '_' });
-    next();
+  req.body = mongoSanitize.sanitize(req.body, { replaceWith: '_' });
+  req.params = mongoSanitize.sanitize(req.params, { replaceWith: '_' });
+  next();
 });
 app.use(sanitizeHtml);
 app.use(hpp());
 
 app.use('/api/health', (req: Request, res: Response) => {
-    res.status(200).json({
-        status: 'success',
-        message: 'Api is healthy',
-    });
+  res.status(200).json({
+    status: 'success',
+    message: 'Api is healthy',
+  });
 });
-
 
 app.use(notFound);
 app.use(globalErrorHandler);

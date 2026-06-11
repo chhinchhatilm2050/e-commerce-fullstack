@@ -1,8 +1,15 @@
 import sanitize from 'sanitize-html';
 
-export type SanitizedValue = string | number | boolean | null | undefined | SanitizedObject | SanitizedValue[];
+export type SanitizedValue =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | SanitizedObject
+  | SanitizedValue[];
 
-export interface SanitizedObject {   
+export interface SanitizedObject {
   [key: string]: SanitizedValue;
 }
 
@@ -22,7 +29,9 @@ const sanitizeValue = (value: unknown): SanitizedValue => {
   return value as SanitizedValue;
 };
 
-export const sanitizeObject = (obj: Record<string, unknown>): SanitizedObject => {
+export const sanitizeObject = (
+  obj: Record<string, unknown>,
+): SanitizedObject => {
   if (!obj || typeof obj !== 'object') return obj as SanitizedObject;
   return Object.keys(obj).reduce((acc: SanitizedObject, key) => {
     acc[key] = sanitizeValue(obj[key]);

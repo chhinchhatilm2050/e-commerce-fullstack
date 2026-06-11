@@ -28,8 +28,7 @@ export default tseslint.config(
       '@typescript-eslint/no-floating-promises': 'error',
       '@typescript-eslint/no-misused-promises': 'error',
       '@typescript-eslint/no-explicit-any': 'error',
-      'eqeqeq': ['error', 'always'],
-      'no-console': 'warn',
+      'eqeqeq': ['error', 'always']
     },
   },
   {
