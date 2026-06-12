@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@source "../";
 @import 'remixicon/fonts/remixicon.css';
 @custom-variant dark (&:where(.dark, .dark *));
 
