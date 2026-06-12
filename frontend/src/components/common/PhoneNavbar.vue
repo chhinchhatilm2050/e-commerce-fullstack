@@ -1,34 +1,34 @@
 <script setup lang="ts">
-    import { watchEffect } from 'vue'
+import { watchEffect } from 'vue';
     interface NavLink {
         to: string,
         label: string,
         icon: string
     }
-    const props = withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
         modelValue: boolean;
     }>(), {
-        modelValue: false
-    })
+  modelValue: false,
+});
 
-    const emit = defineEmits<{
+const emit = defineEmits<{
         'update:modelValue': [value: boolean]
     }>();
-    const close = () => emit('update:modelValue', false);
+const close = () => emit('update:modelValue', false);
 
-    const navLinks: NavLink[] = [
-        { to: '/', label: 'nav.home', icon: '<i class="ri-home-wifi-fill"></i>'},
-        { to: '/clothes', label: 'nav.clothes', icon: '<i class="ri-shirt-fill"></i>'},
-        { to: '/electornic', label: 'nav.electronic', icon: '<i class="ri-tools-fill"></i>'},
-        { to: '/book', label: 'nav.book', icon: '<i class="ri-book-3-fill"></i>'}
-    ]
-    watchEffect(() => {
-        if (props.modelValue) {
-            document.body.style.overflow = 'hidden'
-        } else {
-            document.body.style.overflow = ''
-        }
-    })
+const navLinks: NavLink[] = [
+  { to: '/', label: 'nav.home', icon: '<i class="ri-home-wifi-fill"></i>' },
+  { to: '/clothes', label: 'nav.clothes', icon: '<i class="ri-shirt-fill"></i>' },
+  { to: '/electornic', label: 'nav.electronic', icon: '<i class="ri-tools-fill"></i>' },
+  { to: '/book', label: 'nav.book', icon: '<i class="ri-book-3-fill"></i>' },
+];
+watchEffect(() => {
+  if (props.modelValue) {
+    document.body.style.overflow = 'hidden';
+  } else {
+    document.body.style.overflow = '';
+  }
+});
 </script>
 
 <template>

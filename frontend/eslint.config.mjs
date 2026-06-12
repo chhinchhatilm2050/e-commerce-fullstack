@@ -3,7 +3,6 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 import pluginVue from 'eslint-plugin-vue';
 import vueParser from 'vue-eslint-parser';
-import prettier from 'eslint-config-prettier';
 
 export default tseslint.config(
   js.configs.recommended,
@@ -14,7 +13,7 @@ export default tseslint.config(
       parser: vueParser,
       parserOptions: {
         parser: tseslint.parser,
-        extraFileExtensions: ['.vue'],  // ← removed project & tsconfigRootDir
+        extraFileExtensions: ['.vue'],
       },
       globals: {
         ...globals.browser,
@@ -34,10 +33,20 @@ export default tseslint.config(
 
       // TypeScript rules
       'no-unused-vars': 'off',
-      '@typescript-eslint/no-unused-vars': ['error', {
-        argsIgnorePattern: '^_',
-      }],
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/no-explicit-any': 'error',
+
+      // Formatting
+      'indent': ['error', 2],
+      'quotes': ['error', 'single'],
+      'semi': ['error', 'always'],
+      'comma-dangle': ['error', 'always-multiline'],
+      'object-curly-spacing': ['error', 'always'],
+      'arrow-spacing': ['error', { before: true, after: true }],
+      'space-before-blocks': 'error',
+      'keyword-spacing': ['error', { before: true, after: true }],
+      'no-multiple-empty-lines': ['error', { max: 1 }],
+      'eol-last': ['error', 'always'],
 
       // General
       'eqeqeq': ['error', 'always'],
@@ -47,25 +56,36 @@ export default tseslint.config(
   {
     files: ['**/*.ts'],
     languageOptions: {
-      parserOptions: {
-        // ← removed project & tsconfigRootDir
-      },
+      parserOptions: {},
       globals: {
         ...globals.browser,
         ...globals.node,
       },
     },
     rules: {
+      // TypeScript rules
       'no-unused-vars': 'off',
-      '@typescript-eslint/no-unused-vars': ['error', {
-        argsIgnorePattern: '^_',
-      }],
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/no-explicit-any': 'error',
+
+      // Formatting
+      'indent': ['error', 2],
+      'quotes': ['error', 'single'],
+      'semi': ['error', 'always'],
+      'comma-dangle': ['error', 'always-multiline'],
+      'object-curly-spacing': ['error', 'always'],
+      'arrow-spacing': ['error', { before: true, after: true }],
+      'space-before-blocks': 'error',
+      'keyword-spacing': ['error', { before: true, after: true }],
+      'no-multiple-empty-lines': ['error', { max: 1 }],
+      'eol-last': ['error', 'always'],
+
+      // General
       'eqeqeq': ['error', 'always'],
       'no-console': 'warn',
     },
   },
   {
     ignores: ['dist/**', 'node_modules/**', '*.config.mjs'],
-  }
+  },
 );

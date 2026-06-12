@@ -1,12 +1,11 @@
 <script setup lang="ts">
-  import { useLocaleStore } from '@/stores/localeStore.js';
-  import {ref, computed, onMounted, onUnmounted } from 'vue';
-  import type { SupportedLocale } from '@/i18n/index.js';
+import { useLocaleStore } from '@/stores/localeStore.js';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import type { SupportedLocale } from '@/i18n/index.js';
 
-  const localeStore = useLocaleStore();
-  const langMenuOpen = ref<boolean>(false);
-  const langMenuRef = ref<HTMLElement | null>(null);
-
+const localeStore = useLocaleStore();
+const langMenuOpen = ref<boolean>(false);
+const langMenuRef = ref<HTMLElement | null>(null);
 
   interface Language {
     code: SupportedLocale,
@@ -14,26 +13,26 @@
     flag: string
   };
 
-  const languages: Language[] = [
-    { code: 'en', name: 'English', flag: 'us' },
-    { code: 'kh', name: 'ខ្មែរ', flag: 'kh' }
-  ];
+const languages: Language[] = [
+  { code: 'en', name: 'English', flag: 'us' },
+  { code: 'kh', name: 'ខ្មែរ', flag: 'kh' },
+];
 
-  const currentLanguage = computed(() =>
-    languages.find(l => l.code === localeStore.locale) ?? languages[0]
-  )
+const currentLanguage = computed(() =>
+  languages.find(l => l.code === localeStore.locale) ?? languages[0],
+);
 
-  const setLanguage = (code: 'en' | 'kh'): void => {
-    localeStore.setLocale(code);
-    langMenuOpen.value = false;
-  }
+const setLanguage = (code: 'en' | 'kh'): void => {
+  localeStore.setLocale(code);
+  langMenuOpen.value = false;
+};
 
-  const handleClickOutside = (e: MouseEvent) => {
-    if (langMenuRef.value && !langMenuRef.value.contains(e.target as Node)) langMenuOpen.value = false
-  }
+const handleClickOutside = (e: MouseEvent) => {
+  if (langMenuRef.value && !langMenuRef.value.contains(e.target as Node)) langMenuOpen.value = false;
+};
 
-  onMounted(() => document.addEventListener('click', handleClickOutside))
-  onUnmounted(() => document.removeEventListener('click', handleClickOutside))
+onMounted(() => document.addEventListener('click', handleClickOutside));
+onUnmounted(() => document.removeEventListener('click', handleClickOutside));
 </script> 
 
 <template>

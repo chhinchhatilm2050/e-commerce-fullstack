@@ -1,5 +1,5 @@
 <script setup lang="ts">
-    import { ref } from 'vue';
+import { ref } from 'vue';
     interface Social {
         name: string,
         href: string,
@@ -12,44 +12,43 @@
         icon: string
     }
 
-    const email = ref<string>('');
-    const subscribed = ref<boolean>(false);
-    
+const email = ref<string>('');
+const subscribed = ref<boolean>(false);
 
-    const quickLinks : Customer[]  = [
-        { to: '/', label: 'nav.home', icon: '<i class="ri-home-wifi-fill"></i>'},
-        { to: '/clothes', label: 'nav.clothes', icon: '<i class="ri-shirt-fill"></i>'},
-        { to: '/electornic', label: 'nav.electronic', icon: '<i class="ri-tools-fill"></i>'},
-        { to: '/book', label: 'nav.book', icon: '<i class="ri-book-3-fill"></i>'}
-    ];
+const quickLinks : Customer[]  = [
+  { to: '/', label: 'nav.home', icon: '<i class="ri-home-wifi-fill"></i>' },
+  { to: '/clothes', label: 'nav.clothes', icon: '<i class="ri-shirt-fill"></i>' },
+  { to: '/electornic', label: 'nav.electronic', icon: '<i class="ri-tools-fill"></i>' },
+  { to: '/book', label: 'nav.book', icon: '<i class="ri-book-3-fill"></i>' },
+];
 
-    const customerService: Customer[] = [
-        { to: '/', label: 'footer.online', icon: '<i class="ri-cloud-fill"></i>'},
-        { to: '/clothes', label: 'footer.policy', icon: '<i class="ri-spy-fill"></i>'},
-        { to: '/electornic', label: 'footer.faq', icon: '<i class="ri-questionnaire-fill"></i>'},
-        { to: '/book', label: 'footer.find', icon: '<i class="ri-map-pin-2-fill"></i>'}
-    ];
+const customerService: Customer[] = [
+  { to: '/', label: 'footer.online', icon: '<i class="ri-cloud-fill"></i>' },
+  { to: '/clothes', label: 'footer.policy', icon: '<i class="ri-spy-fill"></i>' },
+  { to: '/electornic', label: 'footer.faq', icon: '<i class="ri-questionnaire-fill"></i>' },
+  { to: '/book', label: 'footer.find', icon: '<i class="ri-map-pin-2-fill"></i>' },
+];
 
-    const socials : Social[] = [
-        { name: 'Twitter', href: '#', icon: '<i class="ri-twitter-x-fill"></i>'},
-        { name: 'GitHub', href: '#', icon: '<i class="ri-github-fill"></i>'},
-        { name: 'Instagram', href: '#', icon: '<i class="ri-instagram-line"></i>'},
-    ];
+const socials : Social[] = [
+  { name: 'Twitter', href: '#', icon: '<i class="ri-twitter-x-fill"></i>' },
+  { name: 'GitHub', href: '#', icon: '<i class="ri-github-fill"></i>' },
+  { name: 'Instagram', href: '#', icon: '<i class="ri-instagram-line"></i>' },
+];
 
-    const contactUs : Social[] = [
-        { name: 'hhatstorekh@gmail.com', href: '#', icon: '<i class="ri-mail-fill"></i>'},
-        { name: '(+855) 060 600 705', href: '#', icon: '<i class="ri-phone-fill"></i>'},
-        { name: 'Telegram', href: '#', icon: '<i class="ri-telegram-fill"></i>'},
-    ]
+const contactUs : Social[] = [
+  { name: 'hhatstorekh@gmail.com', href: '#', icon: '<i class="ri-mail-fill"></i>' },
+  { name: '(+855) 060 600 705', href: '#', icon: '<i class="ri-phone-fill"></i>' },
+  { name: 'Telegram', href: '#', icon: '<i class="ri-telegram-fill"></i>' },
+];
 
-    const subscribe = (): void => {
-        const emailRegex : RegExp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if(emailRegex.test(email.value)) {
-            subscribed.value = true;
-            email.value = ''
-            setTimeout(() => { subscribed.value = false}, 4000)
-        }
-    }
+const subscribe = (): void => {
+  const emailRegex : RegExp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (emailRegex.test(email.value)) {
+    subscribed.value = true;
+    email.value = '';
+    setTimeout(() => { subscribed.value = false;}, 4000);
+  }
+};
 </script>
 
 <template>
