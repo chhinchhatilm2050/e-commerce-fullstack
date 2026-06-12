@@ -1,43 +1,43 @@
 <script setup lang="ts">
-    import { useLocaleStore } from '@/stores/localeStore.js';
-    import {ref, computed, onMounted, onUnmounted } from 'vue';
-    import type { SupportedLocale } from '@/i18n/index.js';
+  import { useLocaleStore } from '@/stores/localeStore.js';
+  import {ref, computed, onMounted, onUnmounted } from 'vue';
+  import type { SupportedLocale } from '@/i18n/index.js';
 
-    const localeStore = useLocaleStore();
-    const langMenuOpen = ref<boolean>(false);
-    const langMenuRef = ref<HTMLElement | null>(null);
+  const localeStore = useLocaleStore();
+  const langMenuOpen = ref<boolean>(false);
+  const langMenuRef = ref<HTMLElement | null>(null);
 
 
-    interface Language {
-        code: SupportedLocale,
-        name: string,
-        flag: string
-    };
+  interface Language {
+    code: SupportedLocale,
+    name: string,
+    flag: string
+  };
 
-    const languages: Language[] = [
-        { code: 'en', name: 'English', flag: 'us' },
-        { code: 'kh', name: 'ខ្មែរ', flag: 'kh' }
-    ];
+  const languages: Language[] = [
+    { code: 'en', name: 'English', flag: 'us' },
+    { code: 'kh', name: 'ខ្មែរ', flag: 'kh' }
+  ];
 
-    const currentLanguage = computed(() =>
-        languages.find(l => l.code === localeStore.locale) ?? languages[0]
-    )
+  const currentLanguage = computed(() =>
+    languages.find(l => l.code === localeStore.locale) ?? languages[0]
+  )
 
-    const setLanguage = (code: 'en' | 'kh'): void => {
-        localeStore.setLocale(code);
-        langMenuOpen.value = false;
-    }
+  const setLanguage = (code: 'en' | 'kh'): void => {
+    localeStore.setLocale(code);
+    langMenuOpen.value = false;
+  }
 
-    const handleClickOutside = (e: MouseEvent) => {
-        if (langMenuRef.value && !langMenuRef.value.contains(e.target as Node)) langMenuOpen.value = false
-    }
+  const handleClickOutside = (e: MouseEvent) => {
+    if (langMenuRef.value && !langMenuRef.value.contains(e.target as Node)) langMenuOpen.value = false
+  }
 
-    onMounted(() => document.addEventListener('click', handleClickOutside))
-    onUnmounted(() => document.removeEventListener('click', handleClickOutside))
+  onMounted(() => document.addEventListener('click', handleClickOutside))
+  onUnmounted(() => document.removeEventListener('click', handleClickOutside))
 </script> 
 
 <template>
-    <div class="relative" ref="langMenuRef">
+  <div class="relative" ref="langMenuRef">
     <button @click="langMenuOpen = !langMenuOpen" class="btn-ghost flex items-center gap-1.5 text-sm dark:hover:bg-surface-100">
       <img :src="`https://flagcdn.com/w40/${currentLanguage?.flag}.png`" :alt="currentLanguage?.name" class="w-7 h-5 rounded-sm object-cover ring-1 ring-gray-400"/>
       <span class="hidden sm:inline font-semibold dark:text-gray-300">{{ currentLanguage?.code.toUpperCase() }}</span>

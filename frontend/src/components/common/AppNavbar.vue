@@ -72,7 +72,7 @@
 
             </nav>
         </div>
-        <PhoneNavbar v-model="mobileMenuOpen" />
+        <PhoneNavbar v-model="mobileMenuOpen"/>
     </header>
 </template>
 

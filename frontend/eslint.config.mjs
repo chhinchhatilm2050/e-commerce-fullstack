@@ -8,7 +8,6 @@ import prettier from 'eslint-config-prettier';
 export default tseslint.config(
   js.configs.recommended,
   tseslint.configs.recommended,
-  prettier,
   {
     files: ['**/*.vue'],
     languageOptions: {
