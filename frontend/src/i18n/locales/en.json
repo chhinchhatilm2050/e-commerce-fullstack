@@ -2,7 +2,9 @@
     "nav": {
         "home": "HOME",
         "products": "PRODUCTS",
-        "contact": "CONTACT",
+        "book": "BOOKS",
+        "electronic": "ELECTRONICS",
+        "clothes": "CLOTHES",
         "cart": "Cart",
         "checkout": "Checkout",
         "login": "LOGIN",
@@ -49,15 +51,22 @@
     },
     "footer": {
         "tagline": "Premium products, exceptional experience with CHHATStore.",
-        "quick_links": "Quick Links",
-        "categories": "Categories",
-        "newsletter": "Newsletter",
+        "quick_links": "QUICK LINKS",
+        "newsletter": "NEWSLETTERS",
+        "customer": "CUSTOMER SERVICE",
+        "contact": "CONTACT US",
+        "accept": "WE ACCEPT",
         "newsletter_desc": "Subscribe for exclusive deals and updates",
         "email_placeholder": "Enter your email",
         "subscribe": "Subscribe",
         "rights": "All rights reserved.",
         "privacy": "Privacy Policy",
-        "terms": "Terms of Service"
+        "terms": "Terms of Service",
+        "online": "Onlone exchange policy",
+        "policy": "Privacy Policy",
+        "faq": "FAQs & Quides",
+        "find": "Find a store"
+        
     },
     "home": {
         "hero_title": "NEW ARRIVALS WITH CHHATStore",
