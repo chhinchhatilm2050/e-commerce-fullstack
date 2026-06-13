@@ -27,6 +27,7 @@
 
     },
     "register": {
+        "enterPhoneNumber": "Enter your phone number",
         "enterEmail": "Enter your email",
         "enterPassword": "Enter your password",
         "enterFirstName": "Enter first name",
@@ -34,6 +35,7 @@
         "confirmPassword": "Confirm your password",
         "firstName": "First name",
         "lastName": "Last name",
+        "phoneNumber": "Phone number",
         "email": "Email Address",
         "password": "Password",
         "confirm": "Confirm Password",
@@ -59,7 +61,7 @@
         "newsletter_desc": "Subscribe for exclusive deals and updates",
         "email_placeholder": "Enter your email",
         "subscribe": "Subscribe",
-        "rights": "All rights reserved.",
+        "rights": "All rights reserved",
         "privacy": "Privacy Policy",
         "terms": "Terms of Service",
         "online": "Onlone exchange policy",
@@ -70,7 +72,7 @@
     },
     "home": {
         "hero_title": "NEW ARRIVALS WITH CHHATStore",
-        "hero_subtitle": "Curated selection of the finest electronics, fashion, books, and home goods",
+        "hero_subtitle": "This is the best choice of shops for electronics, clothing, and books that you are looking for to use daily with the utmost confidence.",
         "hero_cta": "Shop Now",
         "featured_title": "Featured Products",
         "featured_subtitle": "Handpicked by our team",
