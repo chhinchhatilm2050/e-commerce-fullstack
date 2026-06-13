@@ -30,9 +30,9 @@
   --color-surface-950: #020617;
 
   --font-logo: "Dancing Script", Georgia, serif;
-  --font-sans: "Roboto", "Kantumruy Pro", system-ui, sans-serif;
-  --font-display: "Roboto", "Kantumruy Pro";
-  --font-home: "Righteous", "Kantumruy Pro";
+  --font-sans: "Hedvig Letters Serif", "Kantumruy Pro", system-ui, sans-serif;
+  --font-display: "Hedvig Letters Serif", "Kantumruy Pro";
+  --font-home: "Black Ops One", "Kantumruy Pro";
 
   --shadow-card:    0 2px 20px -4px rgba(0,0,0,.12), 0 1px 4px -2px rgba(0,0,0,.08);
   --shadow-card-lg: 0 8px 40px -8px rgba(0,0,0,.18), 0 2px 8px -2px rgba(0,0,0,.10);

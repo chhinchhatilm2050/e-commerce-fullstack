@@ -1,34 +1,36 @@
 <script setup lang="ts">
-import { watchEffect } from 'vue';
-    interface NavLink {
-        to: string,
-        label: string,
-        icon: string
-    }
-const props = withDefaults(defineProps<{
-        modelValue: boolean;
-    }>(), {
-  modelValue: false,
-});
-
-const emit = defineEmits<{
-        'update:modelValue': [value: boolean]
-    }>();
-const close = () => emit('update:modelValue', false);
-
-const navLinks: NavLink[] = [
-  { to: '/', label: 'nav.home', icon: '<i class="ri-home-wifi-fill"></i>' },
-  { to: '/clothes', label: 'nav.clothes', icon: '<i class="ri-shirt-fill"></i>' },
-  { to: '/electornic', label: 'nav.electronic', icon: '<i class="ri-tools-fill"></i>' },
-  { to: '/book', label: 'nav.book', icon: '<i class="ri-book-3-fill"></i>' },
-];
-watchEffect(() => {
-  if (props.modelValue) {
-    document.body.style.overflow = 'hidden';
-  } else {
-    document.body.style.overflow = '';
+  import { watchEffect } from 'vue'
+  interface NavLink {
+    to: string,
+    label: string,
+    icon: string
   }
-});
+  const props = withDefaults(defineProps<{
+    modelValue: boolean;
+  }>(), {
+    modelValue: false,
+  })
+
+  const emit = defineEmits<{
+    'update:modelValue': [value: boolean],
+    'openRegister': [],
+    'openLogin': []
+  }>()
+  const close = () => emit('update:modelValue', false)
+
+  const navLinks: NavLink[] = [
+    { to: '/', label: 'nav.home', icon: '<i class="ri-home-wifi-fill"></i>' },
+    { to: '/clothes', label: 'nav.clothes', icon: '<i class="ri-shirt-fill"></i>' },
+    { to: '/electornic', label: 'nav.electronic', icon: '<i class="ri-tools-fill"></i>' },
+    { to: '/book', label: 'nav.book', icon: '<i class="ri-book-3-fill"></i>' },
+  ]
+  watchEffect(() => {
+    if (props.modelValue) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+  })
 </script>
 
 <template>
@@ -51,7 +53,7 @@ watchEffect(() => {
                 <ul class="flex flex-col gap-1 p-4 flex-1 overflow-y-auto">
                     <li v-for="link in navLinks" :key="link.to">
                        <RouterLink :to="link.to" @click="close"
-                            class="flex items-center gap-2  px-4 py-3 rounded-sm font-medium hover:bg-gray-100 text-gray-700 dark:text-gray-300 dark:hover:bg-surface-100 transition-colors cursor-pointer"
+                            class="flex items-center gap-2 text-[16px] md:text-[17px] px-4 py-3 rounded-sm font-medium hover:bg-gray-100 text-gray-700 dark:text-gray-300 dark:hover:bg-surface-100 transition-colors cursor-pointer"
                             active-class="bg-gray-200 dark:bg-surface-100"
                         >
                          <span v-html="link.icon"></span>   {{ $t(link.label) }}
@@ -61,11 +63,11 @@ watchEffect(() => {
 
                 <div class="p-4 border-t border-gray-100 dark:border-surface-700">
                     <div class="flex flex-col gap-2">
-                        <button @click="close"
+                        <button @click="emit('openLogin'), close()"
                             class="w-full py-2.5 rounded-sm font-semibold border border-gray-300 dark:border-surface-600 cursor-pointer dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-surface-100 transition-colors">
                             {{ $t('nav.login') }}
                         </button>
-                        <button @click="close()"
+                        <button @click="emit('openRegister'),close()"
                             class="w-full py-2.5 rounded-sm font-semibold default-button transition-colors cursor-pointer">
                             {{ $t('nav.register') }}
                         </button>
