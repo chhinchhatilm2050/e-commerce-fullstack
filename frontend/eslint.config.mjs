@@ -1,8 +1,8 @@
-import js from '@eslint/js';
-import globals from 'globals';
-import tseslint from 'typescript-eslint';
-import pluginVue from 'eslint-plugin-vue';
-import vueParser from 'vue-eslint-parser';
+import js from '@eslint/js'
+import globals from 'globals'
+import tseslint from 'typescript-eslint'
+import pluginVue from 'eslint-plugin-vue'
+import vueParser from 'vue-eslint-parser'
 
 export default tseslint.config(
   js.configs.recommended,
@@ -37,9 +37,10 @@ export default tseslint.config(
       '@typescript-eslint/no-explicit-any': 'error',
 
       // Formatting
-      'indent': ['error', 2],
+      'indent': 'off',                                          // ← changed
+      'vue/script-indent': ['error', 2, { baseIndent: 1 }],   // ← added
       'quotes': ['error', 'single'],
-      'semi': ['error', 'always'],
+      'semi': ['error', 'never'],
       'comma-dangle': ['error', 'always-multiline'],
       'object-curly-spacing': ['error', 'always'],
       'arrow-spacing': ['error', { before: true, after: true }],
@@ -71,7 +72,7 @@ export default tseslint.config(
       // Formatting
       'indent': ['error', 2],
       'quotes': ['error', 'single'],
-      'semi': ['error', 'always'],
+      'semi': ['error', 'never'],
       'comma-dangle': ['error', 'always-multiline'],
       'object-curly-spacing': ['error', 'always'],
       'arrow-spacing': ['error', { before: true, after: true }],
@@ -88,4 +89,4 @@ export default tseslint.config(
   {
     ignores: ['dist/**', 'node_modules/**', '*.config.mjs'],
   },
-);
+)
