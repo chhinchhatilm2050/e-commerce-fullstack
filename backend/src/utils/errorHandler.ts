@@ -10,13 +10,13 @@ export interface DuplicateFieldError {
 }
 
 const handleCastError = (err: CastError): AppError => {
-  return new AppError(`Invalid ${err.path}: ${err.value}.`, 400);
+  return new AppError(`Invalid ${err.path}: ${String(err.value)}.`, 400);
 };
 
 const handleDuplicateError = (err: DuplicateFieldError): AppError => {
   const field = Object.values(err.keyValue)[0];
   return new AppError(
-    `Duplicate field value: ${field}. Please use another value!`,
+    `Duplicate field value: ${String(field)}. Please use another value!`,
     409,
   );
 };

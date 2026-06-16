@@ -10,7 +10,7 @@ const validateRequest = (
   if (!errors.isEmpty()) {
     const formattedErrors = errors.array().map((err) => ({
       field: err.type === 'field' ? err.path : 'unknown',
-      message: err.msg,
+      message: err.msg as string,
     }));
 
     res.status(400).json({
