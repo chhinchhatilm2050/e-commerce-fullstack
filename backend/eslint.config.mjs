@@ -33,7 +33,6 @@ export default tseslint.config(
       '@typescript-eslint/no-misused-promises': 'error',
       '@typescript-eslint/no-explicit-any': 'error',
       'eqeqeq': ['error', 'always'],
-      'no-console': 'warn',
     },
   },
   {

@@ -120,5 +120,3 @@ export const updateUser = asyncHandler(async (req: Request<{ id: string }, unkno
     data: {user: safeUser}
   });
 });
-
-const
