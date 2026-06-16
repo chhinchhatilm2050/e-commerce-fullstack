@@ -16,8 +16,9 @@ app.use(cookieParser());
 app.use(requestLogger);
 app.use(globalLimiter);
 app.use((req: Request, res: Response, next: NextFunction) => {
-  req.body = mongoSanitize.sanitize(req.body, { replaceWith: '_' });
-  req.params = mongoSanitize.sanitize(req.params, { replaceWith: '_' });
+  mongoSanitize.sanitize(req.body, { replaceWith: '_' });   
+  mongoSanitize.sanitize(req.params, { replaceWith: '_' }); 
+  mongoSanitize.sanitize(req.query, { replaceWith: '_' });
   next();
 });
 app.use(sanitizeHtml);

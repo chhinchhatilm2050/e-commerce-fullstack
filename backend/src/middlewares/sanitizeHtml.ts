@@ -6,11 +6,12 @@ const sanitizeHtml = (
   res: Response,
   next: NextFunction,
 ): void => {
-  req.body = sanitizeObject(req.body);
+  req.body = sanitizeObject(req.body as Record<string, unknown>);
+
   req.params = sanitizeObject(req.params) as Record<string, string>;
-  (req.query as Record<string, unknown>) = sanitizeObject(
-    req.query as Record<string, unknown>,
-  );
+
+  req.query = sanitizeObject(req.query) as typeof req.query; 
+
   next();
 };
 

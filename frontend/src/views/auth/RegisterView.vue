@@ -34,7 +34,7 @@
   const agreedToTerms = ref<boolean>(false)
   const errors = reactive<FormErrors>({})
   const showPass = ref<boolean>(false)
-  const emailRegx: RegExp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  const emailRegx: RegExp = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
   const phoneRegex: RegExp = /^(\+855|0)[1-9]\d{7,8}$/
 
   const emit = defineEmits<{
@@ -71,7 +71,7 @@
       errors.phoneNumber = 'Phone is required'
       valid = false
     } else if (!phoneRegex.test(registerForm.phoneNumber)) {
-      errors.phoneNumber = 'Invalid phone number'
+      errors.phoneNumber = 'Invalid phone number. (e.g., 012345678 or +85512345678)'
       valid = false
     }
     if (!registerForm.email.trim()) {
