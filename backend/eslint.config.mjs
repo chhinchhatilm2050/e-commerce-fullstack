@@ -36,6 +36,15 @@ export default tseslint.config(
     },
   },
   {
+    files: ['**/*Strategy.ts'],
+    rules: {
+      '@typescript-eslint/no-misused-promises': [
+        'error',
+        { checksVoidReturn: { arguments: false } },
+      ],
+    },
+  },
+  {
     files: ['**/*.{js,mjs,cjs}'],
     ...tseslint.configs.disableTypeChecked,
   },

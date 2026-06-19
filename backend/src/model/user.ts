@@ -13,6 +13,9 @@ export interface IUser extends Document {
   role: 'customer' | 'admin';
   status: 'active' | 'inactive' | 'blocked';
   refreshToken?: string | null;
+  googleId: string,
+  githubId: string,
+  facebookId: string,
   orderCount: number;
   totalSpent: number;
   updatedBy?: Types.ObjectId | null;
@@ -31,27 +34,26 @@ const userSchema = new mongoose.Schema<IUser>(
   {
     firstName: {
       type: String,
-      required: true,
       minlength: 2,
       maxlength: 20,
       trim: true,
+      required: true
     },
     lastName: {
       type: String,
-      required: true,
-      minlength: 2,
+      minlength: 0,
       maxlength: 20,
       trim: true,
+      
     },
     phoneNumber: {
       type: String,
-      required: true,
       unique: true,
       trim: true,
+      sparse: true
     },
     email: {
       type: String,
-      required: true,
       unique: true,
       trim: true,
       lowercase: true,
@@ -59,7 +61,6 @@ const userSchema = new mongoose.Schema<IUser>(
     },
     password: {
       type: String,
-      required: true,
       minlength: 8,
       select: false,
     },
@@ -80,6 +81,18 @@ const userSchema = new mongoose.Schema<IUser>(
     refreshToken: {
       type: String,
       default: null,
+    },
+    googleId: {
+      type: String,
+      sparse: true
+    },
+    githubId: {
+      type: String,
+      sparse: true
+    },
+    facebookId: {
+      type: String,
+      sparse: true
     },
     orderCount: {
       type: Number,
@@ -141,7 +154,7 @@ userSchema.methods.softDelete = async function (
   this.isDeleted = true;
   this.deletedAt = new Date();
   this.deletedBy = deletedBy;
-  await this.save();
+  await this.save({ validateBeforeSave: false });
 };
 
 userSchema.methods.isMatch = async function (
