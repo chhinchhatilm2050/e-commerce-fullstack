@@ -27,6 +27,10 @@ const globalErrorHandler = (
     error = handleDuplicateError(err as DuplicateFieldError);
   }
 
+  if(isDev) {
+    console.log(`Stack: ${err.stack}`);
+  }
+
   if (isDev) {
     res.status(error.statusCode).json({
       status: error.status,
@@ -42,7 +46,7 @@ const globalErrorHandler = (
     } else {
       res.status(error.statusCode).json({
         status: error.statusCode,
-        message: 'Something went wrong!',
+        message: 'Something went wrong',
       });
     }
   }

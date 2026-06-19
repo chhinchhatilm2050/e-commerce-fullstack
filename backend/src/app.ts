@@ -8,6 +8,11 @@ import helmet from 'helmet';
 import sanitizeHtml from './middlewares/sanitizeHtml.js';
 import cookieParser from 'cookie-parser';
 import hpp from 'hpp';
+import router from './routes/index.js';
+import passport from 'passport';
+import { GoogleStrategy } from './middlewares/googleStrategy.js';
+import { GitHubStrategy } from './middlewares/githubStrategy.js';
+import { FacebookStrategy } from './middlewares/facebookStrategy.js';
 
 const app = express();
 app.use(helmet());
@@ -23,15 +28,13 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 app.use(sanitizeHtml);
 app.use(hpp());
+passport.use(GoogleStrategy);
+passport.use(GitHubStrategy);
+passport.use(FacebookStrategy);
 
-app.use('/api/health', (req: Request, res: Response) => {
-  res.status(200).json({
-    status: 'success',
-    message: 'Api is healthy',
-  });
-});
-
+app.use('/api', router);
 app.use(notFound);
+
 app.use(globalErrorHandler);
 
 export default app;

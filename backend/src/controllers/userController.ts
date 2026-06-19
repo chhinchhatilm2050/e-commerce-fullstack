@@ -34,9 +34,9 @@ export const createUser = asyncHandler(async(req: Request<unknown, unknown, Crea
 });
 
 export const promoteToAdmin = asyncHandler( async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  const { userId } = req.params;
+  const { id } = req.params;
   const user = await UserModel.findByIdAndUpdate(
-    userId,
+    id,
     {role: 'admin'},
     { new: true, runValidators: true}
   );
@@ -118,5 +118,15 @@ export const updateUser = asyncHandler(async (req: Request<{ id: string }, unkno
   res.status(200).json({
     status: 'success',
     data: {user: safeUser}
+  });
+});
+
+export const deleteUser = asyncHandler(async(req: Request, res: Response, _next: NextFunction): Promise<void> => {
+  const user = req.resource as IUser;
+  await user.softDelete(req.user!._id);
+
+  res.status(200).json({
+    status: 'success',
+    message: 'User deleted successfully'
   });
 });

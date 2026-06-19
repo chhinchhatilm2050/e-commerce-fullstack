@@ -38,6 +38,8 @@ export const login = asyncHandler(
     const user = await UserModel.findOne({ email }).select(
       '+password email role',
     );
+    console.log(password);
+    console.log(await user!.isMatch(password));
 
     if (!user || !(await user.isMatch(password))) {
       return next(new AppError('User or password incorrect', 400));
@@ -138,3 +140,121 @@ export const refresh = asyncHandler(
     });
   },
 );
+
+export const googleCallBack = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  const user = req.user;
+
+  if (!user) {
+    return next(new AppError('Authentication failed', 401));
+  }
+
+  const accessToken = generateToken(
+    user._id.toString(),
+    {
+      email: user.email,
+      role: user.role,
+    },
+    process.env.JWT_SECRET as Secret,
+    process.env.JWT_EXPIRE_IN as SignOptions['expiresIn'],
+  );
+
+  const refreshToken = generateRefreshToken(
+    user._id.toString(),
+    process.env.JWT_REFRESH_SECRET as Secret,
+    process.env.JWT_REFRESH_EXPIRE_IN as SignOptions['expiresIn'],
+  );
+
+  user.refreshToken = refreshToken;
+  await user.save();
+
+  res.cookie('refreshToken', refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
+
+  res.status(200).json({
+    status: 'success',
+    accessToken,
+    user: user
+  });
+});
+
+export const githubCallBack = asyncHandler(async(req: Request, res: Response, next: NextFunction) => {
+  const user = req.user;
+  if (!user) {
+    return next(new AppError('Authentication failed', 401));
+  }
+
+  const accessToken = generateToken(
+    user._id.toString(),
+    {
+      email: user.email,
+      role: user.role
+    },
+    process.env.JWT_SECRET as Secret,
+    process.env.JWT_EXPIRE_IN as SignOptions['expiresIn'],
+  );
+
+  const refreshToken = generateRefreshToken(
+    user._id.toString(),
+    process.env.JWT_REFRESH_SECRET as Secret,
+    process.env.JWT_REFRESH_EXPIRE_IN as SignOptions['expiresIn'],
+  );
+
+  user.refreshToken = refreshToken;
+  await user.save();
+
+  res.cookie('refreshToken', refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
+
+  res.status(200).json({
+    status: 'success',
+    accessToken,
+    data: user
+  });
+});
+
+export const facebookCallBack = asyncHandler(async(req: Request, res: Response, next: NextFunction) => {
+  const user = req.user;
+  if(!user) {
+    return next(new AppError('Authentication failed', 401));
+  }
+
+  const accessToken = generateToken(
+    user._id.toString(),
+    {
+      email: user.email,
+      role: user.role
+    },
+    process.env.JWT_SECRET as Secret,
+    process.env.JWT_EXPIRE_IN as SignOptions['expiresIn'],
+  );
+
+  const refreshToken = generateRefreshToken(
+    user._id.toString(),
+    process.env.JWT_REFRESH_SECRET as Secret,
+    process.env.JWT_REFRESH_EXPIRE_IN as SignOptions['expiresIn'],
+  );
+
+  user.refreshToken = refreshToken;
+  await user.save();
+
+  res.cookie('refreshToken', refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
+
+  res.status(200).json({
+    status: 'success',
+    accessToken,
+    data: user
+  });
+});
