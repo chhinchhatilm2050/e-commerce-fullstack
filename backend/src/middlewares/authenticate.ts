@@ -20,12 +20,12 @@ export const authenticate = asyncHandler(
       return next(new AppError('Invalid or expired token', 401)); 
     }
 
-    req.user = await UserModel.findById(payload.sub);
-
-    if (!req.user) {
-      return next(new AppError('User no longer exists', 401));
+    const user = await UserModel.findById(payload.sub);
+    if (!user) {
+      return next(new AppError('User not found', 401));
     }
-
+    req.user = user;
     next();
   },
 );
+

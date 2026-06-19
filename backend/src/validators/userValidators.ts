@@ -55,34 +55,30 @@ const registerValidation = [
 
 const updateUserValidation = [
   body('firstName')
+    .optional()
     .trim()
-    .notEmpty()
-    .withMessage('First name is required')
     .isLength({ min: 2, max: 20 })
     .withMessage('First name can be 2-20 characters')
     .matches(NAME_REGEX)
     .withMessage('First name can only cotain letters'),
   body('lastName')
+    .optional()
     .trim()
-    .notEmpty()
-    .withMessage('Last name is required')
     .isLength({ min: 2, max: 20 })
     .withMessage('Last name can be 2-20 characters')
     .matches(NAME_REGEX)
     .withMessage('Last name can only cotain letters'),
   body('phoneNumber')
+    .optional()
     .trim()
-    .notEmpty()
-    .withMessage('Phone number is required')
     .matches(PHONE_REGEX)
     .withMessage('Invalid phone number. (e.g., 012345678 or +85512345678)'),
   body('email')
+    .optional()
     .trim()
-    .isEmail()
-    .withMessage('Invalid email')
     .normalizeEmail()
     .custom(isEmailUnique),
-  body('gender').notEmpty().withMessage('Gender is required'),
+  body('gender').optional().notEmpty().withMessage('Gender is required'),
   validateRequest,
 ];
 
