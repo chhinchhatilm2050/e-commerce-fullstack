@@ -8,7 +8,7 @@
     { icon: '<i class="ri-git-repository-private-fill"></i>', title: 'home.secure_payment' },
     { icon: '<i class="ri-arrow-go-back-line"></i>', title: 'home.easy_returns' },
     { icon: '<i class="ri-cloud-fill"></i>', title: 'home.support' },
-  ]
+  ];
 </script>
 
 <template>

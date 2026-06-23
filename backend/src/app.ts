@@ -1,3 +1,5 @@
+import dotenv from 'dotenv';
+dotenv.config({ path: '.env.dev' });
 import express, { Request, Response, NextFunction } from 'express';
 import globalErrorHandler from './middlewares/globalErrorHandler.js';
 import notFound from './middlewares/notFound.js';
@@ -13,6 +15,7 @@ import passport from 'passport';
 import { GoogleStrategy } from './middlewares/googleStrategy.js';
 import { GitHubStrategy } from './middlewares/githubStrategy.js';
 import { FacebookStrategy } from './middlewares/facebookStrategy.js';
+import cors from 'cors';
 
 const app = express();
 app.use(helmet());
@@ -20,6 +23,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(requestLogger);
 app.use(globalLimiter);
+app.use(cors({origin: process.env.FRONTEND_URL, credentials: true}));
 app.use((req: Request, res: Response, next: NextFunction) => {
   mongoSanitize.sanitize(req.body, { replaceWith: '_' });   
   mongoSanitize.sanitize(req.params, { replaceWith: '_' }); 

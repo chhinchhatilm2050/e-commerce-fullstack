@@ -38,12 +38,13 @@ export const login = asyncHandler(
     const user = await UserModel.findOne({ email }).select(
       '+password email role',
     );
-    console.log(password);
-    console.log(await user!.isMatch(password));
-
     if (!user || !(await user.isMatch(password))) {
       return next(new AppError('User or password incorrect', 400));
     }
+    
+    // if (!user.isVerified) {
+    //   return next(new AppError('Please verify your email before logging in', 403));
+    // }
 
     const accessToken = generateToken(
       user._id.toString(),
@@ -71,9 +72,10 @@ export const login = asyncHandler(
     const { password: _password, ...userWithoutPassword } = user.toObject();
 
     res.status(200).json({
-      status: 'success',
+      success: true,
       accessToken,
       user: userWithoutPassword,
+      message: 'Login success fully'
     });
   },
 );
@@ -98,7 +100,7 @@ export const logout = asyncHandler(
     res.clearCookie(refreshToken);
 
     res.status(200).json({
-      status: 'success',
+      success: true,
       message: 'Logout successfully',
     });
   },
@@ -135,7 +137,7 @@ export const refresh = asyncHandler(
     );
 
     res.status(200).json({
-      status: 'success',
+      success: true,
       accessToken,
     });
   },
@@ -175,7 +177,7 @@ export const googleCallBack = asyncHandler(async (req: Request, res: Response, n
   });
 
   res.status(200).json({
-    status: 'success',
+    success: true,
     accessToken,
     user: user
   });
@@ -214,7 +216,7 @@ export const githubCallBack = asyncHandler(async(req: Request, res: Response, ne
   });
 
   res.status(200).json({
-    status: 'success',
+    success: true,
     accessToken,
     data: user
   });
@@ -253,7 +255,7 @@ export const facebookCallBack = asyncHandler(async(req: Request, res: Response, 
   });
 
   res.status(200).json({
-    status: 'success',
+    success: true,
     accessToken,
     data: user
   });

@@ -18,12 +18,14 @@
   "type": "module",
   "dependencies": {
     "@faker-js/faker": "^10.4.0",
+    "@types/cors": "^2.8.19",
     "@types/express-session": "^1.19.0",
     "@types/passport-github2": "^1.2.9",
     "@types/passport-google-oauth20": "^2.0.17",
     "bcrypt": "^6.0.0",
     "cloudinary": "^2.10.0",
     "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "express-async-handler": "^1.2.0",
@@ -43,6 +45,7 @@
     "passport-github2": "^0.1.12",
     "passport-google-oauth20": "^2.0.0",
     "passport-jwt": "^4.0.1",
+    "resend": "^6.14.0",
     "sanitize-html": "^2.17.4"
   },
   "devDependencies": {

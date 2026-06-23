@@ -1,38 +1,38 @@
 <script setup lang="ts">
-  import { ref } from 'vue'
-  import { useThemeStore } from '@/stores/useThemStore.js'
-  import LangDropdown from './LangDropdown.vue'
-  import UserDropdown from './UserDropdown.vue'
-  import PhoneNavbar from './PhoneNavbar.vue'
-  import { useDialog } from '@/composables/useDialog.js'
-  import AuthDialog from './AuthDialog.vue'
+  import { ref } from 'vue';
+  import { useThemeStore } from '@/stores/useThemStore.js';
+  import LangDropdown from './LangDropdown.vue';
+  import UserDropdown from './UserDropdown.vue';
+  import PhoneNavbar from './PhoneNavbar.vue';
+  import { useDialog } from '@/composables/useDialog.js';
+  import AuthDialog from './AuthDialog.vue';
 
-  const themeStore = useThemeStore()
+  const themeStore = useThemeStore();
   interface NavLink {
     to: string,
     label: string
   }
 
-  const { isOpen, open } = useDialog()
-  const openAsRegister = ref<boolean>(false)
+  const { isOpen, open } = useDialog();
+  const openAsRegister = ref<boolean>(false);
 
   const openRegister = (): void => {
-    openAsRegister.value = true
-    open()
-  }
+    openAsRegister.value = true;
+    open();
+  };
 
   const openLogin = (): void => {
-    openAsRegister.value = false
-    open()
-  }
+    openAsRegister.value = false;
+    open();
+  };
 
-  const mobileMenuOpen = ref<boolean>(false)
+  const mobileMenuOpen = ref<boolean>(false);
   const navLinks: NavLink[] = [
     { to: '/', label: 'nav.home' },
     { to: '/clothes', label: 'nav.clothes' },
     { to: '/electornic', label: 'nav.electronic' },
     { to: '/book', label: 'nav.book' },
-  ]
+  ];
 </script>
 
 <template>

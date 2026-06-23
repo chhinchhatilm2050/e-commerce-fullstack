@@ -40,7 +40,7 @@ export default tseslint.config(
       'indent': 'off',                                          // ← changed
       'vue/script-indent': ['error', 2, { baseIndent: 1 }],   // ← added
       'quotes': ['error', 'single'],
-      'semi': ['error', 'never'],
+      'semi': ['error', 'always'],
       'comma-dangle': ['error', 'always-multiline'],
       'object-curly-spacing': ['error', 'always'],
       'arrow-spacing': ['error', { before: true, after: true }],
@@ -72,7 +72,7 @@ export default tseslint.config(
       // Formatting
       'indent': ['error', 2],
       'quotes': ['error', 'single'],
-      'semi': ['error', 'never'],
+      'semi': ['error', 'always'],
       'comma-dangle': ['error', 'always-multiline'],
       'object-curly-spacing': ['error', 'always'],
       'arrow-spacing': ['error', { before: true, after: true }],

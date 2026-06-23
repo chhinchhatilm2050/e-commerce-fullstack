@@ -1,32 +1,35 @@
 <script setup lang="ts">
-  import { watchEffect } from 'vue'
+  import { watchEffect } from 'vue';
   
   const props = withDefaults(defineProps<{
     modelValue: boolean,
     title?: string,
     size?: string,
+    zIndex?: number,
   }>(), {
     title: '',
     size: 'max-w-md',
-  })
+    zIndex: 50,
+  });
 
   defineEmits<{
     'update:modelValue': [value: boolean]
-  }>()
+  }>();
 
   watchEffect(() => {
     if (props.modelValue) {
-      document.body.style.overflow = 'hidden'
+      document.body.style.overflow = 'hidden';
     } else {
-      document.body.style.overflow = ''
+      document.body.style.overflow = '';
     }
-  })
+  });
 </script>
 
 <template>
   <Teleport to="body">
     <div v-if="props.modelValue"
       class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+      :style="{ zIndex: props.zIndex }"
       @click.self="$emit('update:modelValue', false)"
     >
       <div :class="`bg-white dark:bg-surface-800 rounded-sm shadow-xl  overflow-y-auto max-h-[100vh] w-full ${props.size} mx-4 p-10`">

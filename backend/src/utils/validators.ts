@@ -6,12 +6,11 @@ const PASSWORD_REGEX: RegExp = /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
 const NAME_REGEX: RegExp = /^[a-zA-Z\s]+$/;
 const PHONE_REGEX: RegExp = /^(\+855|0)[1-9]\d{7,8}$/;
 
-const isEmailUnique = async (email: string): Promise<boolean> => {
+const isEmailUnique = async (email: string) => {
   const user = await UserModel.findOne({ email });
-  if (user) {
-    throw new AppError('Email already registered', 409);
+  if (user && user.isVerified) {
+    throw new AppError('This email already in use', 409);
   }
-  return true;
 };
 
 export { EMAIL_REGEX, PASSWORD_REGEX, NAME_REGEX, PHONE_REGEX, isEmailUnique };
