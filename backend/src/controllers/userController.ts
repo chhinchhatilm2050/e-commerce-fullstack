@@ -3,20 +3,52 @@ import asyncHandler from 'express-async-handler';
 import { Request, Response, NextFunction } from 'express';
 import AppError from '../utils/appError.js';
 import { IUser } from '../model/user.js';
+import { sendVerificationEmail } from '../utils/email.js';
+import { 
+  generateVerificationCode,
+  hashVerificationCode,
+  compareVerificationCode,
+  CODE_EXPIRY_MINUTES,
+  MAX_VERIFICATION_ATTEMPTS
+} from '../utils/verificationCode.js';
 
 interface CreateUserBody {
-    firstName: string;
-    lastName: string;
-    phoneNumber: string;
-    email: string;
-    password: string;
-    gender: 'male' | 'female' | 'other';
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
+  email: string;
+  password: string;
+  gender: 'male' | 'female' | 'other';
 }
 
 type UpdateUserBody = Partial<Omit<CreateUserBody, 'password'>>;
 
-export const createUser = asyncHandler(async(req: Request<unknown, unknown, CreateUserBody>, res: Response, _next: NextFunction): Promise<void> => {
+export const createUser = asyncHandler(async(req: Request<unknown, unknown, CreateUserBody>, res: Response, next: NextFunction): Promise<void> => {
   const { firstName, lastName,phoneNumber, email, password, gender } = req.body;
+  const existingUser = await UserModel.findOne({ email });
+  if (existingUser) {
+    if(existingUser.isVerified) {
+      return next(new AppError('This email already in use', 409));
+    }
+    existingUser.firstName = firstName;
+    existingUser.lastName = lastName;
+    existingUser.phoneNumber = phoneNumber;
+    existingUser.password = password;
+    existingUser.gender = gender;
+
+    const code = generateVerificationCode();
+    existingUser.verificationCodeHash = await hashVerificationCode(code);
+    existingUser.verificationCodeExpires = new Date(Date.now() + CODE_EXPIRY_MINUTES * 60 * 1000);
+    existingUser.verificationAttempts = 0;
+
+    await existingUser.save();
+    await sendVerificationEmail(email, code);
+    res.status(200).json({
+      success: true,
+      message: 'Account created. Check your email for a verification code.'
+    });
+    return;
+  };
   const user = new UserModel({
     firstName,
     lastName,
@@ -25,11 +57,73 @@ export const createUser = asyncHandler(async(req: Request<unknown, unknown, Crea
     password,
     gender
   });
-
+  const code = generateVerificationCode();
+  user.verificationCodeHash = await hashVerificationCode(code);
+  user.verificationCodeExpires = new Date(Date.now() + CODE_EXPIRY_MINUTES * 60 * 1000 );
   await user.save();
+
+  try {
+    await sendVerificationEmail(user.email, code);
+  } catch (err) {
+    console.error('Failed to send verification email', err);
+  }
+
   res.status(201).json({
-    status: 'success',
-    message: 'Account created successfully'
+    success: true,
+    message: 'Account created. Check your email for a verification code.'
+  });
+});
+
+interface VerifyEmailBody {
+  email: string;
+  code: string
+}
+
+export const verifyEmail = asyncHandler(async(req: Request<unknown, unknown, VerifyEmailBody>, res: Response, next: NextFunction): Promise<void> => {
+  const { email, code } = req.body;
+  if(!email || !code) {
+    return next(new AppError('Please input 6-digit code to verify.', 400));
+  }
+  const user = await UserModel.findOne({email: email}).select(
+    '+verificationCodeHash +verificationCodeExpires +verificationAttempts'
+  );
+
+  if(!user) {
+    return next(new AppError('Invalid or expired code', 400));
+  }
+
+  if(user.isVerified) {
+    res.status(200).json({
+      success: true,
+      message: 'Eamil already verified.'
+    });
+    return;
+  }
+
+  if(!user.verificationCodeHash || !user.verificationCodeExpires || user.verificationCodeExpires < new Date()) {
+    return next(new AppError('Invalid or expired code', 400));
+  }
+
+  if(user.verificationAttempts >= MAX_VERIFICATION_ATTEMPTS) {
+    return next(new AppError('Too many attempts. Please request a new code.', 409));
+  }
+
+  const isMatch = await compareVerificationCode(code, user.verificationCodeHash);
+  if (!isMatch) {
+    user.verificationAttempts += 1;
+    await user.save({validateBeforeSave: false});
+    return next(new AppError('Invalid or expried code', 400));
+  }
+
+  user.isVerified = true;
+  user.verificationCodeHash = null;
+  user.verificationCodeExpires = null;
+  user.verificationAttempts = 0;
+  await user.save({validateBeforeSave: false});
+
+  res.status(200).json({
+    success: true,
+    message: 'Email verified successfully'
   });
 });
 
@@ -46,7 +140,7 @@ export const promoteToAdmin = asyncHandler( async (req: Request, res: Response, 
   }
 
   res.status(200).json({
-    status: 'success',
+    success: true,
     data: { user }
   });
 });
@@ -61,7 +155,7 @@ export const getSingleUser = asyncHandler(async(req: Request, res: Response, nex
   }
 
   res.status(200).json({
-    status: 'success',
+    success: true,
     data: { user }
   });
 });
@@ -81,7 +175,7 @@ export const getAllUser = asyncHandler(async (req: Request, res: Response, _next
   ]);
 
   res.status(200).json({
-    status: 'success',
+    success: true,
     result: users.length,
     total,
     page,
@@ -116,7 +210,7 @@ export const updateUser = asyncHandler(async (req: Request<{ id: string }, unkno
   } = userObject;
 
   res.status(200).json({
-    status: 'success',
+    success: true,
     data: {user: safeUser}
   });
 });
@@ -126,7 +220,21 @@ export const deleteUser = asyncHandler(async(req: Request, res: Response, _next:
   await user.softDelete(req.user!._id);
 
   res.status(200).json({
-    status: 'success',
+    success: true,
     message: 'User deleted successfully'
+  });
+});
+
+export const getMe = asyncHandler(async(req: Request, res: Response, next: NextFunction): Promise<void> => {
+  const user = await UserModel.findById(req.user?._id).select(
+    '-password -refreshToken -isDeleted -deletedAt -deletedBy -updatedBy'
+  );
+  if(!user) {
+    return next(new AppError('User not found', 404));
+  }
+  
+  res.status(200).json({
+    success: true,
+    data: { user }
   });
 });

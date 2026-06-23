@@ -13,6 +13,10 @@ export interface IUser extends Document {
   role: 'customer' | 'admin';
   status: 'active' | 'inactive' | 'blocked';
   refreshToken?: string | null;
+  isVerified: boolean;
+  verificationCodeHash?: string | null;
+  verificationCodeExpires?: Date | null;
+  verificationAttempts: number;
   googleId: string,
   githubId: string,
   facebookId: string,
@@ -35,22 +39,20 @@ const userSchema = new mongoose.Schema<IUser>(
     firstName: {
       type: String,
       minlength: 2,
-      maxlength: 20,
+      maxlength: 50,
       trim: true,
       required: true
     },
     lastName: {
       type: String,
       minlength: 0,
-      maxlength: 20,
+      maxlength: 50,
       trim: true,
-      
+      required: true
     },
     phoneNumber: {
       type: String,
-      unique: true,
       trim: true,
-      sparse: true
     },
     email: {
       type: String,
@@ -67,6 +69,7 @@ const userSchema = new mongoose.Schema<IUser>(
     gender: {
       type: String,
       enum: ['male', 'female', 'other'],
+      default: 'other'
     },
     role: {
       type: String,
@@ -76,11 +79,30 @@ const userSchema = new mongoose.Schema<IUser>(
     status: {
       type: String,
       enum: ['active', 'inactive', 'blocked'],
-      default: 'active',
+      default: 'inactive',
     },
     refreshToken: {
       type: String,
       default: null,
+    },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    verificationCodeHash: {
+      type: String,
+      default: null,
+      select: false,
+    },
+    verificationCodeExpires: {
+      type: Date,
+      default: null,
+      select: false,
+    },
+    verificationAttempts: {
+      type: Number,
+      default: 0,
+      select: false,
     },
     googleId: {
       type: String,
@@ -129,6 +151,14 @@ const userSchema = new mongoose.Schema<IUser>(
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
   },
+);
+
+userSchema.index(
+  { createdAt: 1 },
+  {
+    expireAfterSeconds: 24 * 60 * 60,
+    partialFilterExpression: { isVerified: false }
+  }
 );
 
 userSchema.pre('save', async function () {

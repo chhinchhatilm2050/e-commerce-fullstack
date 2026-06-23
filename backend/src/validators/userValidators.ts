@@ -11,16 +11,16 @@ const registerValidation = [
     .trim()
     .notEmpty()
     .withMessage('First name is required')
-    .isLength({ min: 2, max: 20 })
-    .withMessage('First name can be 2-20 characters')
+    .isLength({ min: 2, max: 50 })
+    .withMessage('First name can be 2-50 characters')
     .matches(NAME_REGEX)
     .withMessage('First name can only cotain letters'),
   body('lastName')
     .trim()
     .notEmpty()
     .withMessage('Last name is required')
-    .isLength({ min: 2, max: 20 })
-    .withMessage('Last name can be 2-20 characters')
+    .isLength({ min: 2, max: 50 })
+    .withMessage('Last name can be 2-50 characters')
     .matches(NAME_REGEX)
     .withMessage('Last name can only cotain letters'),
   body('phoneNumber')
@@ -33,7 +33,6 @@ const registerValidation = [
     .trim()
     .isEmail()
     .withMessage('Invalid email')
-    .normalizeEmail()
     .custom(isEmailUnique),
   body('password')
     .trim()
@@ -57,15 +56,15 @@ const updateUserValidation = [
   body('firstName')
     .optional()
     .trim()
-    .isLength({ min: 2, max: 20 })
-    .withMessage('First name can be 2-20 characters')
+    .isLength({ min: 2, max: 50 })
+    .withMessage('First name can be 2-50 characters')
     .matches(NAME_REGEX)
     .withMessage('First name can only cotain letters'),
   body('lastName')
     .optional()
     .trim()
-    .isLength({ min: 2, max: 20 })
-    .withMessage('Last name can be 2-20 characters')
+    .isLength({ min: 2, max: 50 })
+    .withMessage('Last name can be 2-50 characters')
     .matches(NAME_REGEX)
     .withMessage('Last name can only cotain letters'),
   body('phoneNumber')
@@ -76,7 +75,6 @@ const updateUserValidation = [
   body('email')
     .optional()
     .trim()
-    .normalizeEmail()
     .custom(isEmailUnique),
   body('gender').optional().notEmpty().withMessage('Gender is required'),
   validateRequest,
