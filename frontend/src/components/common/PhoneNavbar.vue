@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { watchEffect } from 'vue'
+  import { watchEffect } from 'vue';
   interface NavLink {
     to: string,
     label: string,
@@ -9,28 +9,28 @@
     modelValue: boolean;
   }>(), {
     modelValue: false,
-  })
+  });
 
   const emit = defineEmits<{
     'update:modelValue': [value: boolean],
     'openRegister': [],
     'openLogin': []
-  }>()
-  const close = () => emit('update:modelValue', false)
+  }>();
+  const close = () => emit('update:modelValue', false);
 
   const navLinks: NavLink[] = [
     { to: '/', label: 'nav.home', icon: '<i class="ri-home-wifi-fill"></i>' },
     { to: '/clothes', label: 'nav.clothes', icon: '<i class="ri-shirt-fill"></i>' },
     { to: '/electornic', label: 'nav.electronic', icon: '<i class="ri-tools-fill"></i>' },
     { to: '/book', label: 'nav.book', icon: '<i class="ri-book-3-fill"></i>' },
-  ]
+  ];
   watchEffect(() => {
     if (props.modelValue) {
-      document.body.style.overflow = 'hidden'
+      document.body.style.overflow = 'hidden';
     } else {
-      document.body.style.overflow = ''
+      document.body.style.overflow = '';
     }
-  })
+  });
 </script>
 
 <template>

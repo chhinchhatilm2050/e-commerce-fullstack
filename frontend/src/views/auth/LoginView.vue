@@ -1,42 +1,42 @@
 <script setup lang="ts">
-  import { ref, reactive } from 'vue'
+  import { ref, reactive } from 'vue';
 
   interface Errors {
     email?: string,
     password?: string,
   }
   
-  const email = ref<string>('')
-  const password = ref<string>('')
-  const showPass = ref<boolean>(false)
-  const errors = reactive<Errors>({})
+  const email = ref<string>('');
+  const password = ref<string>('');
+  const showPass = ref<boolean>(false);
+  const errors = reactive<Errors>({});
 
-  const emailRegex : RegExp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  const emailRegex : RegExp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const emit = defineEmits<{
     'successLogin': [],
     'go-reginster': []
-  }>()
+  }>();
   
   const handleLogin = async (): Promise<void> => {
-    (Object.keys(errors) as (keyof Errors)[]).forEach(e => delete errors[e])
+    (Object.keys(errors) as (keyof Errors)[]).forEach(e => delete errors[e]);
 
     if (!email.value.trim()) {
-      errors.email = 'Email is required'
-      return
+      errors.email = 'Email is required';
+      return;
     }
     if (!emailRegex.test(email.value)) {
-      errors.email = 'Enter a valid email'
-      return
+      errors.email = 'Enter a valid email';
+      return;
     }
     if (!password.value.trim()) {
-      errors.password = 'Password is required'
-      return
+      errors.password = 'Password is required';
+      return;
     }
-  }
+  };
 
   const handleGoRegister = (): void => {
-    emit('go-reginster')
-  }
+    emit('go-reginster');
+  };
 </script>
 
 <template>

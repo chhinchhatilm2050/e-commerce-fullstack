@@ -1,31 +1,36 @@
 <script setup lang="ts">
-  import BaseDialog from './BaseDialog.vue'
-  import { computed, ref, watch } from 'vue'
-  import RegisterView from '@/views/auth/RegisterView.vue'
-  import LoginView from '@/views/auth/LoginView.vue'
+  import BaseDialog from './BaseDialog.vue';
+  import { computed, ref, watch } from 'vue';
+  import RegisterView from '@/views/auth/RegisterView.vue';
+  import LoginView from '@/views/auth/LoginView.vue';
+  import VerifyEmailView from '@/views/auth/VerifyEmailView.vue';
 
   const props = withDefaults(defineProps<{
     modelValue: boolean
     startRegister: boolean
   }>(), {
     startRegister: false,
-  }) 
+  }); 
 
   const emit = defineEmits<{
     'update:modelValue': [value: boolean]
-  }>()
+  }>();
 
   const open = computed<boolean>({
     get: () => props.modelValue,
     set: (val: boolean) => emit('update:modelValue', val),
-  })
+  });
 
-  const isLogin = ref<boolean>(true)
+  const isLogin = ref<boolean>(true);
+  const showVerify = ref<boolean>(false);
+  const pendingEmail = ref<string>('');
+
   watch(() => props.modelValue, (val) => {
     if (val) {
-      isLogin.value = !props.startRegister
+      isLogin.value = !props.startRegister;
+      showVerify.value = false;
     }
-  })
+  });
 </script>
 
 <template>
@@ -37,6 +42,10 @@
     <RegisterView
       v-else
       @go-login="isLogin = true"
+      @go-verify="(email) => { pendingEmail = email; showVerify = true}" 
     />
+  </BaseDialog>
+  <BaseDialog v-model="showVerify" :title="$t('register.verifyEmail')" size="max-w-lg" :z-index="60">
+    <VerifyEmailView :email = "pendingEmail" @close="showVerify = false" @go-login="isLogin = true"/>
   </BaseDialog>
 </template>

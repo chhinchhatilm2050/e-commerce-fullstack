@@ -48,7 +48,10 @@
         "subTitle": "Join thousands of happy shoppers",
         "gender": "Gender",
         "male": "Male",
-        "female": "Female"
+        "female": "Female",
+        "verifyEmail": "Verify Your Email",
+        "verify": "Verify",
+        "other": "Other"
 
     },
     "footer": {
