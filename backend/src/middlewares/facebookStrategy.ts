@@ -28,8 +28,8 @@ export const FacebookStrategy = new FacebookOAuthStrategy({
     }
     user =  await UserModel.create({
       facebookId: profile.id,
-      firstName: profile.name?.givenName || profile.displayName,
-      lastName: profile.name?.familyName || '',
+      firstName: profile.name?.givenName || profile.displayName?.split(' ')[0] || profile.username,
+      lastName: profile.name?.familyName || profile.displayName?.split(' ')[1] || 'N/A',
       email
     });
     return cb(null, user);

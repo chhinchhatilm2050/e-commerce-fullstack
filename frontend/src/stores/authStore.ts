@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 import axios from 'axios';
 import api from '@/composables/useFetch.js';
-import type { RegisterPayload, RegisterResponse, User, LoginPayload, AuthResponse, MeResponse } from '@/types/auth.js';
+import type { RegisterPayload, RegisterResponse, User, AuthResponse, MeResponse } from '@/types/auth.js';
 import { getAccessToken, setAccessToken, clearToken } from '@/composables/useLocalStorage.js';
 
 export const useAuthStore = defineStore('auth', () => {
@@ -12,16 +12,21 @@ export const useAuthStore = defineStore('auth', () => {
   const token = ref<string | null>(getAccessToken());
   const currentUser = ref<User | null>(null);
 
+  const setToken = (newToekn: string | null) => {
+    token.value = newToekn;
+  };
+
   const isLoggedIn = computed(() => !!token.value);
   const isAdmin = computed(() => currentUser.value?.role === 'admin');
 
-  const login = async(payload: LoginPayload): Promise<{ success: boolean; message: string }> => {
+  const login = async(email: string, password: string): Promise<{ success: boolean; message: string }> => {
     loading.value = true;
     authError.value = '';
     try {
-      const { data } = await api.post<AuthResponse>('/auth/login', payload);
-      token.value = data.token;
-      setAccessToken(data.token);
+      const { data } = await api.post<AuthResponse>('/auth/login', { email, password });
+      token.value = data.accessToken;
+      
+      setAccessToken(data.accessToken);
       return { success: true, message: data.message };
     } catch (err) {
       const message =  axios.isAxiosError(err) ? (err.response?.data?.message ?? 'Invalid email or password.') : 'An unexpected error occurred.';
@@ -95,6 +100,6 @@ export const useAuthStore = defineStore('auth', () => {
 
   return {
     authError, loading, token, isAdmin, isLoggedIn, currentUser, verifyErro,
-    register, verifiEmail, login,fetchProfile, logout,
+    register, verifiEmail, login,fetchProfile, logout, setToken,
   };
 });

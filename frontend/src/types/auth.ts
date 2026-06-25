@@ -13,11 +13,6 @@ export interface User {
   phoneNumber: string;
 }
 
-export interface LoginPayload {
-  email: string;
-  password: string;
-}
-
 export interface RegisterPayload {
   gender: 'male' | 'female' | 'other' | null,
   firstName: string,
@@ -29,7 +24,7 @@ export interface RegisterPayload {
 }
 
 export interface AuthResponse {
-  token: string;
+  accessToken: string;
   message: string
 }
 

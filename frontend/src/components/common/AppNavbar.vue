@@ -4,6 +4,7 @@
   import LangDropdown from './LangDropdown.vue';
   import UserDropdown from './UserDropdown.vue';
   import PhoneNavbar from './PhoneNavbar.vue';
+  import AppProfile from './AppProfile.vue';
   import { useDialog } from '@/composables/useDialog.js';
   import AuthDialog from './AuthDialog.vue';
 
@@ -13,18 +14,13 @@
     label: string
   }
 
-  const { isOpen, open } = useDialog();
+  const { isOpen: isAuthOpen, open: openAuth } = useDialog();
+  const { isOpen: isProfileOpen, open: openProfileDialog } = useDialog();
   const openAsRegister = ref<boolean>(false);
 
-  const openRegister = (): void => {
-    openAsRegister.value = true;
-    open();
-  };
-
-  const openLogin = (): void => {
-    openAsRegister.value = false;
-    open();
-  };
+  const openRegister = () => { openAsRegister.value = true; openAuth(); };
+  const openLogin = () => { openAsRegister.value = false; openAuth(); };
+  const openProfile = () => { openProfileDialog(); };
 
   const mobileMenuOpen = ref<boolean>(false);
   const navLinks: NavLink[] = [
@@ -40,7 +36,7 @@
         :class="{ 'dark:bg-surface-800 dark:border-surface-700': true }"
     >
         <div class="container-xl">
-            <nav class="flex items-center justify-between h-16">
+            <nav class="flex items-center justify-between gap-3 h-16">
                 <button @click="mobileMenuOpen = !mobileMenuOpen"
                     class="lg:hidden btn-ghost w-8 h-8 p-0 flex items-center justify-center rounded-full dark:hover:bg-surface-100"
                 >
@@ -85,12 +81,14 @@
                     <UserDropdown 
                         @open-register="openRegister" 
                         @open-login="openLogin"
+                        @open-profile="openProfile"
                     />
                 </div>
 
             </nav>
         </div>
-        <AuthDialog v-model="isOpen" :start-register="openAsRegister"/>
+        <AuthDialog v-model="isAuthOpen" :start-register="openAsRegister"/>
+        <AppProfile v-model="isProfileOpen"/>
         <PhoneNavbar
             v-model="mobileMenuOpen" 
             @open-login="openLogin"

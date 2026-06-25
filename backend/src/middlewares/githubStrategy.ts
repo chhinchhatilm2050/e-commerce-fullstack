@@ -28,11 +28,12 @@ export const GitHubStrategy = new GitHubOAuthStrategy({
 
     user = await UserModel.create({
       githubId: profile.id,
-      firstName: profile.name?.givenName || profile.displayName,
-      lastName: profile.name?.familyName || '',
+      firstName: profile.name?.givenName || profile.displayName?.split(' ')[0] || profile.username,
+      lastName: profile.name?.familyName || profile.displayName?.split(' ')[1] || 'N/A',
       email
     });
 
+    done(null, user);
   } catch(err) {
     return done(err);
   }

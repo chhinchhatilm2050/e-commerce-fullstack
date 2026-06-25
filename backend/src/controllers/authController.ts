@@ -176,11 +176,8 @@ export const googleCallBack = asyncHandler(async (req: Request, res: Response, n
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
-  res.status(200).json({
-    success: true,
-    accessToken,
-    user: user
-  });
+  const frontendUrl = process.env.FRONTEND_URL;
+  res.redirect(`${frontendUrl}?token=${accessToken}`);
 });
 
 export const githubCallBack = asyncHandler(async(req: Request, res: Response, next: NextFunction) => {
@@ -211,15 +208,12 @@ export const githubCallBack = asyncHandler(async(req: Request, res: Response, ne
   res.cookie('refreshToken', refreshToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    sameSite: 'lax',
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
-  res.status(200).json({
-    success: true,
-    accessToken,
-    data: user
-  });
+  const frontendUrl = process.env.FRONTEND_URL;
+  res.redirect(`${frontendUrl}?token=${accessToken}`);
 });
 
 export const facebookCallBack = asyncHandler(async(req: Request, res: Response, next: NextFunction) => {
@@ -254,9 +248,19 @@ export const facebookCallBack = asyncHandler(async(req: Request, res: Response, 
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
+  const frontendUrl = process.env.FRONTEND_URL;
+  res.redirect(`${frontendUrl}?token=${accessToken}`);
+});
+
+export const getMe = asyncHandler(async(req: Request, res: Response, next: NextFunction) => {
+  const user = await UserModel.findById(req.user?._id).select(
+    '-password -isDeleted -deletedAt -deletedBy -updatedBy'
+  );
+  if(!user) {
+    return next(new AppError('User not found', 404));
+  }
   res.status(200).json({
     success: true,
-    accessToken,
-    data: user
+    data: user,
   });
 });

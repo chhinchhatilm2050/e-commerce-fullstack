@@ -2,7 +2,7 @@ import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios';
 import { getAccessToken, setAccessToken, clearToken } from '@/composables/useLocalStorage.js';
 import router from '@/router/index.js';
 
-const API_URL = import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:3000/api';
+export const API_URL = import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:3000/api';
 
 interface RetryableRequestConfig extends AxiosRequestConfig {
   _retry?: boolean
@@ -15,6 +15,7 @@ interface RefreshResponse {
 const api: AxiosInstance = axios.create({
   baseURL: API_URL,
   headers: { 'Content-Type': 'application/json' },
+  withCredentials: true,
 });
 
 api.interceptors.request.use((config) => {

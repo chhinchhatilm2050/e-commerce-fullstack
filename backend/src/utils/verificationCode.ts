@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import bcrypt from 'bcrypt';
 
-export const CODE_EXPIRY_MINUTES = 2;
+export const CODE_EXPIRY_MINUTES = 1;
 export const MAX_VERIFICATION_ATTEMPTS = 5;
 const SALT_ROUNDS = 10;
 
