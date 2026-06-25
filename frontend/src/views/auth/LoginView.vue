@@ -1,5 +1,9 @@
 <script setup lang="ts">
   import { ref, reactive } from 'vue';
+  import { useAuthStore } from '@/stores/authStore';
+  import { useRouter } from 'vue-router';
+
+  import { API_URL } from '@/composables/useFetch.js';
 
   interface Errors {
     email?: string,
@@ -10,14 +14,28 @@
   const password = ref<string>('');
   const showPass = ref<boolean>(false);
   const errors = reactive<Errors>({});
+  const authStore = useAuthStore();
+  const router = useRouter();
 
   const emailRegex : RegExp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const emit = defineEmits<{
     'successLogin': [],
-    'go-reginster': []
+    'go-reginster': [],
   }>();
+
+  const handleGoogleLogin = (): void => {
+    window.location.href = `${API_URL}/auth/google`;
+  };
+
+  const handleGithubLoign = (): void => {
+    window.location.href = `${API_URL}/auth/github`;
+  };
+
+  const handleFacebookLogin = (): void => {
+    window.location.href = `${API_URL}/auth/facebook`;
+  };
   
-  const handleLogin = async (): Promise<void> => {
+  const handleLogin = async ( ): Promise<void> => {
     (Object.keys(errors) as (keyof Errors)[]).forEach(e => delete errors[e]);
 
     if (!email.value.trim()) {
@@ -32,6 +50,14 @@
       errors.password = 'Password is required';
       return;
     }
+
+    const result = await authStore.login( email.value , password.value);
+    if (authStore.loading) {
+      setTimeout(() => authStore.loading = false, 1000);
+    }
+    if (result.success) {
+      setTimeout(() => {router.push('/'); emit('successLogin');}, 1500);
+    }
   };
 
   const handleGoRegister = (): void => {
@@ -43,6 +69,9 @@
     <div>
         <div class="relative w-full max-w-md animate-slide-up">
             <div class="bg-white dark:bg-surface-800 rounded-3xl">
+                <p v-if="authStore.authError" class="default-button w-full cursor-default bg-red-50 text-sm text-red-700 mb-2 text-center">
+                  {{ authStore.authError }}
+                </p>
                 <form @submit.prevent="handleLogin">
                     <div>
                         <label class="label">{{$t('login.email')}} <span class="text-red-700">*</span></label>
@@ -71,7 +100,11 @@
                         type="submit"
                         class="default-button w-full py-2 mt-4 text-base flex items-center justify-center gap-2"
                     >
-                        {{ $t('login.signIn') }}
+                        <svg v-if="authStore.loading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                        </svg>
+                        {{ authStore.loading ? 'Loading...' : $t('login.signIn') }}
                     </button>
                 </form>
                 <div class="flex items-center gap-3 my-5">
@@ -81,6 +114,7 @@
                 </div>
                 <div class="flex justify-center items-center flex-col gap-3">
                    <button
+                        @click="handleGoogleLogin"
                         type="button"
                         class="cursor-pointer flex items-center w-full justify-center gap-2 px-4 py-2.5 border border-gray-200 dark:border-surface-700 rounded-sm text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-surface-700 transition-all"
                     >
@@ -93,6 +127,7 @@
                         Google
                     </button> 
                     <button
+                        @click="handleFacebookLogin"
                         type="button"
                         class="cursor-pointer w-full flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-200 dark:border-surface-700 rounded-sm text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-surface-700 transition-all"
                     >
@@ -102,6 +137,7 @@
                         Facebook
                     </button>
                     <button
+                        @click="handleGithubLoign"
                         type="button"
                         class="cursor-pointer w-full flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-200 dark:border-surface-700 rounded-sm text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-surface-700 transition-all"
                     >

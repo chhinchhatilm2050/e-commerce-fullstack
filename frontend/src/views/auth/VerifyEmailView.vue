@@ -19,7 +19,7 @@
 
   let cooldownTimer: ReturnType<typeof setInterval> | undefined;
 
-  const startCooldown = (seconds: number = 120): void => {
+  const startCooldown = (seconds: number = 60): void => {
     cooldownTime.value = seconds;
     cooldownTimer = setInterval(() => {
       cooldownTime.value -= 1;
@@ -28,6 +28,7 @@
   };
   onMounted(() => {
     startCooldown();
+    authStore.authError = '';
   });
 
   onUnmounted(() => {
@@ -54,7 +55,7 @@
 <template>
   <div class="relative w-full max-w-md animate-slide-up mt-2">
     <div class="w-full text-center">
-      <p v-if="authStore.verifyErro" class="default-button w-full text-sm text-red-700">
+      <p v-if="authStore.verifyErro" class="default-button cursor-default bg-red-50 w-full text-sm text-red-700">
         {{ authStore.verifyErro }}
       </p>
       <p v-if="successMessage" class="mt-4 rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">
@@ -71,7 +72,7 @@
             :disabled="cooldownTime <= 0"
           />
           <p class="text-end mt-1 dark:text-gray-300 text-surface-800">
-            <p v-if="cooldownTime > 0">Code expires in: {{ cooldownTime }} s</p>
+            <p v-if="cooldownTime > 0">Code expires in 00:{{ cooldownTime }} s</p>
           </p>
         </div>
         <button

@@ -32,7 +32,7 @@
       :style="{ zIndex: props.zIndex }"
       @click.self="$emit('update:modelValue', false)"
     >
-      <div :class="`bg-white dark:bg-surface-800 rounded-sm shadow-xl  overflow-y-auto max-h-[100vh] w-full ${props.size} mx-4 p-10`">
+      <div :class="`bg-white dark:bg-surface-800 rounded-xl shadow-xl  overflow-y-auto max-h-[100vh] w-full ${props.size} mx-4 p-10`">
         <div class="flex items-center justify-between mb-4">
         <h3 v-if="title" class="text-lg font-semibold text-gray-800 dark:text-gray-100">
           {{ title }}
