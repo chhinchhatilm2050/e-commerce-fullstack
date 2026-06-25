@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { ref, reactive } from 'vue';
+  import { ref, reactive, onMounted } from 'vue';
   import { useAuthStore } from '@/stores/authStore.js';
 
   interface RegisterForm {
@@ -44,7 +44,10 @@
     'go-login': [],
     'go-verify': [email: string]
   }>();
-
+  
+  onMounted(() => {
+    authStore.authError = '';
+  });
   const handleRegister = async(): Promise<void> => {
     (Object.keys(errors) as (keyof FormErrors)[]).forEach(e => delete errors[e]);
 
@@ -116,7 +119,7 @@
     <div>
         <div class="relative w-full max-w-md animate-slide-up">
             <div class="bg-white dark:bg-surface-800 rounded-3xl">
-                <p v-if="authStore.authError" class="default-button w-full text-sm text-red-700">
+                <p v-if="authStore.authError" class="default-button cursor-default bg-red-50 w-full text-sm text-red-700 text-center">
                   {{ authStore.authError }}
                 </p>
                 <form @submit.prevent="handleRegister" class="space-y-4">

@@ -38,6 +38,7 @@
     <LoginView
       v-if="isLogin"
       @go-reginster="isLogin = false"
+      @successLogin="open = false"
     />
     <RegisterView
       v-else
