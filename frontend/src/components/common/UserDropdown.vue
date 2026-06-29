@@ -5,13 +5,13 @@
   const emit = defineEmits<{
     'openRegister': [],
     'openLogin': [],
-    'openProfile': []
+    'openAccount': []
   }>(); 
 </script>
 
 <template>
   <div>
-    <button v-if="authStore.isLoggedIn" @click="emit('openProfile')"
+    <button v-if="authStore.isLoggedIn" @click="emit('openAccount')"
       class="btn-ghost w-8 h-8 flex items-center justify-center rounded-full dark:hover:bg-surface-100"
     >
       <i class="ri-user-line font-medium dark:text-gray-200"></i>

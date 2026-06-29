@@ -9,7 +9,8 @@
         "checkout": "Checkout",
         "login": "LOGIN",
         "register": "REGISTER",
-        "profile": "Profile"
+        "profile": "Profile",
+        "search": "What are you searching for?"
     },
     "login": {
         "welcome": "Welcome back",
@@ -150,5 +151,12 @@
         "comment": "Comment",
         "placeholder": "Enter your comment",
         "reviews": "Reviews"
+    },
+    "profile": {
+        "account": "My Account",
+        "myProfile": "My Profile",
+        "editProfile": "Edit Profile",
+        "myOrders": "My Orders",
+        "logout": "Logout"
     }
 }

@@ -17,6 +17,7 @@ const seedAdmin = async () => {
     phoneNumber: process.env.ADMIN_PHONE,
     email: process.env.ADMIN_EMAIL,
     password: process.env.ADMIN_PASSWORD,
+    isVerified: true,
     gender: 'other',
     role: 'admin'
   });

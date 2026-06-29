@@ -3,6 +3,7 @@
 @import 'remixicon/fonts/remixicon.css';
 @custom-variant dark (&:where(.dark, .dark *));
 
+
 @theme {
   --color-primary-50:  #f0f4ff;
   --color-primary-100: #dbe4ff;
@@ -180,3 +181,17 @@
 }
 .dark ::-webkit-scrollbar-track { background: #1e293b; }
 .dark ::-webkit-scrollbar-thumb { background: #475569; }
+
+html[style*="overflow: hidden"] body {
+  padding-right: var(--scrollbar-width, 0px);
+}
+
+html[style*="overflow: hidden"] .navbar,
+html[style*="overflow: hidden"] .top-banner {
+  padding-right: var(--scrollbar-width, 0px);
+}
+
+html[style*="--scrollbar-width"] .top-banner,
+html[style*="--scrollbar-width"] .navbar {
+  padding-right: var(--scrollbar-width, 0px);
+}

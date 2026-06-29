@@ -8,7 +8,7 @@ export const GitHubStrategy = new GitHubOAuthStrategy({
   clientID: process.env.GITHUB_CLIENT_ID!,
   clientSecret: process.env.GITHUB_CLIENT_SECRET!,
   callbackURL: process.env.GITHUB_CALLBACK_URL!,
-  scope: ['profile', 'email'],
+  scope: ['user:email']
 }, async(accessToken: string, refreshToken: string, profile: Profile, done: VerifyCallback): Promise<void> => {
   try {
     let user = await UserModel.findOne({githubId: profile.id});
@@ -20,8 +20,10 @@ export const GitHubStrategy = new GitHubOAuthStrategy({
     if(email) {;
       user = await UserModel.findOne({email});
       if(user) {
-        user.githubId = profile.id;
-        await user.save({validateBeforeSave: false});
+        if(!user.githubId) {         
+          user.githubId = profile.id;
+          await user.save({ validateBeforeSave: false });
+        }
         return done(null, user);
       }
     }
@@ -30,7 +32,7 @@ export const GitHubStrategy = new GitHubOAuthStrategy({
       githubId: profile.id,
       firstName: profile.name?.givenName || profile.displayName?.split(' ')[0] || profile.username,
       lastName: profile.name?.familyName || profile.displayName?.split(' ')[1] || 'N/A',
-      email
+      email,
     });
 
     done(null, user);

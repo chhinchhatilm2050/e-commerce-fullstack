@@ -19,7 +19,7 @@
 </script>
 <template>
     <Teleport to="body">
-    <div class="fixed top-6 left-1/2 -translate-x-1/2 flex flex-col gap-2 z-50">
+    <div class="fixed top-6 left-1/2 -translate-x-1/2 flex flex-col gap-2 z-100">
       <TransitionGroup name="notification">
         <div
           v-for="notification in notifications"
