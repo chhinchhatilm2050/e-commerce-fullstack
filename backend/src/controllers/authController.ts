@@ -32,40 +32,49 @@ interface LoginBody {
   password: string;
 }
 
+const REFRESH_COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'strict' as const,
+  path: '/',
+};
+
 export const login = asyncHandler(
   async (req: Request<unknown, unknown, LoginBody>, res: Response, next: NextFunction) => {
     const { email, password } = req.body;
     const user = await UserModel.findOne({ email }).select(
-      '+password email role',
+      '+password email role isVerified status',
     );
     if (!user || !(await user.isMatch(password))) {
       return next(new AppError('User or password incorrect', 400));
     }
+    if (!user.isVerified) {
+      return next(new AppError('Please verify your email before login.', 403));
+    }
+    console.log((user.status as string) === 'blocked');
+    if ((user.status as string) === 'blocked') {
+      return next(new AppError('Your account has been blocked', 403));
+    }
     
-    // if (!user.isVerified) {
-    //   return next(new AppError('Please verify your email before logging in', 403));
-    // }
-
     const accessToken = generateToken(
       user._id.toString(),
       { role: user.role, email: user.email },
       process.env.JWT_SECRET as Secret,
       process.env.JWT_EXPIRE_IN as SignOptions['expiresIn'],
     );
-
+    
     const refreshToken = generateRefreshToken(
       user._id.toString(),
       process.env.JWT_REFRESH_SECRET as Secret,
       process.env.JWT_REFRESH_EXPIRE_IN as SignOptions['expiresIn'],
     );
-
+    
     user.refreshToken = refreshToken;
+    user.status = 'active';
     await user.save();
 
     res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      ...REFRESH_COOKIE_OPTIONS,
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -88,16 +97,17 @@ export const logout = asyncHandler(
     }
 
     const user = await UserModel.findOne({ refreshToken }).select(
-      'refreshToken',
+      'refreshToken status',
     );
     if (!user) {
       return next(new AppError('No user found', 404));
     }
 
     user.refreshToken = null;
+    user.status = 'inactive';
     await user.save();
 
-    res.clearCookie(refreshToken);
+    res.clearCookie('refreshToken', REFRESH_COOKIE_OPTIONS);
 
     res.status(200).json({
       success: true,
@@ -143,12 +153,18 @@ export const refresh = asyncHandler(
   },
 );
 
-export const googleCallBack = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+export const googleCallBack = asyncHandler(async (req: Request, res: Response, _next: NextFunction) => {
   const user = req.user;
+  const frontendUrl = process.env.FRONTEND_URL;
 
   if (!user) {
-    return next(new AppError('Authentication failed', 401));
+    return res.redirect(`${frontendUrl}?error=Authentication failed`);
   }
+
+  if ((user.status as string) === 'blocked') {
+    return res.redirect(`${frontendUrl}?error=Your account has been blocked`);
+
+  };
 
   const accessToken = generateToken(
     user._id.toString(),
@@ -167,6 +183,7 @@ export const googleCallBack = asyncHandler(async (req: Request, res: Response, n
   );
 
   user.refreshToken = refreshToken;
+  user.status = 'active';
   await user.save();
 
   res.cookie('refreshToken', refreshToken, {
@@ -176,16 +193,18 @@ export const googleCallBack = asyncHandler(async (req: Request, res: Response, n
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
-  const frontendUrl = process.env.FRONTEND_URL;
   res.redirect(`${frontendUrl}?token=${accessToken}`);
 });
 
-export const githubCallBack = asyncHandler(async(req: Request, res: Response, next: NextFunction) => {
+export const githubCallBack = asyncHandler(async(req: Request, res: Response, _next: NextFunction) => {
   const user = req.user;
+  const frontendUrl = process.env.FRONTEND_URL;
   if (!user) {
-    return next(new AppError('Authentication failed', 401));
+    return res.redirect(`${frontendUrl}?error=Authentication failed`);
   }
-
+  if ((user?.status as string) === 'blocked') {
+    return res.redirect(`${frontendUrl}?error=Your account has been blocked`);
+  }
   const accessToken = generateToken(
     user._id.toString(),
     {
@@ -203,6 +222,7 @@ export const githubCallBack = asyncHandler(async(req: Request, res: Response, ne
   );
 
   user.refreshToken = refreshToken;
+  user.status = 'active';
   await user.save();
 
   res.cookie('refreshToken', refreshToken, {
@@ -212,16 +232,20 @@ export const githubCallBack = asyncHandler(async(req: Request, res: Response, ne
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
-  const frontendUrl = process.env.FRONTEND_URL;
   res.redirect(`${frontendUrl}?token=${accessToken}`);
 });
 
-export const facebookCallBack = asyncHandler(async(req: Request, res: Response, next: NextFunction) => {
+export const facebookCallBack = asyncHandler(async(req: Request, res: Response, _next: NextFunction) => {
   const user = req.user;
+  const frontendUrl = process.env.FRONTEND_URL;
   if(!user) {
-    return next(new AppError('Authentication failed', 401));
+    return res.redirect(`${frontendUrl}?error=Authentication failed`);
+    
   }
 
+  if((user?.status as string) === 'blocked') {
+    return res.redirect(`${frontendUrl}?error=Your account has been blocked`);
+  }
   const accessToken = generateToken(
     user._id.toString(),
     {
@@ -239,6 +263,7 @@ export const facebookCallBack = asyncHandler(async(req: Request, res: Response, 
   );
 
   user.refreshToken = refreshToken;
+  user.status = 'active';
   await user.save();
 
   res.cookie('refreshToken', refreshToken, {
@@ -247,14 +272,12 @@ export const facebookCallBack = asyncHandler(async(req: Request, res: Response, 
     sameSite: 'strict',
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
-
-  const frontendUrl = process.env.FRONTEND_URL;
   res.redirect(`${frontendUrl}?token=${accessToken}`);
 });
 
 export const getMe = asyncHandler(async(req: Request, res: Response, next: NextFunction) => {
   const user = await UserModel.findById(req.user?._id).select(
-    '-password -isDeleted -deletedAt -deletedBy -updatedBy'
+    'role email'
   );
   if(!user) {
     return next(new AppError('User not found', 404));

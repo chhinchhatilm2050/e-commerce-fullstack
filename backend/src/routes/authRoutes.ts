@@ -25,15 +25,24 @@ authRouter.post('/login', authLimiter, login);
 authRouter.post('/logout', authenticate, logout);
 authRouter.post('/refresh', refresh);
 
-authRouter.get('/google', passport.authenticate('google', { session: false }) as RequestHandler);
+authRouter.get('/google', passport.authenticate('google', { 
+  session: false,
+  scope: ['profile', 'email']
+}) as RequestHandler);
 authRouter.get('/google/callback', oauthCallback('google'), googleCallBack);
 
-authRouter.get('/github', passport.authenticate('github', { session: false }) as RequestHandler);
+authRouter.get('/github', passport.authenticate('github', { 
+  session: false,
+  scope: ['user:email'] 
+}) as RequestHandler);
 authRouter.get('/github/callback', oauthCallback('github'), githubCallBack);
 
-authRouter.get('/facebook', passport.authenticate('facebook', { session: false }) as RequestHandler);
+authRouter.get('/facebook', passport.authenticate('facebook', { 
+  session: false,
+  scope: ['public_profile', 'email'] 
+}) as RequestHandler);
 authRouter.get('/facebook/callback', oauthCallback('facebook'), facebookCallBack);
 
-authRouter.get('/me', authenticate, getMe); 
+authRouter.get('/me', authenticate, getMe);
 
 export default authRouter;

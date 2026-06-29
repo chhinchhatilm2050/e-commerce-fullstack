@@ -13,17 +13,17 @@ import hpp from 'hpp';
 import router from './routes/index.js';
 import passport from 'passport';
 import { GoogleStrategy } from './middlewares/googleStrategy.js';
-import { GitHubStrategy } from './middlewares/githubStrategy.js';
 import { FacebookStrategy } from './middlewares/facebookStrategy.js';
+import { GitHubStrategy } from './middlewares/githubStrategy.js';
 import cors from 'cors';
 
 const app = express();
+app.use(cors({origin: process.env.FRONTEND_URL, credentials: true}));
 app.use(helmet());
 app.use(express.json());
 app.use(cookieParser());
 app.use(requestLogger);
 app.use(globalLimiter);
-app.use(cors({origin: process.env.FRONTEND_URL, credentials: true}));
 app.use((req: Request, res: Response, next: NextFunction) => {
   mongoSanitize.sanitize(req.body, { replaceWith: '_' });   
   mongoSanitize.sanitize(req.params, { replaceWith: '_' }); 

@@ -123,7 +123,7 @@ export const verifyEmail = asyncHandler(async(req: Request<unknown, unknown, Ver
 
   res.status(200).json({
     success: true,
-    message: 'Email verified successfully'
+    message: 'Email verified successfully.'
   });
 });
 
@@ -212,6 +212,45 @@ export const updateUser = asyncHandler(async (req: Request<{ id: string }, unkno
   res.status(200).json({
     success: true,
     data: {user: safeUser}
+  });
+});
+export const updateMe = asyncHandler(async (req: Request<{ id: string }, unknown, UpdateUserBody>, res: Response, next: NextFunction): Promise<void> => {
+  if (!req.user) {
+    res.status(401).json({ message: 'Unauthorized' });
+    return;
+  }
+
+  const user = await UserModel.findById(req.user._id);
+  if (!user) {
+    return next(new AppError('User not found', 404));
+  }
+
+  if (Object.keys(req.body).length === 0) {
+    return next(new AppError('Please provide at least one field to update', 400));
+  }
+
+  const { firstName, lastName, phoneNumber, gender } = req.body;
+  user.firstName = firstName ?? user.firstName;
+  user.lastName = lastName ?? user.lastName;
+  user.phoneNumber = phoneNumber ?? user.phoneNumber;
+  user.gender = gender ?? user.gender;
+
+  await user.save({ validateBeforeSave: true });
+
+  const userObject = user.toObject() as IUser;
+  const {
+    refreshToken: _refreshToken,
+    isDeleted: _isDeleted,
+    deletedAt: _deletedAt,
+    deletedBy: _deletedBy,
+    updatedBy: _updatedBy,
+    ...safeUser
+  } = userObject;
+
+  res.status(200).json({
+    success: true,
+    message: 'Update profile successfully.',
+    data: { user: safeUser }
   });
 });
 

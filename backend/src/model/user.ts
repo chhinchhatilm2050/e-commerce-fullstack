@@ -58,6 +58,8 @@ const userSchema = new mongoose.Schema<IUser>(
       type: String,
       unique: true,
       trim: true,
+      sparse: true,
+      required: true,
       lowercase: true,
       match: [EMAIL_REGEX, 'Invalid email'],
     },

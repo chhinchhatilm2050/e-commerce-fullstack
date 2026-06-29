@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import { ref, onUnmounted, onMounted, watch } from 'vue';
-  import { useAuthStore } from '@/stores/authStore';
+  import { useAuthStore } from '@/stores/authStore.js';
+  import { useNotification } from '@/composables/useNotification.js';
 
   const authStore = useAuthStore();
   
@@ -14,8 +15,8 @@
   
   const email = props.email ?? '';
   const code = ref<string>('');
-  const successMessage = ref<string>('');
   const cooldownTime = ref<number>(0);
+  const { showNotification } = useNotification();
 
   let cooldownTimer: ReturnType<typeof setInterval> | undefined;
 
@@ -42,12 +43,12 @@
   });
 
   const handleVerify = async(): Promise<void> => {
-    successMessage.value = '';
     const result = await authStore.verifiEmail(props.email, code.value );
     if (result.success) {
-      successMessage.value = 'Email verified!';
+      showNotification(result.message, { type: 'success' });
       if (cooldownTimer) clearInterval(cooldownTimer);
-      setTimeout(() => { emit('close'); emit('go-login'); }, 1500);
+      emit('close'); 
+      emit('go-login');
     }
   };
 </script>
@@ -57,9 +58,6 @@
     <div class="w-full text-center">
       <p v-if="authStore.verifyErro" class="default-button cursor-default bg-red-50 w-full text-sm text-red-700">
         {{ authStore.verifyErro }}
-      </p>
-      <p v-if="successMessage" class="mt-4 rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">
-        {{ successMessage }}
       </p>
       <form @submit.prevent class="mt-3
       ">
@@ -80,7 +78,11 @@
           class="default-button w-full py-2 text-base flex items-center justify-center gap-2 mt-4"
           @click="handleVerify"
         >
-          {{ authStore.loading ? 'Verifying...': $t('register.verify') }}
+         <svg v-if="authStore.emailLoading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+          </svg>
+          {{ authStore.emailLoading ? 'Verifying...': $t('register.verify') }}
         </button>
       </form>
       <p class="w-full text-start mt-4 dark:text-gray-300 text-surface-800">

@@ -16,11 +16,13 @@ export const GoogleStrategy = new GoogleOAuthStrategy(
       if (user) return done(null, user);
 
       const email = profile.emails?.[0]?.value;
-      if (email) {
+      if(email) {
         user = await UserModel.findOne({ email });
-        if (user) {
-          user.googleId = profile.id;
-          await user.save({ validateBeforeSave: false });
+        if(user) {
+          if(!user.facebookId) {       
+            user.facebookId = profile.id;
+            await user.save({ validateBeforeSave: false });
+          }
           return done(null, user);
         }
       }
@@ -28,7 +30,7 @@ export const GoogleStrategy = new GoogleOAuthStrategy(
       user = await UserModel.create({
         googleId: profile.id,
         firstName: profile.name?.givenName || profile.displayName?.split(' ')[0] || profile.username,
-        lastName: profile.name?.familyName || profile.displayName?.split(' ')[1] || 'N/A',
+        lastName: profile.name?.familyName,
         email, 
       });
 

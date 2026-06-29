@@ -8,7 +8,7 @@ export interface User {
   status: 'active' | 'inactive' | 'blocked';
   avatar: string;
   createdAt: string;
-  orders: number;
+  orderCount: number;
   totalSpent: number;
   phoneNumber: string;
 }
@@ -26,6 +26,7 @@ export interface RegisterPayload {
 export interface AuthResponse {
   accessToken: string;
   message: string
+  user: User
 }
 
 export interface AdminCreateUser extends RegisterPayload {
@@ -38,7 +39,3 @@ export interface RegisterResponse {
   user: User
 }
 
-export interface MeResponse {
-  status: boolean
-  data: { user: User }
-}
