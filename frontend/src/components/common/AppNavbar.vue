@@ -4,9 +4,10 @@
   import LangDropdown from './LangDropdown.vue';
   import UserDropdown from './UserDropdown.vue';
   import PhoneNavbar from './PhoneNavbar.vue';
-  import AppProfile from './AppProfile.vue';
+  import AppAccount from './AppAccount.vue';
   import { useDialog } from '@/composables/useDialog.js';
   import AuthDialog from './AuthDialog.vue';
+  import SearchDialog from './SearchDialog.vue';
 
   const themeStore = useThemeStore();
   interface NavLink {
@@ -15,12 +16,14 @@
   }
 
   const { isOpen: isAuthOpen, open: openAuth } = useDialog();
-  const { isOpen: isProfileOpen, open: openProfileDialog } = useDialog();
+  const { isOpen: isAccountOpen, open: openAccountDialog } = useDialog();
+  const { isOpen, open } = useDialog();
   const openAsRegister = ref<boolean>(false);
 
   const openRegister = () => { openAsRegister.value = true; openAuth(); };
   const openLogin = () => { openAsRegister.value = false; openAuth(); };
-  const openProfile = () => { openProfileDialog(); };
+  const openAccount = () => { openAccountDialog(); };
+  const openSearch = () => open() ;
 
   const mobileMenuOpen = ref<boolean>(false);
   const navLinks: NavLink[] = [
@@ -62,7 +65,7 @@
 
                 <div class="flex items-center gap-1 sm:gap-3">
                     <LangDropdown/>
-                    <button class="btn-ghost w-8 h-8 flex items-center justify-center rounded-full dark:hover:bg-surface-100">
+                    <button @click="openSearch" class="btn-ghost w-8 h-8 flex items-center justify-center rounded-full dark:hover:bg-surface-100">
                         <i class="ri-search-line text-gray-500 text-lg dark:text-gray-300"></i>
                     </button>
                     <button @click="themeStore.toggleDarkMode()" class="btn-ghost w-8 h-8 flex items-center justify-center rounded-full dark:hover:bg-surface-100">
@@ -81,14 +84,15 @@
                     <UserDropdown 
                         @open-register="openRegister" 
                         @open-login="openLogin"
-                        @open-profile="openProfile"
+                        @open-account="openAccount"
                     />
                 </div>
 
             </nav>
         </div>
         <AuthDialog v-model="isAuthOpen" :start-register="openAsRegister"/>
-        <AppProfile v-model="isProfileOpen"/>
+        <AppAccount v-model="isAccountOpen"/>
+        <SearchDialog v-model="isOpen"/>
         <PhoneNavbar
             v-model="mobileMenuOpen" 
             @open-login="openLogin"

@@ -18,9 +18,14 @@
 
   watchEffect(() => {
     if (props.modelValue) {
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      document.documentElement.style.setProperty('--scrollbar-width', `${scrollbarWidth}px`);
       document.body.style.overflow = 'hidden';
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
     } else {
       document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
+      document.documentElement.style.removeProperty('--scrollbar-width');
     }
   });
 </script>
@@ -28,7 +33,7 @@
 <template>
   <Teleport to="body">
     <div v-if="props.modelValue"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 "
       :style="{ zIndex: props.zIndex }"
       @click.self="$emit('update:modelValue', false)"
     >

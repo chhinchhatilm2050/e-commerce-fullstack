@@ -13,8 +13,8 @@
 
 <template>
     <section>
-        <div class="max-w-[1322px] mx-auto fixed  right-0 left-0 z-40  h-7 bg-surface-100 dark:bg-gray-100 flex items-center justify-center">
-            <p class="text-white text-sm dark:text-black">{{$t('home.shopping')}}</p>
+        <div class="top-banner max-w-[1316px] mx-auto fixed right-0 left-0 z-40 h-7 bg-surface-100 dark:bg-gray-100 flex items-center justify-center">
+            <p class="text-white text-sm dark:text-black">{{ $t('home.shopping') }}</p>
         </div>
         <div class="container-xl relative py-12 lg:py-18 flex md:py-15 lg:flex-row items-center flex-col">
             <div class="max-w-3xl">

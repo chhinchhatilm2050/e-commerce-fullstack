@@ -95,6 +95,9 @@
       errors.password = 'Password must contain uppercase, lowercase, number, and special character.';
       valid = false;
     }
+    if (!registerForm.confirmPassword) {
+      errors.confirm = 'Confirm password is required';
+    }
     if (registerForm.password !== registerForm.confirmPassword) {
       errors.confirm = 'Passwords do not match';
       valid = false;

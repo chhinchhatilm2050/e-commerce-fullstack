@@ -72,10 +72,6 @@ const updateUserValidation = [
     .trim()
     .matches(PHONE_REGEX)
     .withMessage('Invalid phone number. (e.g., 012345678 or +85512345678)'),
-  body('email')
-    .optional()
-    .trim()
-    .custom(isEmailUnique),
   body('gender').optional().notEmpty().withMessage('Gender is required'),
   validateRequest,
 ];

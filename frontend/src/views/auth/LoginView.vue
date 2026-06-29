@@ -1,8 +1,8 @@
 <script setup lang="ts">
-  import { ref, reactive } from 'vue';
-  import { useAuthStore } from '@/stores/authStore';
+  import { ref, reactive, onMounted } from 'vue';
+  import { useAuthStore } from '@/stores/authStore.js';
   import { useRouter } from 'vue-router';
-
+  import { useNotification } from '@/composables/useNotification.js';
   import { API_URL } from '@/composables/useFetch.js';
 
   interface Errors {
@@ -16,13 +16,18 @@
   const errors = reactive<Errors>({});
   const authStore = useAuthStore();
   const router = useRouter();
+  const { showNotification } = useNotification();
 
   const emailRegex : RegExp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const emit = defineEmits<{
     'successLogin': [],
     'go-reginster': [],
   }>();
-
+ 
+  onMounted(() => {
+    authStore.authError = '';
+  });
+  
   const handleGoogleLogin = (): void => {
     window.location.href = `${API_URL}/auth/google`;
   };
@@ -52,12 +57,11 @@
     }
 
     const result = await authStore.login( email.value , password.value);
-    if (authStore.loading) {
-      setTimeout(() => authStore.loading = false, 1000);
-    }
     if (result.success) {
-      setTimeout(() => {router.push('/'); emit('successLogin');}, 1500);
-    }
+      router.push('/'); 
+      emit('successLogin');
+      showNotification( result.message, { type: 'success' });
+    } 
   };
 
   const handleGoRegister = (): void => {

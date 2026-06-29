@@ -10,7 +10,8 @@
         "checkout": "ការទូទាត់",
         "profile": "គណនី",
         "login": "ចូលគណនី",
-        "register": "ចុះឈ្មោះ"
+        "register": "ចុះឈ្មោះ",
+        "search": "តើអ្នកចង់ស្វែងរកទំនិញអ្វី?"
     },
     "login": {
         "welcome": "សូមស្វាគមន៏",
@@ -149,5 +150,12 @@
         "comment": "មតិយោបល",
         "placeholder": "បញ្ចូលមតិរបស់អ្នក",
         "reviews": "វាយតម្លៃផលិតផល"
+    },
+    "profile": {
+        "account": "My Account",
+        "myProfile": "My Profile",
+        "editProfile": "Edit Profile",
+        "myOrders": "My Orders",
+        "logout": "Logout"
     }
 }
