@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 dotenv.config({ path: '.env.dev' });
 import { Resend } from 'resend';
 import { CODE_EXPIRY_MINUTES } from './verificationCode.js';
+import AppError from './appError.js';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -14,7 +15,25 @@ export const sendVerificationEmail = async(email: string, code: string): Promise
     html: `<p>Your verification code is <b>${code}</b>.</p><p>It expires in ${CODE_EXPIRY_MINUTES} minutes.</p>`
   });
   if (error) {
-    console.error('Resend error:', error);
-    throw new Error('Failed to send verification email');
+    throw new AppError('Failed to send verification email', 401);
+  }
+};
+
+export const sendResetPasswordEmail = async( email: string, code: string ): Promise<void> => {
+  const { error } = await resend.emails.send({
+    from: process.env.MAIL_FROM ?? 'onboarding@resend.dev',
+    to: email,
+    subject: 'Reset your password',
+    text: `Your password reset code is ${code}. It expires in 10 minutes. If you didn't request this, ignore this email.`,
+    html: `
+      <p>You requested a password reset.</p>
+      <p>Your reset code is <b>${code}</b>.</p>
+      <p>It expires in <b>10 minutes</b>.</p>
+      <p>If you didn't request this, safely ignore this email.</p>
+    `,
+  });
+
+  if (error) {
+    throw new AppError('Failed to send password reset email', 401);
   }
 };

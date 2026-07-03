@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import { ref, reactive, onMounted } from 'vue';
   import { useAuthStore } from '@/stores/authStore.js';
+  import { useAlert } from '@/composables/useAlert.js';
 
   interface RegisterForm {
     gender: 'male' | 'female' | 'other' | null,
@@ -39,6 +40,7 @@
   const phoneRegex: RegExp = /^(\+855|0)[1-9]\d{7,8}$/;
   const passwordRegex: RegExp = /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
   const nameRegex: RegExp = /^[a-zA-Z\s]+$/;
+  const { showAlert } = useAlert();
   
   const emit = defineEmits<{
     'go-login': [],
@@ -111,6 +113,8 @@
     const result = await authStore.register(registerForm);
     if (result.success) {
       emit('go-verify', registerForm.email);
+    } else {
+      showAlert(result.message, { type: 'error' });
     }
   };
   const handleLogin = (): void => {
@@ -122,9 +126,7 @@
     <div>
         <div class="relative w-full max-w-md animate-slide-up">
             <div class="bg-white dark:bg-surface-800 rounded-3xl">
-                <p v-if="authStore.authError" class="default-button cursor-default bg-red-50 w-full text-sm text-red-700 text-center">
-                  {{ authStore.authError }}
-                </p>
+              
                 <form @submit.prevent="handleRegister" class="space-y-4">
                     <div class="flex flex-col">
                         <label class="label mt-2">{{ $t('register.gender') }} <span class="text-red-700">*</span></label>

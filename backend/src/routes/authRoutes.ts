@@ -1,10 +1,11 @@
 import dotenv from 'dotenv';
 dotenv.config({ path: '.env.dev' });
 import { Router, RequestHandler, Request, Response, NextFunction } from 'express';
-import { login, logout, refresh, googleCallBack, githubCallBack, facebookCallBack, getMe } from '../controllers/authController.js';
-import { authLimiter } from '../middlewares/rateLimit.js';
+import { login, logout, refresh, googleCallBack, githubCallBack, facebookCallBack, getMe, verifyEmail, forgetPassword, verifyResetcode, register, resetPassword } from '../controllers/authController.js';
+import { authLimiter, verifyEmailLimiter, passwordResetLimiter, registerLimiter, verifyResetCodeLimiter } from '../middlewares/rateLimit.js';
 import { authenticate } from '../middlewares/authenticate.js';
 import passport from 'passport';
+import { registerValidation } from '../validators/userValidators.js';
 
 const authRouter = Router();
 
@@ -21,6 +22,11 @@ const oauthCallback = (strategy: string) => (req: Request, res: Response, next: 
   }) as RequestHandler)(req, res, next);
 };
 
+authRouter.post('/register', registerLimiter, registerValidation, register);
+authRouter.post('/verify-email', verifyEmailLimiter, verifyEmail);
+authRouter.post('/forget-password', passwordResetLimiter, forgetPassword);
+authRouter.post('/verify-reset-code', verifyResetCodeLimiter, verifyResetcode);
+authRouter.post('/reset-password', passwordResetLimiter, resetPassword);
 authRouter.post('/login', authLimiter, login);
 authRouter.post('/logout', authenticate, logout);
 authRouter.post('/refresh', refresh);

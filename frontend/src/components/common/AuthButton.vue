@@ -1,6 +1,5 @@
 <script setup lang="ts">
   import { useAuthStore } from '@/stores/authStore.js';
-
   const authStore = useAuthStore();
   const emit = defineEmits<{
     'openRegister': [],

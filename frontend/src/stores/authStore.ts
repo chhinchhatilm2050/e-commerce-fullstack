@@ -10,6 +10,8 @@ export const useAuthStore = defineStore('auth', () => {
   const verifyErro = ref<string>('');
   const loading = ref<boolean>(false);
   const emailLoading = ref<boolean>(false);
+  const verifyLoading = ref<boolean>(false);
+  const resetLoading = ref<boolean>(false);
   const token = ref<string | null>(getAccessToken());
   const currentUser = ref<User | null>(null);
 
@@ -26,20 +28,23 @@ export const useAuthStore = defineStore('auth', () => {
     loading.value = true;
     authError.value = '';
     try {
-      const { data } = await api.post<RegisterResponse>('/users/register', payload);
+      const { data } = await api.post<RegisterResponse>('/auth/register', payload);
       return { success: true, message: data.message };
     } catch (err) {
       if (axios.isAxiosError(err)) {
         const data = err.response?.data;
         if (data?.errors?.length) {
           const message = data.errors[0].message; 
+          await delay(1500);
           authError.value = message;
           return { success: false, message };
         }
         const message = data?.message ?? 'Registration failed.';
+        await delay(1500);
         authError.value = message;
         return { success: false, message };
       }
+      await delay(1500);
       authError.value = 'An unexpected error occurred.';
       return { success: false, message: 'An unexpected error occurred.' };
     } finally {
@@ -77,7 +82,7 @@ export const useAuthStore = defineStore('auth', () => {
     emailLoading.value = true;
     verifyErro.value = '';
     try {
-      const { data } = await api.post<{message: string}>('/users/verify-email', { email, code });
+      const { data } = await api.post<{message: string}>('/auth/verify-email', { email, code });
       await delay(1500);
       return { success: true, message: data.message };
     } catch (err) {
@@ -108,8 +113,60 @@ export const useAuthStore = defineStore('auth', () => {
     }
   };
 
+  const forgetPasword = async(email: string): Promise<{success: boolean; message: string}> => {
+    loading.value = true;
+    authError.value = '';
+    try {
+      const { data } = await api.post<{message: string}>('/auth/forget-password', { email });
+      await delay(1500);
+      return { success: true, message: data.message };
+    } catch (err) {
+      const message = axios.isAxiosError(err) ? (err.response?.data.message ?? 'Failed to send password reset email.') : 'An unexpected error occurred.';
+      await delay(1500);
+      authError.value = message;
+      return { success: false, message };
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  const verifyResetCode = async(email: string, code: string): Promise<{success: boolean; message: string; resetToken?: string}> => {
+    verifyLoading.value = true;
+    authError.value = '';
+    try {
+      const { data } = await api.post<{message: string; resetToken?: string}>('/auth/verify-reset-code', { email, code });
+      await delay(1500);
+      return { success: true, message: data.message, resetToken: data.resetToken };
+    } catch (err) {
+      const message = axios.isAxiosError(err) ? (err.response?.data.message ?? 'Invalid reset code.') : 'An unexpected error occurred.';
+      await delay(1500);
+      authError.value = message;
+      return { success: false, message };
+    } finally {
+      verifyLoading.value = false;
+    }
+  };
+
+  const resetPassword = async(email: string, resetToken: string, newPassword: string): Promise<{success: boolean; message: string}> => {
+    resetLoading.value = true;
+    authError.value = '';
+    try {
+      const { data } = await api.post<{message: string}>('/auth/reset-password', { email, resetToken, password: newPassword });
+      await delay(1500);
+      return { success: true, message: data.message };
+    } catch (err) {
+      const message = axios.isAxiosError(err) ? (err.response?.data.message ?? 'Failed to reset password.') : 'An unexpected error occurred.';
+      await delay(1500);
+      authError.value = message;
+      return { success: false, message };
+    } finally {
+      resetLoading.value = false;
+    } 
+  };
+
   return {
-    authError, loading, token, isAdmin, isLoggedIn, currentUser, verifyErro, emailLoading,
-    register, verifiEmail, login,  logout, setToken, fetchMe,
+    authError, loading, token, isAdmin, isLoggedIn, currentUser, verifyErro, emailLoading, verifyLoading, resetLoading,
+    register, verifiEmail, login,  logout, setToken, fetchMe, forgetPasword, verifyResetCode,
+    resetPassword,
   };
 });

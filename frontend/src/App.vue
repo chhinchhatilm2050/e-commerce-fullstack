@@ -1,16 +1,16 @@
 <script setup lang="ts">
-  import BaseNotification from './components/common/BaseNotification.vue';
+  import BaseAlert from './components/common/BaseAlert.vue';
   import AppNavbar from './components/common/AppNavbar.vue';
   import AppFooter from './components/common/AppFooter.vue';
-  import { onMounted } from 'vue';
+  import { onMounted, computed } from 'vue';
   import { useRouter } from 'vue-router';
   import { setAccessToken, getAccessToken } from '@/composables/useLocalStorage.js';
-  import { useAuthStore } from './stores/authStore.ts';
-  import { useNotification } from './composables/useNotification.js';
-
+  import { useAuthStore } from './stores/authStore.js';
+  import { useAlert } from '@/composables/useAlert.js';
   const router = useRouter();
   const authStore = useAuthStore();
-  const { showNotification } = useNotification();
+  const { showAlert } = useAlert();
+  const isForgotPasswordRoute = computed(() => router.currentRoute.value.path.startsWith('/forget-password'));
 
   onMounted(async () => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -25,7 +25,7 @@
     if (!accessToken) {
       if (oauthError) { 
         router.push('/');
-        showNotification(oauthError, { type: 'error' });
+        showAlert(oauthError, { type: 'error' });
         window.history.replaceState({}, document.title, window.location.pathname);
       }
       return;
@@ -37,17 +37,17 @@
       await authStore.fetchMe();
       window.history.replaceState({}, document.title, window.location.pathname);
       router.push('/');
-      showNotification('Login successfully.', { type: 'success' });
+      showAlert('Login successfully.', { type: 'success' });
     } catch (err) {
       authStore.authError = err as string;
-      showNotification('Login failed!', { type: 'error' });
+      showAlert('Login failed!', { type: 'error' });
     }
   });
 </script>
 
 <template>
   <app-navbar />
-  <base-notification />
+  <base-alert />
   <router-view />
-  <app-footer />
+  <app-footer v-if="!isForgotPasswordRoute" />
 </template>
