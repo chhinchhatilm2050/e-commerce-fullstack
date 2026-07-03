@@ -1,4 +1,4 @@
-import { IUser } from './model/user.js'; 
+import { IUser } from './interface/iuser.ts';
 import { Document } from 'mongoose';
 
 declare global {

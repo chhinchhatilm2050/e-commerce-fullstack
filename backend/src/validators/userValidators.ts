@@ -31,8 +31,11 @@ const registerValidation = [
     .withMessage('Invalid phone number. (e.g., 012345678 or +85512345678)'),
   body('email')
     .trim()
+    .notEmpty()
+    .withMessage('Email is required')
     .isEmail()
     .withMessage('Invalid email')
+    .normalizeEmail({ gmail_remove_dots: false })
     .custom(isEmailUnique),
   body('password')
     .trim()
@@ -81,4 +84,56 @@ const userIdValidation = [
   validateRequest,
 ];
 
-export { registerValidation, updateUserValidation, userIdValidation };
+const verifyEmailValidation = [
+  body('email')
+    .trim()
+    .notEmpty()
+    .withMessage('Email is required')
+    .isEmail()
+    .withMessage('Invalid email')
+    .normalizeEmail({ gmail_remove_dots: false })
+];
+const verifyResetCodeValidation = [
+  body('email')
+    .trim()
+    .notEmpty()
+    .withMessage('Email is required')
+    .isEmail()
+    .withMessage('Invalid email')
+    .normalizeEmail({ gmail_remove_dots: false }),
+  body('code')
+    .notEmpty()
+    .withMessage('Code is required')
+];
+
+const resetPassValidator = [
+  body('email')
+    .trim()
+    .notEmpty()
+    .withMessage('Email is required')
+    .isEmail()
+    .withMessage('Invalid email')
+    .normalizeEmail({ gmail_remove_dots: false }),
+  body('resetToken')
+    .notEmpty()
+    .withMessage('Reset token is required'),
+  body('password')
+    .trim()
+    .notEmpty()
+    .withMessage('Password is required')
+    .isLength({ min: 8 })
+    .withMessage('Password must be at least 8 characters')
+    .matches(PASSWORD_REGEX)
+    .withMessage(
+      'Password must contain uppercase, lowercase, number, and special character',
+    ),
+];
+
+export { 
+  registerValidation, 
+  updateUserValidation, 
+  userIdValidation, 
+  verifyEmailValidation, 
+  verifyResetCodeValidation,
+  resetPassValidator
+};

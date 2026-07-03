@@ -4,6 +4,7 @@ const HomeView = () => import('@/views/HomeView.vue');
 const RegisterView = () => import('@/views/auth/RegisterView.vue');
 const LoginView = () => import('@/views/auth/LoginView.vue');
 const VerifyEmailView = () => import('@/views/auth/VerifyEmailView.vue');
+const ForgetPasswordView = () => import('@/views/auth/ForgetPasswordView.vue');
 
 const routes: RouteRecordRaw[] = [
   {
@@ -28,6 +29,12 @@ const routes: RouteRecordRaw[] = [
     path: '/verify-email',
     name: 'verify-email',
     component: VerifyEmailView,
+    meta: { title: 'ChhatStore - Home', guestOnly: true },
+  },
+  {
+    path: '/forget-password',
+    name: 'forget-password',
+    component: ForgetPasswordView,
     meta: { title: 'ChhatStore - Home', guestOnly: true },
   },
 ];

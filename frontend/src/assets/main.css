@@ -134,7 +134,7 @@
   }
 
   .label {
-    @apply block text-sm  text-gray-900 mb-1.5 dark:text-gray-200;
+    @apply block text-sm  text-gray-900 mb-0.5 dark:text-gray-200;
   }
 
   .error-msg {

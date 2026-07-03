@@ -1,38 +1,7 @@
-import mongoose, { Document, Types, Model } from 'mongoose';
+import mongoose, { Types, Model } from 'mongoose';
 import bcrypt from 'bcrypt';
 import { EMAIL_REGEX, PASSWORD_REGEX } from '../utils/validators.js';
-
-export interface IUser extends Document {
-  firstName: string;
-  lastName: string;
-  phoneNumber: string;
-  email: string;
-  password: string;
-  avatar: string;
-  gender: 'male' | 'female' | 'other';
-  role: 'customer' | 'admin';
-  status: 'active' | 'inactive' | 'blocked';
-  refreshToken?: string | null;
-  isVerified: boolean;
-  verificationCodeHash?: string | null;
-  verificationCodeExpires?: Date | null;
-  verificationAttempts: number;
-  googleId: string,
-  githubId: string,
-  facebookId: string,
-  orderCount: number;
-  totalSpent: number;
-  updatedBy?: Types.ObjectId | null;
-  isDeleted: boolean;
-  deletedAt?: Date | null;
-  deletedBy?: Types.ObjectId | null;
-  createdAt: Date;
-  updatedAt: Date;
-  comparePassword(inputPassword: string): Promise<boolean>;
-  softDelete(deletedBy: Types.ObjectId): Promise<void>;
-  isMatch(enteredPassword: string): Promise<boolean>;
-  _id: Types.ObjectId;
-}
+import type { IUser } from '../interface/iuser.js';
 
 const userSchema = new mongoose.Schema<IUser>(
   {
@@ -41,14 +10,14 @@ const userSchema = new mongoose.Schema<IUser>(
       minlength: 2,
       maxlength: 50,
       trim: true,
-      required: true
+      required: true,
     },
     lastName: {
       type: String,
       minlength: 0,
       maxlength: 50,
       trim: true,
-      required: true
+      required: true,
     },
     phoneNumber: {
       type: String,
@@ -71,7 +40,7 @@ const userSchema = new mongoose.Schema<IUser>(
     gender: {
       type: String,
       enum: ['male', 'female', 'other'],
-      default: 'other'
+      default: 'other',
     },
     role: {
       type: String,
@@ -106,17 +75,32 @@ const userSchema = new mongoose.Schema<IUser>(
       default: 0,
       select: false,
     },
+    passwordResetCode: {
+      type: String,
+      default: null,
+      select: false,
+    },
+    passwordResetExpires: {
+      type: Date,
+      default: null,
+      select: false,
+    },
+    passwordResetAttempts: {
+      type: Number,
+      default: 0,
+      select: false,
+    },
     googleId: {
       type: String,
-      sparse: true
+      sparse: true,
     },
     githubId: {
       type: String,
-      sparse: true
+      sparse: true,
     },
     facebookId: {
       type: String,
-      sparse: true
+      sparse: true,
     },
     orderCount: {
       type: Number,
@@ -159,8 +143,8 @@ userSchema.index(
   { createdAt: 1 },
   {
     expireAfterSeconds: 12 * 60 * 60,
-    partialFilterExpression: { isVerified: false }
-  }
+    partialFilterExpression: { isVerified: false },
+  },
 );
 
 userSchema.pre('save', async function () {
