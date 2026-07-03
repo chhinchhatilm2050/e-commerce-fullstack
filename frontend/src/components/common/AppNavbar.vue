@@ -2,7 +2,7 @@
   import { ref } from 'vue';
   import { useThemeStore } from '@/stores/useThemStore.js';
   import LangDropdown from './LangDropdown.vue';
-  import UserDropdown from './UserDropdown.vue';
+  import AuthButton from './AuthButton.vue';
   import PhoneNavbar from './PhoneNavbar.vue';
   import AppAccount from './AppAccount.vue';
   import { useDialog } from '@/composables/useDialog.js';
@@ -81,7 +81,7 @@
                         99+</span>
                     </RouterLink>
 
-                    <UserDropdown 
+                    <AuthButton 
                         @open-register="openRegister" 
                         @open-login="openLogin"
                         @open-account="openAccount"

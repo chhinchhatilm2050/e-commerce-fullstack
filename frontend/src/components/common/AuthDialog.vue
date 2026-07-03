@@ -4,6 +4,7 @@
   import RegisterView from '@/views/auth/RegisterView.vue';
   import LoginView from '@/views/auth/LoginView.vue';
   import VerifyEmailView from '@/views/auth/VerifyEmailView.vue';
+  import { useRoute, useRouter } from 'vue-router';
 
   const props = withDefaults(defineProps<{
     modelValue: boolean
@@ -24,6 +25,8 @@
   const isLogin = ref<boolean>(true);
   const showVerify = ref<boolean>(false);
   const pendingEmail = ref<string>('');
+  const route = useRoute();
+  const router = useRouter();
 
   watch(() => props.modelValue, (val) => {
     if (val) {
@@ -31,6 +34,14 @@
       showVerify.value = false;
     }
   });
+
+  watch(() => route.query.openAuth, (val) => {
+    if (val === 'login') {
+      isLogin.value = false;
+      open.value = true; 
+      router.replace({ query: {} }); 
+    }
+  }, { immediate: true });
 </script>
 
 <template>
@@ -39,6 +50,8 @@
       v-if="isLogin"
       @go-reginster="isLogin = false"
       @successLogin="open = false"
+      @close="open = false"
+
     />
     <RegisterView
       v-else
