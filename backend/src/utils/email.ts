@@ -1,7 +1,5 @@
-import dotenv from 'dotenv';
-dotenv.config({ path: '.env.dev' });
 import { Resend } from 'resend';
-import { CODE_EXPIRY_MINUTES } from './verificationCode.js';
+import { CODE_EXPIRY_MINUTES, RESET_CODE_EXPIRY_MINUTES } from './verificationCode.js';
 import AppError from './appError.js';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -24,11 +22,11 @@ export const sendResetPasswordEmail = async( email: string, code: string ): Prom
     from: process.env.MAIL_FROM ?? 'onboarding@resend.dev',
     to: email,
     subject: 'Reset your password',
-    text: `Your password reset code is ${code}. It expires in 10 minutes. If you didn't request this, ignore this email.`,
+    text: `Your password reset code is ${code}. It expires in ${RESET_CODE_EXPIRY_MINUTES} minutes. If you didn't request this, ignore this email.`,
     html: `
       <p>You requested a password reset.</p>
       <p>Your reset code is <b>${code}</b>.</p>
-      <p>It expires in <b>10 minutes</b>.</p>
+      <p>It expires in <b>${RESET_CODE_EXPIRY_MINUTES} minutes</b>.</p>
       <p>If you didn't request this, safely ignore this email.</p>
     `,
   });

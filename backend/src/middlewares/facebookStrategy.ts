@@ -1,10 +1,7 @@
-import dotenv from 'dotenv';
-dotenv.config({path: '.dev.env'});
 import { Strategy as FacebookOAuthStrategy } from 'passport-facebook';
 import UserModel from '../model/user.js';
 import { Profile } from 'passport';
 import { VerifyCallback, VerifyErrors } from 'jsonwebtoken';
-
 export const FacebookStrategy = new FacebookOAuthStrategy({
   clientID: process.env.FACEBOOK_CLIENT_ID!,
   clientSecret: process.env.FACEBOOK_CLIENT_SECRET!,

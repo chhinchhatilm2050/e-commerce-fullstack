@@ -94,6 +94,9 @@ export const register = asyncHandler(
     try {
       await sendVerificationEmail(user.email, code);
     } catch {
+      user.verificationCodeHash = null;
+      user.verificationCodeExpires = null;
+      await user.save({ validateBeforeSave: false });
       return next(new AppError('Failed to send verification email. Please try again.', 500));
     }
 
@@ -477,13 +480,10 @@ export const verifyResetcode = asyncHandler(async(req: Request<unknown, unknown,
 
 export const resetPassword = asyncHandler(async(req: Request<unknown, unknown, { email: string, resetToken: string, password: string}>, res: Response, next: NextFunction): Promise<void> => {
   const { email, resetToken, password } = req.body;
-  console.log('resetToken:', resetToken);
 
   const hashedToken = await bcrypt.hash(resetToken, 10);
-  console.log('hashedToken:', hashedToken);
   const user = await UserModel.findOne({
     email,
-
     passwordResetExpires: { $gt: new Date()},
   }).select('+passwordResetCode +passwordResetExpires');
 
@@ -491,7 +491,7 @@ export const resetPassword = asyncHandler(async(req: Request<unknown, unknown, {
     return next(new AppError('Expired session. Invalid or expired reset token. Please start over.', 400));
   }
 
-  const isValid = await bcrypt.compare(resetToken, user.passwordResetCode);
+  const isValid = await bcrypt.compare(hashedToken, user.passwordResetCode);
   if (!isValid) {
     return next(new AppError('Expired session. Invalid or expired reset token. Please start over.', 400));
   }
