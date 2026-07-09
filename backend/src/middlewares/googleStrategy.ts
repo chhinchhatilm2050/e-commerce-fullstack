@@ -1,5 +1,3 @@
-import dotenv from 'dotenv';
-dotenv.config({ path: '.env.dev' });
 import { Strategy as GoogleOAuthStrategy, Profile, VerifyCallback } from 'passport-google-oauth20';
 import UserModel from '../model/user.js';
 console.log('DEBUG callbackURL:', process.env.GOOGLE_CALLBACK_URL);

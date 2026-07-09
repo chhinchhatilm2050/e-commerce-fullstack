@@ -1,5 +1,4 @@
-import dotenv from 'dotenv';
-dotenv.config({ path: '.env.dev' });
+import './config/env.js';
 import express, { Request, Response, NextFunction } from 'express';
 import globalErrorHandler from './middlewares/globalErrorHandler.js';
 import notFound from './middlewares/notFound.js';

@@ -1,4 +1,4 @@
-import mongoose, { Types, Model } from 'mongoose';
+import mongoose, { Types, Model, Query } from 'mongoose';
 import bcrypt from 'bcrypt';
 import { EMAIL_REGEX, PASSWORD_REGEX } from '../utils/validators.js';
 import type { IUser } from '../interface/iuser.js';
@@ -183,6 +183,13 @@ userSchema.methods.isMatch = async function (
 userSchema.virtual('avatar').get(function (this: IUser) {
   const name = this.firstName?.charAt(0) ?? '';
   return name.toUpperCase();
+});
+
+userSchema.pre(/^find/, function (this: Query<unknown, IUser>): void {
+  const filter = this.getFilter();
+  if (filter.isDeleted === undefined) {
+    this.where({ isDeleted: false });
+  }
 });
 
 const UserModel: Model<IUser> = mongoose.model<IUser>('User', userSchema);

@@ -19,29 +19,28 @@ const SANITIZE_OPTIONS: sanitize.IOptions = {
 };
 
 const sanitizeValue = (value: unknown): SanitizedValue => {
-  if (value === null || value === undefined) return value; // ✅ explicit null/undefined guard
-
+  if (value === null || value === undefined) return value; 
   if (typeof value === 'string') {
-    return sanitize(value, SANITIZE_OPTIONS); // ✅ extracted constant
+    return sanitize(value, SANITIZE_OPTIONS); 
   }
 
   if (Array.isArray(value)) {
     return value.map(sanitizeValue);
   }
 
-  if (typeof value === 'object') { // null already handled above
-    return sanitizeObject(value as Record<string, unknown>); // ✅ correct cast
+  if (typeof value === 'object') {
+    return sanitizeObject(value as Record<string, unknown>); 
   }
 
-  return value as SanitizedValue; // number, boolean, etc.
+  return value as SanitizedValue; 
 };
 
 export const sanitizeObject = (
   obj: Record<string, unknown>,
 ): SanitizedObject => {
-  if (!obj || typeof obj !== 'object') return {}; // ✅ return {} not obj
+  if (!obj || typeof obj !== 'object') return {}; 
 
-  return Object.keys(obj).reduce<SanitizedObject>((acc, key) => { // ✅ typed reduce
+  return Object.keys(obj).reduce<SanitizedObject>((acc, key) => { 
     acc[key] = sanitizeValue(obj[key]);
     return acc;
   }, {});
