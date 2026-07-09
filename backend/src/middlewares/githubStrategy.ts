@@ -1,5 +1,3 @@
-import dotenv from 'dotenv';
-dotenv.config({ path: '.env.dev' });
 import { Strategy as GitHubOAuthStrategy, Profile } from 'passport-github2';
 import { VerifyCallback } from 'passport-oauth2';
 import UserModel from '../model/user.js';
