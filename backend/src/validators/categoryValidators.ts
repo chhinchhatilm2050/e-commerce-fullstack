@@ -95,8 +95,16 @@ export const updateCategoryStatusValidator = [
 ];
 
 export const deleteCategoryValidator = [
-  param('id').isMongoId()
+  param('id')
+    .isMongoId()
     .withMessage('Invalid category ID'),
   validateRequest
+];
+
+export const restoreCategoryValidator = [
+  param('id')
+    .isMongoId()
+    .withMessage('Invalid category ID'),
+  validateRequest,
 ];
 

@@ -7,7 +7,9 @@ import {
   updateCategory,
   updateCategoryStatus,
   deleteCategory,
-  moveCategory
+  moveCategory,
+  getDeleteCategories,
+  restoreCategory
 } from '../controllers/categoryController.js';
 import { 
   createCategoryValidator,
@@ -15,7 +17,8 @@ import {
   categoryIdValidator,
   moveCategoryValidator,
   updateCategoryStatusValidator,
-  deleteCategoryValidator
+  deleteCategoryValidator,
+  restoreCategoryValidator
 } from '../validators/categoryValidators.js';
 
 import { authenticate } from '../middlewares/authenticate.js';
@@ -28,6 +31,8 @@ categoryAdminRouter.use(authorize('admin'));
 categoryAdminRouter.post('', upload.single('image'), createCategoryValidator, createCategory);
 categoryAdminRouter.get('', getAllCategoriesAdmin);
 categoryAdminRouter.get('/tree', getCategoryTreeAdmin);
+categoryAdminRouter.get('/trash', getDeleteCategories);
+categoryAdminRouter.patch('/:id/restore', restoreCategoryValidator, restoreCategory);
 categoryAdminRouter.get('/:id', categoryIdValidator, getCategoryById);
 categoryAdminRouter.put('/:id', upload.single('image'), updateCategoryValidator, updateCategory);
 categoryAdminRouter.patch('/:id/move', moveCategoryValidator, moveCategory);

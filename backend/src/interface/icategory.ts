@@ -5,6 +5,7 @@ export interface ICategory extends Document {
   slug: string;
   parentId: Types.ObjectId | null; 
   image?: string;
+  imagePublicId?: string;
   status: 'active' | 'inactive';
   description?: string;
   isDeleted: boolean;
@@ -15,7 +16,7 @@ export interface ICategory extends Document {
   updatedAt: Date;
   softDelete(deletedBy: Types.ObjectId): Promise<void>;
   _id: Types.ObjectId;
-}
+};
 
 export interface ICategoryTreeNode {
   _id: Types.ObjectId;
@@ -25,4 +26,9 @@ export interface ICategoryTreeNode {
   status: 'active' | 'inactive';
   description?: string; 
   children: ICategoryTreeNode[];
+};
+
+export interface CloudinaryUploadResult {
+  url: string;
+  publicId: string;
 }

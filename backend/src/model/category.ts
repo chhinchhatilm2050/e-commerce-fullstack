@@ -1,22 +1,23 @@
-import { model, Schema, Types, Query } from 'mongoose';
+import mongoose from 'mongoose';
 import type { ICategory } from '../interface/icategory.js';
 
-const categorySchema = new Schema<ICategory>({
+const categorySchema = new mongoose.Schema<ICategory>({
   name: {
     type: String,
     required: true,
     unique: true,
     trim: true,
+    minlength: 2,
+    maxlength: 50
   },
   slug: {
     type: String,
-    required: true,
     unique: true,
     trim: true,
     lowercase: true,
   },
   parentId: {
-    type: Schema.Types.ObjectId,
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'Category',
     default: null,
   },
@@ -25,13 +26,23 @@ const categorySchema = new Schema<ICategory>({
     trim: true,
     default: '', 
   },
+  imagePublicId: {
+    type: String,
+    trim: true,
+    default: ''
+  },
   status: {
     type: String,
     enum: ['active', 'inactive'],
     default: 'active'
   },
+  description: {
+    type: String,
+    minlength: 2,
+    maxLength: 500,
+  },
   updatedBy: {
-    type: Schema.Types.ObjectId,
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     default: null,
   },
@@ -44,7 +55,7 @@ const categorySchema = new Schema<ICategory>({
     default: null,
   },
   deletedBy: {
-    type: Schema.Types.ObjectId,
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     default: null,
   }
@@ -56,6 +67,7 @@ const categorySchema = new Schema<ICategory>({
 });
 
 categorySchema.pre('save', async function (this: ICategory): Promise<void> {
+  console.log('hello');
   if (this.isModified('name')) {
     let baseSlug = this.name
       .toLowerCase()
@@ -79,7 +91,7 @@ categorySchema.pre('save', async function (this: ICategory): Promise<void> {
   }
 });
 
-categorySchema.methods.softDelete = async function (this: ICategory ,deletedBy: Types.ObjectId): Promise<void> {
+categorySchema.methods.softDelete = async function (this: ICategory ,deletedBy: mongoose.Types.ObjectId): Promise<void> {
   this.isDeleted = true;
   this.deletedAt = new Date();
   this.deletedBy = deletedBy;
@@ -87,11 +99,11 @@ categorySchema.methods.softDelete = async function (this: ICategory ,deletedBy: 
   await this.save({ validateBeforeSave: false });
 };
 
-categorySchema.pre(/^find/, function (this: Query<unknown, ICategory>): void {
+categorySchema.pre(/^find/, function (this: mongoose.Query<unknown, ICategory>): void {
   const filter = this.getFilter();
   if (filter.isDeleted === undefined) {
     this.where({ isDeleted: false });
   }
 });
 
-export const CategoryModel = model<ICategory>('Category', categorySchema);
+export const CategoryModel = mongoose.model<ICategory>('Category', categorySchema);
