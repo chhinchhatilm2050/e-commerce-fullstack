@@ -31,8 +31,6 @@ export const FacebookStrategy = new FacebookOAuthStrategy({
       lastName: profile.name?.familyName || profile.displayName?.split(' ')[1] || 'N/A',
       email 
     });
-
-    console.log('Created Facebook user:', user);
     return cb(null, user);
   } catch(err) {
     return cb(err as VerifyErrors);

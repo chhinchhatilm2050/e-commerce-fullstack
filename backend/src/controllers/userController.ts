@@ -75,7 +75,11 @@ export const updateUser = asyncHandler(
     res: Response,
     next: NextFunction,
   ): Promise<void> => {
-    const user = req.resource as IUser;
+    const { id } = req.params;
+    const user = await UserModel.findById(id);
+    if(!user) {
+      return next(new AppError('User not found', 404));
+    };
 
     if (Object.keys(req.body).length === 0) {
       return next(

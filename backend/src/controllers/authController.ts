@@ -214,6 +214,21 @@ export const refresh = asyncHandler(
       process.env.JWT_EXPIRE_IN as SignOptions['expiresIn'],
     );
 
+    const newRefreshToken = generateRefreshToken(
+      user._id.toString(),
+      process.env.JWT_REFRESH_SECRET as Secret,
+      process.env.JWT_REFRESH_EXPIRE_IN as SignOptions['expiresIn'],
+    );
+
+    res.cookie('refreshToken', newRefreshToken, {
+      ...REFRESH_COOKIE_OPTIONS,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+    
+    user.refreshToken = newRefreshToken;
+    user.status = 'active';
+    await user.save();
+
     res.status(200).json({
       success: true,
       accessToken,

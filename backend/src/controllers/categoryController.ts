@@ -6,6 +6,7 @@ import AppError from '../utils/appError.js';
 import asyncHandler from 'express-async-handler';
 import type { ICategory } from '../interface/icategory.js';
 import mongoose from 'mongoose';
+import { deleteFromCaloudinay } from '../utils/deleteFromCloudinary.js';
 
 export const getTopLevelCategories = asyncHandler(async( req: Request, res: Response, next: NextFunction): Promise<void> => {
   const categories = await CategoryModel.find({parentId: null, status: 'active'});
@@ -57,8 +58,11 @@ export const createCategory = asyncHandler(async(req: Request<unknown, unknown,I
   } 
 
   let imageUrl = '';
+  let imagePublicId = '';
   if (req.file) {
-    imageUrl = await uploadTopCloudinary(req.file.buffer, 'categories');
+    const uploaded = await uploadTopCloudinary(req.file.buffer, 'categories');
+    imageUrl = uploaded.url;
+    imagePublicId = uploaded.publicId;
   }
 
   const category = new CategoryModel({
@@ -66,7 +70,8 @@ export const createCategory = asyncHandler(async(req: Request<unknown, unknown,I
     parentId: parentId || null,
     status: status || 'active',
     image: imageUrl,
-    description: description
+    imagePublicId,
+    description
   });
 
   await category.save();
@@ -98,7 +103,7 @@ export const getCategoryTreeAdmin = asyncHandler(async(req: Request, res: Respon
 
   res.status(200).json({
     success: true,
-    data: { categories }
+    data: { tree }
   });
 });
 
@@ -132,8 +137,14 @@ export const updateCategory = asyncHandler(async(req: Request<{id: string}, unkn
   if(status) category.status = status;
   if(description) category.description = description;
   if(req.file) {
-    const newImageUrl = await uploadTopCloudinary(req.file.buffer, 'categories');
-    category.image = newImageUrl;
+    const oldPublicId = category.imagePublicId;
+    const uploaded = await uploadTopCloudinary(req.file.buffer, 'categories');
+    category.image = uploaded.url;
+    category.imagePublicId = uploaded.publicId;
+
+    if(oldPublicId) {
+      void deleteFromCaloudinay(oldPublicId);
+    }
   }
   category.updatedBy = req.user?._id;
   await category.save();
@@ -155,9 +166,12 @@ export const moveCategory = asyncHandler(async(req: Request<{ id: string} ,unkno
 
   const allCategories = await CategoryModel.find();
   const descendantIds = getAllDescendantIds(allCategories, id);
+  
   if (newParentId && descendantIds.includes(newParentId)) {
     return next(new AppError('Cannot move category into its own descendant', 400));
   };
+
+  console.log(newParentId && descendantIds.includes(newParentId));
 
   category.parentId = newParentId ? new mongoose.Types.ObjectId(newParentId): null;
   category.updatedBy = req.user?._id;
@@ -210,3 +224,45 @@ export const deleteCategory = asyncHandler(async(req: Request, res: Response, ne
   });
 });
 
+export const getDeleteCategories = asyncHandler(async(req: Request, res: Response, next: NextFunction): Promise<void> => {
+  const deleteCategories = await CategoryModel.find({isDeleted: true})
+    .populate('deleteBy', 'firstName lastName email');
+  if(!deleteCategories) {
+    return next(new AppError('No delete category found.', 404));
+  };
+
+  res.status(200).json({
+    success: true,
+    data: { deleteCategories }
+  });
+});
+
+export const restoreCategory = asyncHandler(async(req: Request, res: Response, next: NextFunction): Promise<void> => {
+  const { id } = req.params;
+  const category = await CategoryModel.findOne({ _id: id, isDeleted: true});
+  if (!category) {
+    return next(new AppError('Deleted category not found', 404));
+  }
+  if (category.parentId) {
+    const parent = await CategoryModel.findById(category.parentId);
+    if (!parent) {
+      return next(new AppError(
+        'Cannot restore: parent category no longer exists. Move this category to a different parent first.',
+        400
+      ));
+    }
+  };
+  category.isDeleted = false;
+  category.deletedAt = null;
+  category.deletedBy = null;
+  category.status = 'active';
+  category.updatedBy = req.user?._id;
+
+  await category.save();
+
+  res.status(200).json({
+    success: true,
+    message: 'Category restored successfully',
+    data: { category }
+  });
+}); 

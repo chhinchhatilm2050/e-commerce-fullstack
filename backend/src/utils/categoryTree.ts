@@ -24,6 +24,5 @@ export const getAllDescendantIds = (categories: ICategory[], parentId: string | 
   for (const child of directChildren) {
     ids = ids.concat(getAllDescendantIds(categories, String(child._id)));
   }
-
   return ids;
 };
