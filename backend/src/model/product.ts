@@ -85,7 +85,7 @@ const productSchema = new mongoose.Schema<IProduct>({
   timestamps: true,
   id: false,
   toJSON: { virtuals: true },
-  toObject: { virtuals: true }, .
+  toObject: { virtuals: true },
 });
 
 productSchema.index({ name: 'text', description: 'text' });
