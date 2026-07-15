@@ -21,6 +21,7 @@ export const createCategoryValidator = [
 
   body('slug')
     .not().exists().withMessage('Slug is auto-generated, do not send it manually'),
+
   body('description')
     .optional()
     .trim()
@@ -48,6 +49,7 @@ export const updateCategoryValidator = [
   body('slug')
     .not().exists()
     .withMessage('Slug is auto-generated, do not send it manually'),
+    
   body('description')
     .optional()
     .trim()

@@ -1,4 +1,4 @@
-import mongoose, { Model } from 'mongoose';
+import mongoose, { Model, Query } from 'mongoose';
 import type { IProduct } from '../interface/iproducts.js';
 
 const productSchema = new mongoose.Schema<IProduct>({
@@ -85,7 +85,24 @@ const productSchema = new mongoose.Schema<IProduct>({
   timestamps: true,
   id: false,
   toJSON: { virtuals: true },
-  toObject: { virtuals: true }, 
+  toObject: { virtuals: true }, .
+});
+
+productSchema.index({ name: 'text', description: 'text' });
+
+productSchema.methods.softDelete = async function (this: IProduct, deletedBy: mongoose.Types.ObjectId): Promise<void> {
+  this.isDeleted = true;
+  this.deletedAt = new Date();
+  this.deletedBy = deletedBy;
+  this.isActive = false;
+  await this.save({ validateBeforeSave: false });
+};
+
+productSchema.pre(/^find/, function (this: Query<unknown, IProduct>): void {
+  const filter = this.getFilter();
+  if (filter.isDeleted === undefined) {
+    this.where({ isDeleted: false });
+  }
 });
 
 const ProductModel: Model<IProduct> = mongoose.model<IProduct>('Product', productSchema);
