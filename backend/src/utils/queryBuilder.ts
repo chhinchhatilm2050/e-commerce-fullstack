@@ -8,7 +8,7 @@ const SORT_MAP: Record<string, string> = {
   price_low: 'price',
 };
 
-const RESERVED_QUERY_KEYS = ['page', 'limit', 'sort', 'fields', 'search', 'minPrice', 'maxPrice'];
+const RESERVED_QUERY_KEYS = ['page', 'limit', 'sort', 'fields', 'search', 'minPrice', 'maxPrice', 'minRating'];
 
 class QueryBuilder<T extends Document> {
   private model: Model<T>;
@@ -42,6 +42,14 @@ class QueryBuilder<T extends Document> {
       if (queryString.minPrice) price.$gte = Number(queryString.minPrice);
       if (queryString.maxPrice) price.$lte = Number(queryString.maxPrice);
       filter.price = price;
+    }
+
+    if (typeof queryString.search === 'string' && queryString.search.trim()) {
+      filter.$text = { $search: queryString.search.trim() };
+    }
+
+    if (queryString.minRating) {
+      filter.ratingAvg = { $gte: Number(queryString.minRating) };
     }
 
     if (typeof queryString.search === 'string' && queryString.search.trim()) {

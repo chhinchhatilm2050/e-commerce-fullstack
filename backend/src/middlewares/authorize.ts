@@ -16,18 +16,24 @@ export const authorize = (...roles: string[]) => {
   };
 };
 
-export const checkOwnership = <T extends Document>(Model: Model<T>, ownField: keyof T & string) => {
-  return asyncHandler(async(req: Request, res: Response, next: NextFunction) => {
-    const resource = await Model.findById(req.params.id);
-    if(!resource) {
-      return next(new AppError('Resource not found', 400));
-    };
+export const checkOwnership = <T extends Document>(
+  Model: Model<T>,
+  ownField: keyof T & string,
+  paramName: string = 'id'
+) => {
+  return asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    const resourceId = req.params[paramName];
+
+    const resource = await Model.findById(resourceId);
+    if (!resource) {
+      return next(new AppError('Resource not found', 404));
+    }
 
     const isOwner = resource[ownField]?.toString() === req.user?._id.toString();
     const isAdmin = req.user?.role === 'admin';
 
-    if(!isAdmin && !isOwner) {
-      return next(new AppError('You do not have permission to modify this resource', 403));
+    if (!isAdmin && !isOwner) {
+      return next(new AppError('You do not have permission to access this resource', 403));
     }
 
     req.resource = resource;
