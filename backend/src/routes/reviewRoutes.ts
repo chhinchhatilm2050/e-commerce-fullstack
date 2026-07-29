@@ -15,11 +15,11 @@ import { authenticate } from '../middlewares/authenticate.js';
 import { checkOwnership } from '../middlewares/authorize.js';
 import ReviewModel from '../model/review.js';
 
-const reviewRouter = Router({ mergeParams: true });
+const reviewRouter = Router();
 
-reviewRouter.get('/', productIdValidator, getProductReview);
+reviewRouter.get('/:id', productIdValidator, getProductReview);
 reviewRouter.use(authenticate);
-reviewRouter.post('/', creaateReviewValidator, createReview);
+reviewRouter.post('/:id', creaateReviewValidator, createReview);
 reviewRouter.put('/:reviewId', updateReviewValidator, checkOwnership(ReviewModel, 'userId', 'reviewId'), updateReview);
 reviewRouter.delete('/:reviewId', reviewIdValidator, checkOwnership(ReviewModel, 'userId', 'reviewId'), deleteReview);
 

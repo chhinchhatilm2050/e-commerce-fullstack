@@ -42,9 +42,6 @@ export const creaateReviewValidator = [
 ];
 
 export const updateReviewValidator = [
-  param('id')
-    .isMongoId().withMessage('Invalid product ID'),
-
   param('reviewId')
     .isMongoId().withMessage('Invalid review ID'),
 
@@ -67,9 +64,6 @@ export const updateReviewValidator = [
 ];
 
 export const reviewIdValidator = [
-  param('id')
-    .isMongoId().withMessage('Invalid product ID'),
-
   param('reviewId')
     .isMongoId().withMessage('Invalid review ID'),
 

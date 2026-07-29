@@ -1,4 +1,4 @@
-import { Types, Document } from 'mongoose';
+import { Types, Document, Model } from 'mongoose';
 
 export interface IReview extends Document {
   productId: Types.ObjectId;
@@ -9,9 +9,10 @@ export interface IReview extends Document {
   createdAt: Date;
   updatedAt: Date;
   _id: Types.ObjectId;
+}
+export interface IReviewModel extends Model<IReview> {
   recalculateProductRating(productId: Types.ObjectId): Promise<void>;
 }
-
 export interface IAggregationResult {
   _id: Types.ObjectId;
   avg: number;

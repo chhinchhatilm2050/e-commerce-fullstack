@@ -1,8 +1,8 @@
-import mongoose, { Model } from 'mongoose';
-import type { IReview, IAggregationResult } from '../interface/ireview.js';
+import mongoose from 'mongoose';
+import type { IReview, IAggregationResult, IReviewModel } from '../interface/ireview.js';
 import ProductModel from './product.js';
 
-const reviewSchema = new mongoose.Schema<IReview>({
+const reviewSchema = new mongoose.Schema<IReview, IReviewModel>({
   productId: {
     type: mongoose.Schema.ObjectId,
     ref: 'Product',
@@ -55,6 +55,5 @@ reviewSchema.statics.recalculateProductRating = async function (productId: mongo
   }
 };
 
-const ReviewModel: Model<IReview> = mongoose.model('Review', reviewSchema);
-
+const ReviewModel: IReviewModel = mongoose.model<IReview, IReviewModel>('Review', reviewSchema);
 export default ReviewModel;
