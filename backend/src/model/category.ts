@@ -67,7 +67,6 @@ const categorySchema = new mongoose.Schema<ICategory>({
 });
 
 categorySchema.pre('save', async function (this: ICategory): Promise<void> {
-  console.log('hello');
   if (this.isModified('name')) {
     let baseSlug = this.name
       .toLowerCase()

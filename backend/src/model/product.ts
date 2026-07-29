@@ -7,6 +7,12 @@ const productSchema = new mongoose.Schema<IProduct>({
     required: true,
     trim: true,
   },
+  slug: {
+    type: String,
+    unique: true,
+    lowercase: true,
+    trim: true,
+  },
   description: { 
     type: String, 
     default: null,
@@ -27,14 +33,12 @@ const productSchema = new mongoose.Schema<IProduct>({
     min: 0,
     default: null
   },
-  image: {
-    url: { type: String, default: ''},
-    publicId: { type: String, default: ''}
-  },
   images: [
     {
       url: { type: String, required: true },
-      publicId: { type: String, required: true }
+      publicId: { type: String, required: true },
+      isPrimary: { type: Boolean, default: false },
+      order: { type: Number, default: 0 },
     }
   ],
   ratingAvg: {
@@ -58,9 +62,10 @@ const productSchema = new mongoose.Schema<IProduct>({
     type: mongoose.Schema.Types.Mixed,
     default: {},
   },
-  isActive: { 
-    type: Boolean,
-    default: true
+  status: {
+    type: String,
+    enum: ['draft', 'active', 'out_of_stock'],
+    default: 'draft',
   },
   updatedBy: {
     type: mongoose.Schema.ObjectId,
@@ -89,12 +94,46 @@ const productSchema = new mongoose.Schema<IProduct>({
 });
 
 productSchema.index({ name: 'text', description: 'text' });
+productSchema.index({ categoryId: 1, isActive: 1 });
+productSchema.index({ status: 1 });
 
-productSchema.methods.softDelete = async function (this: IProduct, deletedBy: mongoose.Types.ObjectId): Promise<void> {
+productSchema.pre('save', async function (this: IProduct): Promise<void> {
+  if (this.isModified('name')) {
+    let baseSlug = this.name
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-');
+
+    if (!baseSlug) {
+      baseSlug = 'category'; 
+    }
+    let slug = baseSlug;
+    let counter = 1;
+
+    while (await ProductModel.exists({ slug, _id: { $ne: this._id } })) {
+      slug = `${baseSlug}-${counter}`;
+      counter++;
+    }
+
+    this.slug = slug;
+  }
+});
+
+productSchema.pre('save', function () {
+  if (this.isModified('stock') && this.stock === 0 && this.status === 'active') {
+    this.status = 'out_of_stock';
+  }
+});
+
+productSchema.methods.softDelete = async function (
+  this: IProduct,
+  deletedBy: mongoose.Types.ObjectId
+): Promise<void> {
   this.isDeleted = true;
   this.deletedAt = new Date();
   this.deletedBy = deletedBy;
-  this.isActive = false;
   await this.save({ validateBeforeSave: false });
 };
 

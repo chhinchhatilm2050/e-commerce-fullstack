@@ -67,7 +67,7 @@ export const createReview = asyncHandler(async(req: Request<{ id: string }, unkn
   });
 
   await review.save();
-  await review.recalculateProductRating(product._id);
+  await ReviewModel.recalculateProductRating(product._id);
 
   res.status(201).json({
     success: true,
@@ -89,7 +89,7 @@ export const updateReview = asyncHandler(async(req: Request<{ id: string; review
 
   await review.save();
 
-  await review.recalculateProductRating(review.productId);
+  await ReviewModel.recalculateProductRating(review.productId);
 
   res.status(200).json({
     success: true,
@@ -103,8 +103,7 @@ export const deleteReview = asyncHandler(async(req: Request<{ id: string; review
 
   const productId = review.productId;
   await ReviewModel.findByIdAndDelete(review._id);
-  await review.recalculateProductRating(productId);
-  
+  await ReviewModel.recalculateProductRating(productId);
   res.status(200).json({
     success: true,
     message: 'Review deleted successfully',

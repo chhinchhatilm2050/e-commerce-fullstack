@@ -20,7 +20,7 @@ export const createProductValidator = [
     .withMessage('Price must be a positive number'),
 
   body('comparePrice')
-    .optional()
+    .optional({ checkFalsy: true })
     .isFloat({ min: 0 })
     .withMessage('Compare price must be a positive number'), 
 
@@ -94,9 +94,8 @@ export const updateStockValidator = [
 
 export const updateStatusValidator = [
   param('id').isMongoId().withMessage('Invalid product ID'),
-  body('isActive')
-    .notEmpty().withMessage('isActive is required')
-    .isBoolean().withMessage('isActive must be true or false'),
+  body('status')
+    .notEmpty().withMessage('Status is required'),
   validateRequest,
 ];
 
