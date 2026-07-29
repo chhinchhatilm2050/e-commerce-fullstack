@@ -7,6 +7,7 @@ import asyncHandler from 'express-async-handler';
 import type { ICategory } from '../interface/icategory.js';
 import mongoose from 'mongoose';
 import { deleteFromCaloudinay } from '../utils/deleteFromCloudinary.js';
+import ProductModel from '../model/product.js';
 
 export const getTopLevelCategories = asyncHandler(async( req: Request, res: Response, next: NextFunction): Promise<void> => {
   const categories = await CategoryModel.find({parentId: null, status: 'active'});
@@ -217,6 +218,11 @@ export const deleteCategory = asyncHandler(async(req: Request, res: Response, ne
     return next(new AppError('Delete or move subcategories first', 400));
   };
 
+  const hasProduct = await ProductModel.exists({ categoryId: id });
+  if (hasProduct) {
+    return next(new AppError('Delete or move products in this category first', 400));
+  }
+
   await category.softDelete(req.user!._id);
   res.status(200).json({
     success: true,
@@ -226,7 +232,7 @@ export const deleteCategory = asyncHandler(async(req: Request, res: Response, ne
 
 export const getDeleteCategories = asyncHandler(async(req: Request, res: Response, next: NextFunction): Promise<void> => {
   const deleteCategories = await CategoryModel.find({isDeleted: true})
-    .populate('deleteBy', 'firstName lastName email');
+    .populate('deletedBy', 'firstName lastName email');
   if(!deleteCategories) {
     return next(new AppError('No delete category found.', 404));
   };
