@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { ref } from 'vue';
+  import { ref, onMounted } from 'vue';
   import { useThemeStore } from '@/stores/useThemStore.js';
   import LangDropdown from './LangDropdown.vue';
   import AuthButton from './AuthButton.vue';
@@ -8,12 +8,16 @@
   import { useDialog } from '@/composables/useDialog.js';
   import AuthDialog from './AuthDialog.vue';
   import SearchDialog from './SearchDialog.vue';
+  import { useCategoryStore } from '@/stores/categoryStore.ts';
 
   const themeStore = useThemeStore();
-  interface NavLink {
-    to: string,
-    label: string
-  }
+  const categoryStore = useCategoryStore();
+
+  onMounted(() => {
+    if (categoryStore.topLevelCategories.length === 0) {
+      categoryStore.fetchTopLevelCategories();
+    }
+  });
 
   const { isOpen: isAuthOpen, open: openAuth } = useDialog();
   const { isOpen: isAccountOpen, open: openAccountDialog } = useDialog();
@@ -26,12 +30,6 @@
   const openSearch = () => open() ;
 
   const mobileMenuOpen = ref<boolean>(false);
-  const navLinks: NavLink[] = [
-    { to: '/', label: 'nav.home' },
-    { to: '/clothes', label: 'nav.clothes' },
-    { to: '/electornic', label: 'nav.electronic' },
-    { to: '/book', label: 'nav.book' },
-  ];
 </script>
 
 <template>
@@ -48,12 +46,20 @@
                     </svg>
                 </button>
                 <ul class="hidden lg:flex items-center gap-4">
-                    <li v-for="link in navLinks" :key="link.to">
-                        <RouterLink :to="link.to"
+                    <li>
+                        <RouterLink to="/"
                             class="rounded-sm text-[17px] hover:underline font-semibold transition-all duration-200 cursor-pointer"
                             active-class="underline"
                         >
-                            {{ $t(link.label) }}
+                            HOME
+                        </RouterLink>
+                    </li>
+                    <li v-for="cat in categoryStore.topLevelCategories" :key="cat._id">
+                        <RouterLink :to="`/category/${cat.slug}`"
+                            class="rounded-sm text-[17px] hover:underline font-semibold transition-all duration-200 cursor-pointer"
+                            active-class="underline"
+                        >
+                            {{ cat.name.toUpperCase() }}
                         </RouterLink>
                     </li>
                 </ul>

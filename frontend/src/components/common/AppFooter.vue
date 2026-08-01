@@ -1,5 +1,7 @@
 <script setup lang="ts">
-  import { ref } from 'vue';
+  import { useCategoryStore } from '@/stores/categoryStore';
+  import { getCategoryIcon } from '@/utils/categoryIcon';
+  import { ref, onMounted } from 'vue';
   interface Social {
     name: string,
     href: string,
@@ -12,15 +14,15 @@
     icon: string
   }
 
+  const categoryStore = useCategoryStore();
   const email = ref<string>('');
   const subscribed = ref<boolean>(false);
 
-  const quickLinks : Customer[]  = [
-    { to: '/', label: 'nav.home', icon: '<i class="ri-home-wifi-fill"></i>' },
-    { to: '/clothes', label: 'nav.clothes', icon: '<i class="ri-shirt-fill"></i>' },
-    { to: '/electornic', label: 'nav.electronic', icon: '<i class="ri-tools-fill"></i>' },
-    { to: '/book', label: 'nav.book', icon: '<i class="ri-book-3-fill"></i>' },
-  ];
+  onMounted(() => {
+    if (categoryStore.topLevelCategories.length === 0) {
+      categoryStore.fetchTopLevelCategories();
+    }
+  });
 
   const customerService: Customer[] = [
     { to: '/', label: 'footer.online', icon: '<i class="ri-cloud-fill"></i>' },
@@ -75,9 +77,17 @@
                 <div>
                     <h3 class="text-[17px] font-semibold text-gray-800 mb-4 dark:text-white">{{ $t('footer.quick_links') }}</h3>
                     <ul class="space-y-2.5">
-                        <li v-for="link in quickLinks" :key="link.to">
-                            <RouterLink :to="link.to" class="text-sm cursor-pointer flex gap-2 hover:underline dark:text-gray-200 text-gray-700 hover:text-gray-500 transition-colors">
-                            <span v-html="link.icon"></span>{{ $t(link.label) }}
+                        <li>
+                        <RouterLink to="/"
+                            class="text-sm cursor-pointer flex gap-2 hover:underline dark:text-gray-200 text-gray-700 hover:text-gray-500 transition-colors"
+                        >
+                            <i class="ri-home-wifi-fill"></i> HOME
+                        </RouterLink>
+                    </li>
+                        <li v-for="cat in categoryStore.topLevelCategories" :key="cat._id">
+                            <RouterLink :to="`/categories/${cat.slug}`" class="text-sm cursor-pointer flex gap-2 hover:underline dark:text-gray-200 text-gray-700 hover:text-gray-500 transition-colors">
+                            <i :class="getCategoryIcon(cat.slug)"></i>
+                            <span>{{ cat.name }}</span>
                             </RouterLink>
                         </li>
                     </ul>

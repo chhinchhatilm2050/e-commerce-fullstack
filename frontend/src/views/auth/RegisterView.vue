@@ -129,8 +129,9 @@
               
                 <form @submit.prevent="handleRegister" class="space-y-4">
                     <div class="flex flex-col">
-                        <label class="label mt-2">{{ $t('register.gender') }} <span class="text-red-700">*</span></label>
-                        <div class="flex gap-4">
+                      <div class="flex gap-3">
+                        <label class="label flex items-center">{{ $t('register.gender') }} <span class="text-red-700">*</span></label>
+                        <div class="flex gap-4 items-center">
                             <label class="flex items-center gap-2 cursor-pointer group">
                                 <input type="radio" name="gender" value="male" v-model="registerForm.gender" class="cursor-pointer w-4 h-4 " />
                                 <span class="text-sm text-black dark:text-gray-200">{{$t('register.male')}}</span>
@@ -146,7 +147,8 @@
                                 <span class="text-sm text-black dark:text-gray-200">{{$t('register.other')}}</span>
                             </label>
                         </div>
-                        <p v-if="errors.gender" class="error-msg">{{ errors.gender }}</p>
+                      </div>
+                      <p v-if="errors.gender" class="error-msg">{{ errors.gender }}</p>
                     </div>
                     <div class="flex gap-2">
                         <div>

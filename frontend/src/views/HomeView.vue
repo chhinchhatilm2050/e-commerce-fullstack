@@ -1,4 +1,15 @@
 <script setup lang="ts">
+  import { onMounted } from 'vue';
+  import { useCategoryStore } from '@/stores/categoryStore';
+
+  const categoryStore = useCategoryStore();
+
+  onMounted(() => {
+    if (categoryStore.topLevelCategories.length === 0) {
+      categoryStore.fetchTopLevelCategories();
+    }
+  });
+
   interface States {
     title: string,
     icon: string
@@ -43,4 +54,43 @@
             </div>
         </div>
     </section>
+    <section class="py-5 container-xl">
+      <h2 class="section-title mb-5"><i class="ri-chat-smile-ai-line"></i>  {{ $t('home.categories_title') }}</h2>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <RouterLink
+          v-for="cat in categoryStore.topLevelCategories"
+          :key="cat._id" :to="`/category/${cat.slug}`"
+          class="group relative overflow-hidden aspect-[3/3] block"
+        >
+          <img :src="cat.image" :alt="cat.name" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+          <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+          <div class="absolute bottom-0 left-0 right-0 p-4">
+            <p class="text-white font-display font-bold text-lg">{{ $t(cat.name).toUpperCase() }}</p>
+          </div>
+      </RouterLink>
+    </div>
+  </section>
+  <section class="py-10 bg-surface-50 dark:bg-surface-900">
+    <div class="container-xl">
+      <div class="flex items-end justify-between mb-10">
+        <div>
+          <h2 class="section-title mb-1"><i class="ri-emotion-line"></i> {{ $t('home.featured_title') }}</h2>
+  
+        </div>
+        <RouterLink to="/products" class="default-button px-4 text-sm hidden sm:inline-flex">
+           {{ $t('home.view_all') }}
+        </RouterLink>
+      </div>
+      <!-- <LoadingSpinner v-if="productStore.loading" :message="$t('products.loading')"/>
+      <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <ProductCard
+          v-for="product in productStore.featuredProducts"
+          :key="product.id"
+          :product="product"
+          @add-to-cart="handleAddToCart"
+          @open-review="$emit('open-review', $event)"
+        />
+      </div> -->
+    </div>
+  </section>
 </template>
