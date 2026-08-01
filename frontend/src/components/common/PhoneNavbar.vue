@@ -1,10 +1,15 @@
 <script setup lang="ts">
   import { watchEffect } from 'vue';
-  interface NavLink {
-    to: string,
-    label: string,
-    icon: string
-  }
+  import { useCategoryStore } from '@/stores/categoryStore';
+  import { onMounted } from 'vue';
+  import { getCategoryIcon } from '@/utils/categoryIcon';
+  const categoryStore = useCategoryStore();
+
+  onMounted(() => {
+    if ( categoryStore.topLevelCategories.length === 0 ) {
+      categoryStore.fetchTopLevelCategories();
+    }
+  });
   const props = withDefaults(defineProps<{
     modelValue: boolean;
   }>(), {
@@ -18,12 +23,6 @@
   }>();
   const close = () => emit('update:modelValue', false);
 
-  const navLinks: NavLink[] = [
-    { to: '/', label: 'nav.home', icon: '<i class="ri-home-wifi-fill"></i>' },
-    { to: '/clothes', label: 'nav.clothes', icon: '<i class="ri-shirt-fill"></i>' },
-    { to: '/electornic', label: 'nav.electronic', icon: '<i class="ri-tools-fill"></i>' },
-    { to: '/book', label: 'nav.book', icon: '<i class="ri-book-3-fill"></i>' },
-  ];
   watchEffect(() => {
     if (props.modelValue) {
       document.body.style.overflow = 'hidden';
@@ -51,12 +50,20 @@
                 </div>
 
                 <ul class="flex flex-col gap-1 p-4 flex-1 overflow-y-auto">
-                    <li v-for="link in navLinks" :key="link.to">
-                       <RouterLink :to="link.to" @click="close"
+                    <li>
+                        <RouterLink to="/" @click="close" 
+                            class="flex items-center gap-2 text-[16px] md:text-[17px] px-4 py-3 rounded-sm font-medium hover:bg-gray-100 text-gray-700 dark:text-gray-300 dark:hover:bg-surface-100 transition-colors cursor-pointer"
+                            active-class="bg-gray-200 dark:bg-surface-100">
+                            <span><i class="ri-home-wifi-fill"></i></span> HOME
+                        </RouterLink>
+                    </li>
+                    <li v-for="cat in categoryStore.topLevelCategories" :key="cat._id">
+                       <RouterLink :to="`/category/${cat.slug}`" @click="close"
                             class="flex items-center gap-2 text-[16px] md:text-[17px] px-4 py-3 rounded-sm font-medium hover:bg-gray-100 text-gray-700 dark:text-gray-300 dark:hover:bg-surface-100 transition-colors cursor-pointer"
                             active-class="bg-gray-200 dark:bg-surface-100"
                         >
-                         <span v-html="link.icon"></span>   {{ $t(link.label) }}
+                         <i :class="getCategoryIcon(cat.slug)"></i>
+                         <span>{{ cat.name }}</span>
                        </RouterLink>
                     </li>
                 </ul>

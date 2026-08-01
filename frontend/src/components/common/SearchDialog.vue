@@ -52,7 +52,7 @@
           v-if="props.modelValue"
           class="w-full h-[140px] pt-5 bg-white backdrop-blur-md dark:bg-surface-800 shadow-xl pointer-events-auto"
         >
-          <div class="flex items-center gap-3  max-w-[1316px] mx-auto  left-0 right-0 max-xl py-4 border-b border-gray-400 dark:border-gray-300"> 
+          <div class="flex items-center gap-3 px-6 sm:p-0 sm:pt-5 max-w-[1316px] mx-auto  left-0 right-0 max-xl py-4 border-b border-gray-400 dark:border-gray-300"> 
             <input
               ref="inputRef"
               v-model="query"
