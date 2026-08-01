@@ -17,7 +17,7 @@ export const getTopLevelCategories = asyncHandler(async( req: Request, res: Resp
 
   res.status(200).json({
     success: true,
-    data: {categories}
+    data: { categories }
   });
 });
 

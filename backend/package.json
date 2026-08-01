@@ -10,7 +10,9 @@
     "start": "node dist/server.js",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
-    "seed:admin": "tsx src/scripts/seedAdmin.ts"
+    "seed:admin": "tsx src/scripts/seedAdmin.ts",
+    "seed": "tsx src/scripts/seedProducts.ts",
+    "seed:clean": "tsx src/scripts/cleanProducts.ts"
   },
   "keywords": [],
   "author": "",
