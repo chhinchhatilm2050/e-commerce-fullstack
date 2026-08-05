@@ -12,20 +12,20 @@ interface SubcategoryConfig {
   name: string;
   productNameFn: () => string;
   specFn: () => Record<string, unknown>;
-};
+}
 
 interface CategoryConfig {
   name: string;
   description: string;
   imageKeyword: string;
   subcategories: SubcategoryConfig[];
-};
+}
 
 const categoryConfig: CategoryConfig[] = [
   {
     name: 'Books',
     description: 'Fiction, non-fiction, and everything in between',
-    imageKeyword: 'Books',
+    imageKeyword: 'books',
     subcategories: [
       {
         name: 'Fiction',
@@ -76,7 +76,7 @@ const categoryConfig: CategoryConfig[] = [
   {
     name: 'Electronics',
     description: 'Gadgets, devices, and tech accessories',
-    imageKeyword: 'Electronics',
+    imageKeyword: 'technology',
     subcategories: [
       {
         name: 'Laptops',
@@ -123,7 +123,7 @@ const categoryConfig: CategoryConfig[] = [
   {
     name: 'Clothes',
     description: 'Apparel for men, women, and kids',
-    imageKeyword: 'Clothes',
+    imageKeyword: 'fashion',
     subcategories: [
       {
         name: 'Men',
@@ -166,24 +166,23 @@ const categoryConfig: CategoryConfig[] = [
         }),
       },
     ],
-  }
+  },
 ];
 
-const PRODUCT_PER_SUBCATEGORY = 20;
+const PRODUCT_PER_SUBCATEGORY = 60;
 
-// Static, predictable placeholder images — no random photo content,
-// no rate limits, portrait orientation (width < height).
-function generateFakeImages(label: string, count: number) {
+// Uses Faker's LoremFlickr generator to fetch real photos matching category keywords
+function generateFakeImages(keyword: string, count: number) {
   return Array.from({ length: count }).map((_, i) => ({
-    url: `https://placehold.co/400x600?text=${encodeURIComponent(label)}`,
-    publicId: `fake_${label.toLowerCase().replace(/\s+/g, '_')}_${faker.string.uuid()}`,
+    url: faker.image.urlLoremFlickr({ width: 400, height: 600, category: keyword }),
+    publicId: `fake_${keyword.toLowerCase().replace(/\s+/g, '_')}_${faker.string.uuid()}`,
     isPrimary: i === 0,
     order: i,
   }));
-};
+}
 
-function generateCategoryImage(label: string) {
-  return `https://placehold.co/400x600?text=${encodeURIComponent(label)}`;
+function generateCategoryImage(keyword: string) {
+  return faker.image.urlLoremFlickr({ width: 400, height: 600, category: keyword });
 }
 
 const seed = async () => {
@@ -205,11 +204,11 @@ const seed = async () => {
         name: `${category.name} ${sub.name}`,
         description: `${sub.name} under ${category.name}`,
         parentId: parentDoc._id,
-        image: generateCategoryImage(`${category.name} ${sub.name}`),
+        image: generateCategoryImage(category.imageKeyword),
         imagePublicId: `fake_category_${faker.string.uuid()}`,
         status: 'active',
       });
-      console.log(`  Created subcategory: ${subDoc.name} (${subDoc.slug})`);
+      console.log(`   Created subcategory: ${subDoc.name} (${subDoc.slug})`);
 
       let created = 0;
       for (let i = 0; i < PRODUCT_PER_SUBCATEGORY; i++) {
@@ -221,7 +220,7 @@ const seed = async () => {
           comparePrice: faker.datatype.boolean()
             ? Number(faker.commerce.price({ min: 5, max: 1200 }))
             : undefined,
-          images: generateFakeImages(`${category.name} ${sub.name}`, faker.number.int({ min: 1, max: 4 })),
+          images: generateFakeImages(category.imageKeyword, faker.number.int({ min: 1, max: 4 })),
           stock: faker.number.int({ min: 0, max: 200 }),
           specification: sub.specFn(),
           status: faker.helpers.arrayElement(['active', 'active', 'active', 'draft']),
@@ -229,8 +228,8 @@ const seed = async () => {
         created++;
       }
       console.log(`Seeded ${created} products in ${subDoc.name}`);
-    };
-  };
+    }
+  }
 
   console.log('Seeding complete');
   const catCount = await CategoryModel.countDocuments();

@@ -41,6 +41,7 @@
 
   --animate-fade-in:    fadeIn    0.4s ease-out;
   --animate-slide-up:   slideUp   0.4s ease-out;
+  --animate-slide-card: slideCard 0.3s ease-out;
   --animate-slide-down: slideDown 0.3s ease-out;
   --animate-spin-slow:  spin      3s   linear    infinite;
   --animate-bounce-sm:  bounceSm  2s ease       infinite;
@@ -49,6 +50,20 @@
 
 @keyframes fadeIn    { from { opacity: 0 }                           to { opacity: 1 } }
 @keyframes slideUp   { from { opacity: 0; translate: 0 20px }        to { opacity: 1; translate: 0 0 } }
+@keyframes slideCard {
+  from {
+    opacity: 0;
+    translate: 0 5px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+.animate-slide-card {
+  animation: slideCard 0.35s ease-out both;
+}
 @keyframes slideDown { from { opacity: 0; translate: 0 -10px }       to { opacity: 1; translate: 0 0 } }
 @keyframes bounceSm  { 0%,100% { translate: 0 0 }                   50% { translate: 0 -4px } }
 @keyframes pulseSoft { 0%,100% { opacity: 1 }                       50% { opacity: .6 } }
@@ -92,6 +107,14 @@
     @apply bg-gray-200 text-gray-800 dark:bg-surface-100 dark:text-gray-200 hover:bg-gray-300
     dark:hover:bg-surface-900
     font-medium px-2 py-2 rounded-sm cursor-pointer transition-all dark:hover:shadow-glow
+    duration-200 shadow-sm  disabled:opacity-50 disabled:cursor-not-allowed
+    focus:outline-none
+    inline-flex items-center justify-center
+  }
+  .subCategory-button {
+    @apply bg-gray-200 text-gray-800 dark:bg-surface-100 dark:text-gray-200 hover:bg-gray-300
+    dark:hover:bg-gray-200/50
+    font-medium px-3 py-2 rounded-sm cursor-pointer transition-all dark:hover:shadow-glow
     duration-200 shadow-sm  disabled:opacity-50 disabled:cursor-not-allowed
     focus:outline-none
     inline-flex items-center justify-center
@@ -164,6 +187,14 @@
   .dark .shimmer {
     background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
     background-size: 200% 100%;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 }
 

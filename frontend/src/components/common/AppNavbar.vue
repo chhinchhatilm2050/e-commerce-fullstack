@@ -9,9 +9,11 @@
   import AuthDialog from './AuthDialog.vue';
   import SearchDialog from './SearchDialog.vue';
   import { useCategoryStore } from '@/stores/categoryStore.ts';
+  import { useRoute } from 'vue-router';
 
   const themeStore = useThemeStore();
   const categoryStore = useCategoryStore();
+  const route = useRoute();
 
   onMounted(() => {
     if (categoryStore.topLevelCategories.length === 0) {
@@ -45,11 +47,15 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
                     </svg>
                 </button>
+                <RouterLink to="/" class="cursor-pointer">
+                    <img class="w-[90px] h-[20px] sm:w-[140px] sm:h-[25px] block dark:hidden" src="../../assets/image/torilogo.png" alt="">
+                    <img class="w-[90px] h-[20px] sm:w-[140px] sm:h-[25px] hidden dark:block" src="../../assets/image/torilogowhite.png" alt="">
+                </RouterLink>
                 <ul class="hidden lg:flex items-center gap-4">
                     <li>
                         <RouterLink to="/"
                             class="rounded-sm text-[17px] hover:underline font-semibold transition-all duration-200 cursor-pointer"
-                            active-class="underline"
+                            :class="{ underline: route.path === '/' }"
                         >
                             HOME
                         </RouterLink>
@@ -57,17 +63,12 @@
                     <li v-for="cat in categoryStore.topLevelCategories" :key="cat._id">
                         <RouterLink :to="`/category/${cat.slug}`"
                             class="rounded-sm text-[17px] hover:underline font-semibold transition-all duration-200 cursor-pointer"
-                            active-class="underline"
+                            :class="{ underline: route.path === `/category/${cat.slug}` }"
                         >
                             {{ cat.name.toUpperCase() }}
                         </RouterLink>
                     </li>
                 </ul>
-
-                <RouterLink to="/" class="cursor-pointer">
-                    <img class="w-[90px] h-[20px] sm:w-[140px] sm:h-[25px] block dark:hidden" src="../../assets/image/torilogo.png" alt="">
-                    <img class="w-[90px] h-[20px] sm:w-[140px] sm:h-[25px] hidden dark:block" src="../../assets/image/torilogowhite.png" alt="">
-                </RouterLink>
 
                 <div class="flex items-center gap-1 sm:gap-3">
                     <LangDropdown/>

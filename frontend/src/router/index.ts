@@ -5,6 +5,7 @@ const RegisterView = () => import('@/views/auth/RegisterView.vue');
 const LoginView = () => import('@/views/auth/LoginView.vue');
 const VerifyEmailView = () => import('@/views/auth/VerifyEmailView.vue');
 const ForgetPasswordView = () => import('@/views/auth/ForgetPasswordView.vue');
+const CategoryPage = () => import('@/views/CategoryPage.vue');
 
 const routes: RouteRecordRaw[] = [
   {
@@ -37,6 +38,12 @@ const routes: RouteRecordRaw[] = [
     component: ForgetPasswordView,
     meta: { title: 'ChhatStore - Home', guestOnly: true },
   },
+  {
+    path: '/category/:slug',
+    name: 'category',
+    component: CategoryPage,
+    meta: { title: 'ChhatStore - Category', guestOnly: true },
+  },
 ];
 
 const router = createRouter({
@@ -44,6 +51,9 @@ const router = createRouter({
   routes,
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) return savedPosition;
+    if (to.path === from.path) {
+      return false;
+    }
     return { top: 0, behavior: 'smooth' };
   },
 });

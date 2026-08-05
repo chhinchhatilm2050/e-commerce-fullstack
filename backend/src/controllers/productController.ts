@@ -62,13 +62,17 @@ export const getProductById = asyncHandler(async(req: Request<{ id: string }>, r
   });
 });
 
-export const getProductsByCategorySlug = asyncHandler(async(req: Request<{ slug: string }>, res: Response, next: NextFunction): Promise<void> => {
+export const getProductsByCategorySlug = asyncHandler(async (
+  req: Request<{ slug: string }>,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   const { slug } = req.params;
 
-  const category = await CategoryModel.findOne({ slug, status: 'active'});
-  if(!category) {
+  const category = await CategoryModel.findOne({ slug, status: 'active' });
+  if (!category) {
     return next(new AppError('Category not found', 404));
-  };
+  }
 
   const allCategories = await CategoryModel.find().lean();
   const descendantIds = getAllDescendantIds(allCategories, String(category._id));
@@ -76,15 +80,14 @@ export const getProductsByCategorySlug = asyncHandler(async(req: Request<{ slug:
 
   const result = await new QueryBuilder(ProductModel, {
     ...req.query,
-    categoryIds: { $in: categoryIds}
+    categoryId: { $in: categoryIds }, 
   }).filter().sort().paginate().execute();
 
   res.status(200).json({
     success: true,
-    ...result
+    ...result,
   });
 });
-
 export const createProduct = asyncHandler(async(req: Request<unknown, unknown, CreateProductBody>, res: Response, next: NextFunction): Promise<void> => {
   const { name, description, price, comparePrice, categoryId, stock, specification } = req.body;
 
