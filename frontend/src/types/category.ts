@@ -5,6 +5,8 @@ export interface ICategory {
   parentId: string | null;
   image?: string;
   status: 'active' | 'inactive';
+  description?: string;
+  productCount?: number;
 }
 
 export interface ICategoryListResponse {
@@ -14,5 +16,15 @@ export interface ICategoryListResponse {
 
 export interface ICategorySingleResponse {
   success: boolean;
-  data: ICategory;
+  data: { category: ICategory };
 };
+
+export interface ICategoryListChildrenResponse {
+  success: boolean;
+  data: { children: ICategory[]}
+}
+
+export interface ICategoryListSiblingsResponse {
+  success: boolean;
+  data: { siblings: ICategory[]}
+}

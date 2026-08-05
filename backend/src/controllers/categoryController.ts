@@ -21,31 +21,97 @@ export const getTopLevelCategories = asyncHandler(async( req: Request, res: Resp
   });
 });
 
-export const getCategoryBySlugg = asyncHandler(async(req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const getCategoryBySlug = asyncHandler(async (
+  req: Request<{ slug: string }>,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   const { slug } = req.params;
-  const category = await CategoryModel.findOne({ slug , status: 'active'});
-  if(!category) {
+
+  const category = await CategoryModel.findOne({ slug, status: 'active' }).lean();
+  if (!category) {
     return next(new AppError('Category not found', 404));
   }
+
+  const allCategories = await CategoryModel.find().lean();
+  const descendantIds = getAllDescendantIds(allCategories, String(category._id));
+  const categoryIds = [category._id, ...descendantIds];
+
+  const productCount = await ProductModel.countDocuments({
+    categoryId: { $in: categoryIds },
+    status: 'active',
+  });
+
   res.status(200).json({
     success: true,
-    data: {category}
+    data: {
+      category: { ...category, productCount },
+    },
   });
 });
 
-export const getCategoryChildren = asyncHandler(async(req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const getCategoryChildren = asyncHandler(async (
+  req: Request<{ slug: string }>,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   const { slug } = req.params;
 
-  const parent = await CategoryModel.findOne({slug});
-  if(!parent) {
+  const parent = await CategoryModel.findOne({ slug });
+  if (!parent) {
+    return next(new AppError('Category not found', 404));
+  }
+
+  const children = await CategoryModel.find({ parentId: parent._id, status: 'active' }).lean();
+  const allCategories = await CategoryModel.find().lean();
+
+  const childrenWithCounts = await Promise.all(
+    children.map(async (child) => {
+      const descendantIds = getAllDescendantIds(allCategories, String(child._id));
+      const categoryIds = [child._id, ...descendantIds];
+
+      const productCount = await ProductModel.countDocuments({
+        categoryId: { $in: categoryIds },
+        status: 'active'
+      });
+
+      return { ...child, productCount };
+    })
+  );
+
+  res.status(200).json({ success: true, data: { children: childrenWithCounts } });
+});
+
+export const getCategorySyblings = asyncHandler(async (req: Request<{ slug: string }>, res: Response, next: NextFunction): Promise<void> => {
+  const { slug } = req.params;
+
+  const currentCategory = await CategoryModel.findOne({ slug });
+  if (!currentCategory) {
     return next(new AppError('Category not found', 404));
   };
 
-  const chhildren = await CategoryModel.find({ parentId: parent._id, status: 'active'});
-  res.status(200).json({
-    success: true,
-    data: {chhildren}
-  });
+  if (!currentCategory.parentId) {
+    return next(new AppError('Top-level category has no siblings', 400));
+  };
+
+  const siblings = await CategoryModel.find({ parentId: currentCategory.parentId, status: 'active' }).lean();
+  const allCategories = await CategoryModel.find().lean();
+
+  const siblingsWithCounts = await Promise.all(
+    siblings.map(async (sibling) => {
+      const descendantIds = getAllDescendantIds(allCategories, String(sibling._id));
+      const categoryIds = [sibling._id, ...descendantIds];
+
+      const productCount = await ProductModel.countDocuments({
+        categoryId: { $in: categoryIds },
+        status: 'active',
+      });
+
+      return { ...sibling, productCount };
+    })
+  );
+
+  res.status(200).json({ success: true, data: { siblings: siblingsWithCounts } });
 });
 
 export const createCategory = asyncHandler(async(req: Request<unknown, unknown,ICategory>, res: Response, next: NextFunction): Promise<void> => {

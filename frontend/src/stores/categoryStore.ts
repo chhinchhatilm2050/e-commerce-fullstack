@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import axios from 'axios';
 import api from '@/composables/useFetch.js';
 import { ref } from 'vue';
-import type { ICategory, ICategoryListResponse, ICategorySingleResponse } from '@/types/category';
+import type { ICategory, ICategoryListChildrenResponse, ICategoryListResponse, ICategoryListSiblingsResponse, ICategorySingleResponse } from '@/types/category';
 
 export const useCategoryStore = defineStore('category', () => {
   const topLevelCategories = ref<ICategory[]>([]);
@@ -41,7 +41,7 @@ export const useCategoryStore = defineStore('category', () => {
     error.value = '';
     try {
       const { data } = await api.get<ICategorySingleResponse>(`/categories/${slug}`);
-      currentCategory.value = data.data;
+      currentCategory.value = data.data.category;
       return true;
     } catch (err) {
       error.value = axios.isAxiosError(err) ? err.response?.data?.message ?? 'Category not found' : 'Category not found';
@@ -54,15 +54,31 @@ export const useCategoryStore = defineStore('category', () => {
 
   const fetchCategoryChildren = async (slug: string) => {
     try {
-      const { data } = await api.get<ICategoryListResponse>(`/categories/${slug}/children`);
-      subcategories.value = data.data.categories;
-      return true;
+      const { data } = await api.get<ICategoryListChildrenResponse>(`/categories/${slug}/children`);
+      if (data.data.children.length > 0) {
+        subcategories.value = data.data.children;
+        return true;
+      } else {
+        await fetchCategorySiblings(slug);
+      }
+
     } catch {
       subcategories.value = [];
       return false;
     }
   };
 
+  const fetchCategorySiblings = async (slug: string) => {
+    try {
+      const { data } = await api.get<ICategoryListSiblingsResponse>(`/categories/${slug}/siblings`);
+      subcategories.value = data.data.siblings;
+      return true;
+    } catch {
+      subcategories.value = [];
+      return false;
+    }
+  };
+   
   return {
     topLevelCategories,
     currentCategory,
@@ -72,6 +88,7 @@ export const useCategoryStore = defineStore('category', () => {
     fetchCategoryBySlug,
     fetchCategoryChildren,
     fetchTopLevelCategories,
+    fetchCategorySiblings,
   };
 });
 

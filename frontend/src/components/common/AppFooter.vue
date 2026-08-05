@@ -55,7 +55,7 @@
 
 <template>
     <footer class="bg-white-900 text-gray-300 mt-auto ">
-        <div class="container-xl py-12">
+        <div class="container-xl px-8 py-12">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10">
                 <div class="lg:col-span-1">
                     <RouterLink to="/" class="flex items-center group">
@@ -85,7 +85,7 @@
                         </RouterLink>
                     </li>
                         <li v-for="cat in categoryStore.topLevelCategories" :key="cat._id">
-                            <RouterLink :to="`/categories/${cat.slug}`" class="text-sm cursor-pointer flex gap-2 hover:underline dark:text-gray-200 text-gray-700 hover:text-gray-500 transition-colors">
+                            <RouterLink :to="`/category/${cat.slug}`" class="text-sm cursor-pointer flex gap-2 hover:underline dark:text-gray-200 text-gray-700 hover:text-gray-500 transition-colors">
                             <i :class="getCategoryIcon(cat.slug)"></i>
                             <span>{{ cat.name }}</span>
                             </RouterLink>
@@ -117,7 +117,7 @@
                 <div>
                     <h3 class="text-[17px] font-semibold text-gray-800 mb-4 dark:text-white">{{ $t('footer.newsletter') }}</h3>
                     <p class="text-sm text-gray-700 mb-4 dark:text-gray-200">{{ $t('footer.newsletter_desc') }}</p>
-                    <div class="flex gap-2">
+                    <div class="flex gap-1">
                     <input
                         v-model="email"
                         type="email"
