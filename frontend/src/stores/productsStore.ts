@@ -97,6 +97,26 @@ export const useProductsStore = defineStore('products', () => {
     }
   };
 
+  // Fix: swap loading → loadingMore throughout fetchMoreAllProducts
+  const fetchMoreAllProducts = async (query: Record<string, string> = {}) => {
+    if (loadingMore.value) return false;
+    loadingMore.value = true;
+    try {
+      const params = new URLSearchParams(query).toString();
+      const { data } = await api.get<IProductListResponse>(`/products?${params}`);
+      products.value.push(...data.data);
+      pagination.value = data.pagination;
+      return true;
+    } catch (err) {
+      error.value = axios.isAxiosError(err)
+        ? err.response?.data?.message ?? 'Failed to load more products'
+        : 'Failed to load more products';
+      return false;
+    } finally {
+      loadingMore.value = false;
+    }
+  };
+
   return {
     products,
     currentProduct,
@@ -110,5 +130,6 @@ export const useProductsStore = defineStore('products', () => {
     fetchAllProducts,
     fetchProductDetail,
     fetchMoreProductByCategory,
+    fetchMoreAllProducts,
   };
 });

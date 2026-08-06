@@ -6,6 +6,7 @@ const LoginView = () => import('@/views/auth/LoginView.vue');
 const VerifyEmailView = () => import('@/views/auth/VerifyEmailView.vue');
 const ForgetPasswordView = () => import('@/views/auth/ForgetPasswordView.vue');
 const CategoryPage = () => import('@/views/CategoryPage.vue');
+const SerchPageResult = () => import('@/views/SearchResultsPage.vue');
 
 const routes: RouteRecordRaw[] = [
   {
@@ -42,6 +43,12 @@ const routes: RouteRecordRaw[] = [
     path: '/category/:slug',
     name: 'category',
     component: CategoryPage,
+    meta: { title: 'ChhatStore - Category', guestOnly: true },
+  },
+  {
+    path: '/search',
+    name: 'search',
+    component: SerchPageResult,
     meta: { title: 'ChhatStore - Category', guestOnly: true },
   },
 ];

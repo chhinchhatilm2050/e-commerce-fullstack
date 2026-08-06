@@ -1,11 +1,12 @@
 <script setup lang="ts">
-  import { ref, watch, onUnmounted, nextTick } from 'vue';
+  import { ref, watch, onUnmounted, nextTick, computed } from 'vue';
   import { useRoute, useRouter } from 'vue-router';
   import { useProductsStore } from '@/stores/productsStore.ts';
   import { useCategoryStore } from '@/stores/categoryStore.ts';
   import ProductGrid from '@/components/category/ProductGrid.vue';
   import SortDropdown from '@/components/category/SortDropdown.vue';
   import SubcategoryPills from '@/components/category/SubcategoryPills.vue';
+  import TopLoader from '@/components/common/TopLoader.vue';
 
   const route = useRoute();
   const router = useRouter();
@@ -48,7 +49,7 @@
 
     currentPage.value += 1;
 
-    isInternalUpdate = true; // mark this as a scroll-triggered update
+    isInternalUpdate = true; 
     router.replace({
       query: { ...route.query, page: String(currentPage.value) },
     });
@@ -81,7 +82,7 @@
     () => [route.params.slug, route.query.search, route.query.sort],
     () => {
       if (isInternalUpdate) {
-        isInternalUpdate = false; // consume the flag, skip this trigger
+        isInternalUpdate = false; 
         return;
       }
       loadInitialData();
@@ -101,7 +102,7 @@
 
   watch(currentSort, (newSort) => {
     if (newSort !== route.query.sort) {
-      isInternalUpdate = false; // real user action — let it reload properly
+      isInternalUpdate = false; 
       router.replace({ query: { ...route.query, sort: newSort, page: '1' } });
     }
   });
@@ -113,22 +114,19 @@
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  const searchTerm = computed(() => (route.query.search as string) || '');
 </script>
 
 <template>
-  <div class="container-xl px-8 py-6">
-    <div
-      v-if="(categoryStore.loading || productStore.loading) && productStore.products.length === 0"
-      class="text-center py-16"
-    >
-      Loading...
-    </div>
+  <div>
+    <TopLoader :isLoading="categoryStore.loading || productStore.loading || productStore.loadingMore" />
 
-    <template v-else>
-      <div class="flex items-center justify-between gap-4 pb-4 border-gray-200 ">
+    <div class="container-xl px-8 py-6">
+      <div class="flex items-center justify-between gap-4 pb-4 border-gray-200">
         <div class="flex flex-row items-center gap-3">
-          <div class="max-w-[200verflow-hidden text-ellipsis whitespace-nowrap">
-            {{ categoryStore.currentCategory?.name.toUpperCase() }} ( {{ categoryStore.currentCategory?.productCount || 0 }} Items )
+          <div class="max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap">
+            {{ categoryStore.currentCategory?.name?.toUpperCase() }} ( {{ categoryStore.currentCategory?.productCount || 0 }} Items )
           </div>
           <SubcategoryPills 
             :subcategories="categoryStore.subcategories"
@@ -141,15 +139,17 @@
         </div>
       </div>
 
-      <ProductGrid :products="productStore.products" />
+      <ProductGrid :products="productStore.products" :search-term="searchTerm"/>
       <div ref="sentinel" class="h-4"></div>
+
       <button
-        v-if="!productStore.pagination?.hasNextPage && productStore.products.length > 0"
+        v-if="!productStore.pagination?.hasNextPage && productStore.products.length > 0 "
         @click="scrollToTop"
-        class="subCategory-button flex items-center justify-center gap-2 mt-6 mx-auto"
+        class="fixed bottom-6 right-6 bg-black/50 text-white rounded-full w-8 h-8 flex items-center justify-center shadow-lg hover:bg-gray-800 transition z-50"
       >
-        Back to Top ↑
+        ↑
       </button>
-    </template>
+    </div>
   </div>
 </template>
+

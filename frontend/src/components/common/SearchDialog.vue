@@ -10,6 +10,7 @@
 
   const emit = defineEmits<{
     'update:modelValue': [value: boolean];
+    'search': [query: string];
   }>();
 
   const query = ref('');
@@ -29,6 +30,11 @@
   });
   const close = () => {
     emit('update:modelValue', false);
+  };
+  const submitSearch = () => {
+    if (!query.value.trim()) return;
+    emit('search', query.value.trim());
+    close();
   };
 
 </script>
@@ -58,12 +64,14 @@
               v-model="query"
               type="text"
               :placeholder="$t('nav.search')"
+              @keyup.enter="submitSearch"
               class="flex-1 bg-transparent placeholder-gray-600 dark:placeholder-gray-400 text-[18px] outline-none"
             />
             <div class="flex items-center gap-4">
               <button
                 class="text-surface-100 cursor-pointer dark:text-gray-200"
                 aria-label="Search"
+                @click="submitSearch"
               >
                 <i class="ri-search-line text-xl" />
               </button>
