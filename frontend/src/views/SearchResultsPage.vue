@@ -133,6 +133,7 @@
 
       <template v-else>
         <ProductGrid :products="productStore.products" searchTerm="" />
+        
         <div ref="sentinel" class="h-4"></div>
       </template>
     </template>
