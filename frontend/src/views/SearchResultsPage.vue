@@ -56,7 +56,7 @@
 
   };
 
-  function setupObserver() {
+  const setupObserver = () => {
     observer?.disconnect();
     observer = new IntersectionObserver(
       (entries) => {
@@ -65,7 +65,7 @@
       { rootMargin: '200px' },
     );
     if (sentinel.value) observer.observe(sentinel.value);
-  }
+  };
 
   watch(
     () => [route.query.search, route.query.sort],
