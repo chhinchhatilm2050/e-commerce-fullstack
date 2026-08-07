@@ -4,11 +4,12 @@
 
   defineProps<{
     products: IProduct[];
+    searchTerm: string;
   }>();
 </script>
 <template>
-  <div v-if="products.length === 0" class="text-center text-gray-500 py-16">
-    No products found.
+  <div v-if="products.length === 0" class="text-center text-lg font-semibold py-16">
+    <i class="ri-emotion-unhappy-fill text-2xl"></i> Hmm... We couldn't find any results for " {{searchTerm}} ".
   </div>
 
   <div v-else class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-8 mt-4">

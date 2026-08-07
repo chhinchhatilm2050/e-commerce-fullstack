@@ -44,10 +44,6 @@ class QueryBuilder<T extends Document> {
       filter.price = price;
     }
 
-    if (typeof queryString.search === 'string' && queryString.search.trim()) {
-      filter.$text = { $search: queryString.search.trim() };
-    }
-
     if (queryString.minRating) {
       filter.ratingAvg = { $gte: Number(queryString.minRating) };
     }

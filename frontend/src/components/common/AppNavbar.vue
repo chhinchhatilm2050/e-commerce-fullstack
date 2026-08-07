@@ -9,11 +9,12 @@
   import AuthDialog from './AuthDialog.vue';
   import SearchDialog from './SearchDialog.vue';
   import { useCategoryStore } from '@/stores/categoryStore.ts';
-  import { useRoute } from 'vue-router';
+  import { useRoute, useRouter } from 'vue-router';
 
   const themeStore = useThemeStore();
   const categoryStore = useCategoryStore();
   const route = useRoute();
+  const router = useRouter();
 
   onMounted(() => {
     if (categoryStore.topLevelCategories.length === 0) {
@@ -23,7 +24,7 @@
 
   const { isOpen: isAuthOpen, open: openAuth } = useDialog();
   const { isOpen: isAccountOpen, open: openAccountDialog } = useDialog();
-  const { isOpen, open } = useDialog();
+  const { isOpen, open, close } = useDialog();
   const openAsRegister = ref<boolean>(false);
 
   const openRegister = () => { openAsRegister.value = true; openAuth(); };
@@ -32,6 +33,22 @@
   const openSearch = () => open() ;
 
   const mobileMenuOpen = ref<boolean>(false);
+
+  const handleSearchSubmit = (query: string) => {
+    if (!query.trim()) return;
+    const currentSlug = route.params.slug as string | undefined;
+
+    if (route.name === 'category' && currentSlug) {
+      router.push({ path: `/category/${currentSlug}`, query: { search: query.trim(), page: '1' } });
+      return;
+    } else {
+      router.push({
+        path: '/search',
+        query: { search: query.trim(), page: '1' },
+      });
+    }
+    close();
+  };
 </script>
 
 <template>
@@ -99,7 +116,7 @@
         </div>
         <AuthDialog v-model="isAuthOpen" :start-register="openAsRegister"/>
         <AppAccount v-model="isAccountOpen"/>
-        <SearchDialog v-model="isOpen"/>
+        <SearchDialog v-model="isOpen" @search="handleSearchSubmit"/>
         <PhoneNavbar
             v-model="mobileMenuOpen" 
             @open-login="openLogin"
