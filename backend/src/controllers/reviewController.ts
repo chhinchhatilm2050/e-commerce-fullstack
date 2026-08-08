@@ -29,7 +29,6 @@ export const getProductReview = asyncHandler(async(req: Request<{ id: string }>,
   res.status(200).json({
     success: true,
     data: {
-      reviews,
       pagination: {
         total,
         page,
@@ -38,6 +37,7 @@ export const getProductReview = asyncHandler(async(req: Request<{ id: string }>,
         hasNextPage: page < totalPage,
         hasPrevPage: page > 1,
       },
+      reviews,
     }
   });
 });

@@ -1,7 +1,14 @@
 <script setup lang="ts">
   import BaseDropdown from '@/components/common/BaseDropdown.vue';
+  import { computed } from 'vue';
 
-  const modelValue = defineModel<string>({ default: 'recommend' });
+  // const modelValue = defineModel<string>({ default: 'recommend' });
+  const props = defineProps(['modelValue']);
+  const emit = defineEmits(['update:modelValue']);
+  const modelValue = computed({
+    get: () => props.modelValue,
+    set: (val) => emit('update:modelValue', val),
+  });
 
   const sortOptions = [
     { label: 'Recommend', value: 'recommend' },
