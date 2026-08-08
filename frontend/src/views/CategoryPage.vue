@@ -28,9 +28,6 @@
     const sort = (route.query.sort as string) || 'recommend';
     const page = Number(route.query.page) || 1;
 
-    currentSort.value = sort;
-    currentPage.value = page;
-
     await Promise.all([
       categoryStore.fetchCategoryBySlug(slug),
       categoryStore.fetchCategoryChildren(slug),
