@@ -167,11 +167,57 @@ const categoryConfig: CategoryConfig[] = [
       },
     ],
   },
+  {
+    name: 'Furniture',
+    description: 'Furniture and decor for every room in your home',
+    imageKeyword: 'furniture',
+    subcategories: [
+      {
+        name: 'Living Room',
+        productNameFn: () => faker.commerce.productAdjective() + ' ' + faker.helpers.arrayElement(['Sofa', 'Coffee Table', 'TV Stand', 'Armchair', 'Bookshelf']),
+        specFn: () => ({
+          material: faker.helpers.arrayElement(['Wood', 'Metal', 'Fabric', 'Leather', 'Glass']),
+          color: faker.color.human(),
+          weightKg: faker.number.int({ min: 5, max: 60 }),
+          dimensions: `${faker.number.int({ min: 60, max: 220 })}x${faker.number.int({ min: 40, max: 100 })}x${faker.number.int({ min: 30, max: 90 })} cm`,
+        }),
+      },
+      {
+        name: 'Bedroom',
+        productNameFn: () => faker.commerce.productAdjective() + ' ' + faker.helpers.arrayElement(['Bed Frame', 'Wardrobe', 'Nightstand', 'Dresser', 'Mattress']),
+        specFn: () => ({
+          material: faker.helpers.arrayElement(['Wood', 'Metal', 'Fabric', 'Memory Foam']),
+          color: faker.color.human(),
+          weightKg: faker.number.int({ min: 8, max: 80 }),
+          dimensions: `${faker.number.int({ min: 90, max: 200 })}x${faker.number.int({ min: 60, max: 180 })}x${faker.number.int({ min: 20, max: 120 })} cm`,
+        }),
+      },
+      {
+        name: 'Office',
+        productNameFn: () => faker.commerce.productAdjective() + ' ' + faker.helpers.arrayElement(['Office Chair', 'Desk', 'Filing Cabinet', 'Bookcase']),
+        specFn: () => ({
+          material: faker.helpers.arrayElement(['Wood', 'Metal', 'Mesh', 'Plastic']),
+          color: faker.color.human(),
+          weightKg: faker.number.int({ min: 5, max: 40 }),
+          adjustableHeight: faker.datatype.boolean(),
+        }),
+      },
+      {
+        name: 'Outdoor',
+        productNameFn: () => faker.commerce.productAdjective() + ' ' + faker.helpers.arrayElement(['Patio Set', 'Garden Bench', 'Hammock', 'Outdoor Table']),
+        specFn: () => ({
+          material: faker.helpers.arrayElement(['Rattan', 'Metal', 'Teak Wood', 'Aluminum']),
+          color: faker.color.human(),
+          weatherResistant: true,
+          weightKg: faker.number.int({ min: 3, max: 50 }),
+        }),
+      },
+    ],
+  },
 ];
 
-const PRODUCT_PER_SUBCATEGORY = 60;
+const PRODUCT_PER_SUBCATEGORY = 100;
 
-// Uses Faker's LoremFlickr generator to fetch real photos matching category keywords
 function generateFakeImages(keyword: string, count: number) {
   return Array.from({ length: count }).map((_, i) => ({
     url: faker.image.urlLoremFlickr({ width: 400, height: 600, category: keyword }),
@@ -183,6 +229,28 @@ function generateFakeImages(keyword: string, count: number) {
 
 function generateCategoryImage(keyword: string) {
   return faker.image.urlLoremFlickr({ width: 400, height: 600, category: keyword });
+}
+
+// generates a realistic rating: most products cluster around 3.5-4.8,
+// with roughly 15% of products having zero reviews (rating 0, count 0)
+function generateRating(): { ratingAvg: number; ratingCount: number } {
+  const hasReviews = faker.datatype.boolean({ probability: 0.85 });
+
+  if (!hasReviews) {
+    return { ratingAvg: 0, ratingCount: 0 };
+  }
+
+  const ratingAvg = Number(faker.number.float({ min: 3.0, max: 5.0, fractionDigits: 1 }));
+  const ratingCount = faker.number.int({ min: 1, max: 500 });
+
+  return { ratingAvg, ratingCount };
+}
+
+// derives status from stock — out of stock products are automatically marked as such,
+// remaining products are mostly active with a small percentage left as draft
+function generateStatus(stock: number): 'draft' | 'active' | 'out_of_stock' {
+  if (stock === 0) return 'out_of_stock';
+  return faker.helpers.arrayElement(['active', 'active', 'active', 'active', 'draft']);
 }
 
 const seed = async () => {
@@ -212,6 +280,9 @@ const seed = async () => {
 
       let created = 0;
       for (let i = 0; i < PRODUCT_PER_SUBCATEGORY; i++) {
+        const { ratingAvg, ratingCount } = generateRating();
+        const stock = faker.number.int({ min: 0, max: 200 });
+
         await ProductModel.create({
           name: sub.productNameFn(),
           description: faker.commerce.productDescription(),
@@ -221,9 +292,11 @@ const seed = async () => {
             ? Number(faker.commerce.price({ min: 5, max: 1200 }))
             : undefined,
           images: generateFakeImages(category.imageKeyword, faker.number.int({ min: 1, max: 4 })),
-          stock: faker.number.int({ min: 0, max: 200 }),
+          stock,
           specification: sub.specFn(),
-          status: faker.helpers.arrayElement(['active', 'active', 'active', 'draft']),
+          ratingAvg,
+          ratingCount,
+          status: generateStatus(stock),
         });
         created++;
       }

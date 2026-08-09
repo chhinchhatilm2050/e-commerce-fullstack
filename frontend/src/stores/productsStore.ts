@@ -18,6 +18,8 @@ export const useProductsStore = defineStore('products', () => {
   const pagination = ref<IPagination | null>(null);
   const loading = ref<boolean>(false);
   const error = ref<string>('');
+  const featureProducts = ref<IProduct[]>([]);
+  const homeSections = ref<Record<string, IProduct[]>>({});
 
   const fetchProductsByCategory = async (slug: string, query: Record<string, string | number> = {}) => {
     loading.value = true;
@@ -25,6 +27,7 @@ export const useProductsStore = defineStore('products', () => {
     try {
       const params = new URLSearchParams(query as Record<string, string>).toString();
       const { data } = await api.get<IProductListResponse>(`/products/category/${slug}?${params}`);
+      console.log(data);
       products.value = data.data;
       pagination.value = data.pagination;
       return true;
@@ -117,6 +120,28 @@ export const useProductsStore = defineStore('products', () => {
     }
   };
 
+  const fetchFeaturenProducts = async () => {
+    try {
+      const { data } = await api.get<IProductListResponse>('/products?minRating=4.7&sort=recommend&limit=20');
+      featureProducts.value = data.data;
+    } catch {
+      featureProducts.value = [];
+    }
+  };
+
+  const fetchProductSection = async (key: string, query: Record<string, string>, forceRefresh = false) => {
+    if (!forceRefresh && (homeSections.value[key]?.length ?? 0) > 0) {
+      return;
+    };
+    try {
+      const params = new URLSearchParams(query).toString();
+      const { data } = await api.get<IProductListResponse>(`/products?${params}`);
+      homeSections.value[key] = data.data;
+    } catch {
+      homeSections.value[key] = [];
+    }
+  };
+
   return {
     products,
     currentProduct,
@@ -126,10 +151,14 @@ export const useProductsStore = defineStore('products', () => {
     loading,
     loadingMore,
     error,
+    featureProducts,
+    homeSections,
     fetchProductsByCategory,
     fetchAllProducts,
     fetchProductDetail,
     fetchMoreProductByCategory,
     fetchMoreAllProducts,
+    fetchFeaturenProducts,
+    fetchProductSection,
   };
 });

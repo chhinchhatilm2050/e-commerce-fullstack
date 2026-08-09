@@ -1,4 +1,4 @@
-import { Model, Document, Query, PipelineStage  } from 'mongoose';
+import { Model, Document, Query, PipelineStage, Types } from 'mongoose';
 import type { IQueryResult, PriceRange, BaseFilter } from '../interface/iproducts.js';
 
 const SORT_MAP: Record<string, string> = {
@@ -24,18 +24,35 @@ class QueryBuilder<T extends Document> {
     this.query = model.find();
   }
 
+  /**
+   * Helper to safely convert standard 24-hex strings into native ObjectIds
+   * so MongoDB Aggregation pipelines can accurately match them.
+   */
+  private static castObjectId(val: unknown): unknown {
+    if (typeof val === 'string' && Types.ObjectId.isValid(val)) {
+      return new Types.ObjectId(val);
+    }
+    if (val && typeof val === 'object' && '$in' in val && Array.isArray((val as { $in: unknown[] }).$in)) {
+      return {
+        ...val,
+        $in: (val as { $in: unknown[] }).$in.map((v) =>
+          typeof v === 'string' && Types.ObjectId.isValid(v) ? new Types.ObjectId(v) : v
+        ),
+      };
+    }
+    return val;
+  }
+
   private static buildBaseFilter(queryString: Record<string, unknown>): BaseFilter {
     const filter: BaseFilter = { isDeleted: false };
 
     Object.keys(queryString).forEach((key) => {
       if (!RESERVED_QUERY_KEYS.includes(key)) {
-        filter[key] = queryString[key];
+        filter[key] = QueryBuilder.castObjectId(queryString[key]);
       }
     });
 
-    if (queryString.isActive !== undefined) {
-      filter.isActive = queryString.isActive === 'true';
-    }
+    filter.status = queryString.status !== undefined ? queryString.status : 'active';
 
     if (queryString.minPrice || queryString.maxPrice) {
       const price: PriceRange = {};
@@ -133,33 +150,52 @@ class QueryBuilder<T extends Document> {
 
     const match = QueryBuilder.buildBaseFilter(queryString);
 
-    const pipeline: PipelineStage[] = [
-      { $match: match },
-      {
-        $addFields: {
-          discountAmount: {
-            $cond: [
-              { $gt: ['$comparePrice', 0] },
-              { $subtract: ['$comparePrice', '$price'] },
-              0,
-            ],
+    const discountCalculationStage: PipelineStage.AddFields = {
+      $addFields: {
+        discountAmount: {
+          $let: {
+            vars: {
+              cPrice: { $ifNull: ['$comparePrice', 0] },
+              pPrice: { $ifNull: ['$price', 0] },
+            },
+            in: {
+              $cond: [
+                { $gt: ['$$cPrice', '$$pPrice'] },
+                { $subtract: ['$$cPrice', '$$pPrice'] },
+                0,
+              ],
+            },
           },
         },
       },
-      { $sort: { discountAmount: direction } },
+    };
+
+    const pipeline: PipelineStage[] = [
+      { $match: match },
+      discountCalculationStage,
+      { $match: { discountAmount: { $gt: 0 } } },
+      { $sort: { discountAmount: direction, _id: 1 } },
       { $skip: (page - 1) * limit },
       { $limit: limit },
     ];
 
-    const [data, total] = await Promise.all([
-      model.aggregate(pipeline),
-      model.countDocuments(match as unknown as Record<string, unknown>),
+    const countPipeline: PipelineStage[] = [
+      { $match: match },
+      discountCalculationStage,
+      { $match: { discountAmount: { $gt: 0 } } },
+      { $count: 'total' },
+    ];
+
+    const [data, countResult] = await Promise.all([
+      model.aggregate<T>(pipeline),
+      model.aggregate<{ total: number }>(countPipeline),
     ]);
 
+    const total = countResult[0]?.total ?? 0;
     const totalPage = Math.ceil(total / limit) || 1;
 
     return {
-      data: data as T[],
+      data,
       pagination: {
         total,
         page,

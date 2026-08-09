@@ -1,13 +1,25 @@
 <script setup lang="ts">
   import { onMounted } from 'vue';
   import { useCategoryStore } from '@/stores/categoryStore';
+  import { useProductsStore } from '@/stores/productsStore';
+  import ProductSlider from '@/components/products/ProductSlider.vue';
 
   const categoryStore = useCategoryStore();
+  const productStore = useProductsStore();
 
   onMounted(() => {
     if (categoryStore.topLevelCategories.length === 0) {
       categoryStore.fetchTopLevelCategories();
     }
+    if (productStore.featureProducts.length === 0) {
+      productStore.fetchFeaturenProducts();
+    }
+
+    productStore.fetchProductSection('expensive', { sort: 'price_high', limit: '20' });
+    productStore.fetchProductSection('newest', { sort: 'newest', limit: '20' });
+    productStore.fetchProductSection('cheap', { sort: 'price_low', limit: '20' });
+    productStore.fetchProductSection('discount_high', { sort: 'discount_high', limit: '20' });
+    productStore.fetchProductSection('discount_low', { sort: 'discount_low', limit: '20' });
   });
 
   interface States {
@@ -40,7 +52,7 @@
                 {{ $t('home.hero_subtitle') }}
                 </p>
                 <div class="hidden lg:flex flex-wrap gap-4 animate-slide-up" style="animation-delay:0.5s">
-                <RouterLink to="/products" class="default-button px-4 inline-block">
+                <RouterLink to="/category/books" class="default-button px-4 inline-block">
                     {{ $t('home.hero_cta') }}
                 </RouterLink>
                 </div>
@@ -74,27 +86,52 @@
       </RouterLink>
     </div>
   </section>
-  <section class="py-10 bg-surface-50 dark:bg-surface-900">
-    <div class="container-xl px-8">
-      <div class="flex items-end justify-between mb-10">
-        <div>
-          <h2 class="section-title mb-1"><i class="ri-emotion-line"></i> {{ $t('home.featured_title') }}</h2>
-  
-        </div>
-        <RouterLink to="/products" class="default-button px-4 text-sm hidden sm:inline-flex">
-           {{ $t('home.view_all') }}
-        </RouterLink>
-      </div>
-      <!-- <LoadingSpinner v-if="productStore.loading" :message="$t('products.loading')"/>
-      <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <ProductCard
-          v-for="product in productStore.featuredProducts"
-          :key="product.id"
-          :product="product"
-          @add-to-cart="handleAddToCart"
-          @open-review="$emit('open-review', $event)"
-        />
-      </div> -->
-    </div>
+  <section>
+    <ProductSlider
+      :products="productStore.featureProducts"
+      title="Top Rating"
+      icon="ri-star-fill"
+      see-more-link="/category/books?sort=recommend&page=1"
+    />
+  </section>
+  <section>
+    <ProductSlider
+      :products="productStore.homeSections.expensive || []"
+      title="Premium Picks"
+      icon="ri-vip-crown-line"
+      see-more-link="/category/books?sort=price_high&page=1"
+    />
+  </section>
+  <section>
+    <ProductSlider
+    :products="productStore.homeSections.newest || []"
+    title="New Arrivals"
+    icon="ri-sparkling-2-line"
+    see-more-link="/category/books?sort=newest&page=1"
+  />
+  </section>
+  <section>
+    <ProductSlider
+    :products="productStore.homeSections.cheap || []"
+    title="Low Price"
+    icon="ri-coin-line"
+    see-more-link="/category/books?sort=price_low&page=1"
+  />
+  </section>
+  <section>
+    <ProductSlider
+    :products="productStore.homeSections.discount_high || []"
+    title="High Discount"
+    icon="ri-discount-percent-fill"
+    see-more-link="/category/books?sort=discount_high&page=1"
+  />
+  </section>
+  <section>
+    <ProductSlider
+    :products="productStore.homeSections.discount_low || []"
+    title="Low Discount"
+    icon="ri-price-tag-3-line"
+    see-more-link="/category/books?sort=discount_low&page=1"
+  />
   </section>
 </template>
