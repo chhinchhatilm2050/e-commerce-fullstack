@@ -10,22 +10,26 @@ import type { CreateProductBody, IProduct, IProductImage } from '../interface/ip
 import AppError from '../utils/appError.js';
 import { CategoryModel } from '../model/category.js';
 
-export const getAllProducts = asyncHandler(async(req: Request, res: Response, _next: NextFunction): Promise<void> => {
-  let result;
-  if(QueryBuilder.isDiscountSort(req.query.sort)) {
-    result = await QueryBuilder.executeDiscountSort(ProductModel, req.query);
-  } else {
-    result = await new QueryBuilder(ProductModel, req.query)
-      .filter()
-      .sort()
-      .paginate()
-      .execute();
-  };
-  res.status(200).json({
-    success: true,
-    ...result,
-  });
-});
+export const getAllProducts = asyncHandler(
+  async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
+    let result;
+
+    if (QueryBuilder.isDiscountSort(req.query.sort)) {
+      result = await QueryBuilder.executeDiscountSort(ProductModel, req.query);
+    } else {
+      result = await new QueryBuilder(ProductModel, req.query)
+        .filter()
+        .sort()
+        .paginate()
+        .execute();
+    }
+
+    res.status(200).json({
+      success: true,
+      ...result,
+    });
+  }
+);
 
 export const getProductById = asyncHandler(async(req: Request<{ id: string }>, res: Response, next: NextFunction): Promise<void> => {
   const { id } = req.params;
@@ -78,16 +82,29 @@ export const getProductsByCategorySlug = asyncHandler(async (
   const descendantIds = getAllDescendantIds(allCategories, String(category._id));
   const categoryIds = [category._id, ...descendantIds];
 
-  const result = await new QueryBuilder(ProductModel, {
+  const queryWithCategory = {
     ...req.query,
-    categoryId: { $in: categoryIds }, 
-  }).filter().sort().paginate().execute();
+    categoryId: { $in: categoryIds },
+  } as Record<string, unknown>;
+
+  let result;
+
+  if (QueryBuilder.isDiscountSort(req.query.sort)) {
+    result = await QueryBuilder.executeDiscountSort(ProductModel, queryWithCategory);
+  } else {
+    result = await new QueryBuilder(ProductModel, queryWithCategory)
+      .filter()
+      .sort()
+      .paginate()
+      .execute();
+  }
 
   res.status(200).json({
     success: true,
     ...result,
   });
 });
+
 export const createProduct = asyncHandler(async(req: Request<unknown, unknown, CreateProductBody>, res: Response, next: NextFunction): Promise<void> => {
   const { name, description, price, comparePrice, categoryId, stock, specification } = req.body;
 
