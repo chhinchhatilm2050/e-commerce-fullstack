@@ -39,7 +39,7 @@
     const currentSlug = route.params.slug as string | undefined;
 
     if (route.name === 'category' && currentSlug) {
-      router.push({ path: `/category/${currentSlug}`, query: { search: query.trim(), page: '1' } });
+      router.push({ path: `/products/category/${currentSlug}`, query: { search: query.trim(), page: '1' } });
       return;
     } else {
       router.push({
@@ -71,16 +71,16 @@
                 <ul class="hidden lg:flex items-center gap-4">
                     <li>
                         <RouterLink to="/"
-                            class="rounded-sm text-[17px] hover:underline font-semibold transition-all duration-200 cursor-pointer"
+                            class="rounded-sm text-[17px] hover:underline hover:shadow-xl font-semibold transition-all duration-200 cursor-pointer"
                             :class="{ underline: route.path === '/' }"
                         >
                             HOME
                         </RouterLink>
                     </li>
                     <li v-for="cat in categoryStore.topLevelCategories" :key="cat._id">
-                        <RouterLink :to="`/category/${cat.slug}`"
-                            class="rounded-sm text-[17px] hover:underline font-semibold transition-all duration-200 cursor-pointer"
-                            :class="{ underline: route.path === `/category/${cat.slug}` }"
+                        <RouterLink :to="`/products/category/${cat.slug}`"
+                            class="rounded-sm text-[17px] hover:shadow-xl hover:underline font-semibold transition-all duration-200 cursor-pointer"
+                            :class="{ underline: route.path === `/products/category/${cat.slug}` }"
                         >
                             {{ cat.name.toUpperCase() }}
                         </RouterLink>
@@ -102,7 +102,7 @@
                     <RouterLink to="/cart" class="relative btn-ghost w-8 h-8 p-0 flex items-center justify-center rounded-full dark:hover:bg-surface-100">
                         <i class="ri-shopping-bag-line text-lg dark:text-gray-300 text-gray-500"></i>
                         <span class="absolute -top-0 -right-0.5 w-4.5 h-4.5 bg-red-600 animate-bounce-sm text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-                        99+</span>
+                       99+</span>
                     </RouterLink>
 
                     <AuthButton 

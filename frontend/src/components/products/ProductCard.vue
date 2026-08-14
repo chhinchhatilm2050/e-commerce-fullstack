@@ -8,7 +8,7 @@
   }>();
   const router = useRouter();
   const goToProductDetail = (): void => {
-    router.push(`/product/${props.product._id}`);
+    router.push(`/products/${props.product._id}`);
   };
 
   const discountPrice = computed(() => {

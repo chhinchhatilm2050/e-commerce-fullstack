@@ -21,6 +21,24 @@ interface CategoryConfig {
   subcategories: SubcategoryConfig[];
 }
 
+// --- Size/Color helpers -----------------------------------------------
+// A product can have ONE size/color, MANY sizes/colors, or be "Free Size"
+// (single universal size, e.g. belts, scarves, one-size hats).
+
+function generateSizes(possibleSizes: string[], freeSizeProbability = 0): string[] {
+  if (freeSizeProbability > 0 && faker.datatype.boolean({ probability: freeSizeProbability })) {
+    return ['Free Size'];
+  }
+  const count = faker.number.int({ min: 1, max: Math.min(3, possibleSizes.length) });
+  return faker.helpers.arrayElements(possibleSizes, count);
+}
+
+function generateColors(): string[] {
+  const count = faker.number.int({ min: 1, max: 3 });
+  const colors = Array.from({ length: count }, () => faker.color.human());
+  return Array.from(new Set(colors)); // dedupe in case of repeats
+}
+
 const categoryConfig: CategoryConfig[] = [
   {
     name: 'Books',
@@ -129,8 +147,8 @@ const categoryConfig: CategoryConfig[] = [
         name: 'Men',
         productNameFn: () => faker.commerce.productAdjective() + ' ' + faker.commerce.productMaterial() + ' ' + faker.commerce.product(),
         specFn: () => ({
-          size: faker.helpers.arrayElement(['XS', 'S', 'M', 'L', 'XL']),
-          color: faker.color.human(),
+          sizes: generateSizes(['XS', 'S', 'M', 'L', 'XL'], 0.1),
+          colors: generateColors(),
           material: faker.commerce.productMaterial(),
           gender: 'men',
         }),
@@ -139,8 +157,8 @@ const categoryConfig: CategoryConfig[] = [
         name: 'Women',
         productNameFn: () => faker.commerce.productAdjective() + ' ' + faker.commerce.productMaterial() + ' ' + faker.commerce.product(),
         specFn: () => ({
-          size: faker.helpers.arrayElement(['XS', 'S', 'M', 'L', 'XL']),
-          color: faker.color.human(),
+          sizes: generateSizes(['XS', 'S', 'M', 'L', 'XL'], 0.1),
+          colors: generateColors(),
           material: faker.commerce.productMaterial(),
           gender: 'women',
         }),
@@ -149,8 +167,8 @@ const categoryConfig: CategoryConfig[] = [
         name: 'Kids',
         productNameFn: () => faker.commerce.productAdjective() + ' Kids ' + faker.commerce.product(),
         specFn: () => ({
-          size: faker.helpers.arrayElement(['2T', '4T', 'S', 'M']),
-          color: faker.color.human(),
+          sizes: generateSizes(['2T', '4T', 'S', 'M'], 0.05),
+          colors: generateColors(),
           material: faker.commerce.productMaterial(),
           gender: 'unisex',
         }),
@@ -159,8 +177,9 @@ const categoryConfig: CategoryConfig[] = [
         name: 'Accessories',
         productNameFn: () => faker.commerce.productAdjective() + ' ' + faker.helpers.arrayElement(['Belt', 'Scarf', 'Hat', 'Bag']),
         specFn: () => ({
-          size: 'One Size',
-          color: faker.color.human(),
+          // Accessories are frequently one-size items (belts, scarves, hats, bags)
+          sizes: generateSizes(['S', 'M', 'L'], 0.6),
+          colors: generateColors(),
           material: faker.commerce.productMaterial(),
           gender: 'unisex',
         }),

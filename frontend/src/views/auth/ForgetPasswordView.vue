@@ -58,7 +58,7 @@
     class="relative flex items-center justify-self-center justify-center w-full max-w-2xl animate-slide-up"
   >
     <div class="flex flex-col gap-2 w-sm sm:w-full">
-      <h1 class="text-2xl sm:text-4xl font-bold text-center mt-10">
+      <h1 class="text-2xl sm:text-4xl font-bold text-center mt-20">
         FORGOT PASSWORD
       </h1>
       <form @submit.prevent="handleSubmit" class="mt-3">
