@@ -1,8 +1,8 @@
 <script setup lang="ts">
   import { ref, watch, onUnmounted, nextTick, computed } from 'vue';
   import { useRoute, useRouter } from 'vue-router';
-  import { useProductsStore } from '@/stores/productsStore.ts';
-  import { useCategoryStore } from '@/stores/categoryStore.ts';
+  import { useProductsStore } from '@/stores/productsStore';
+  import { useCategoryStore } from '@/stores/categoryStore';
   import ProductGrid from '@/components/category/ProductGrid.vue';
   import SortDropdown from '@/components/category/SortDropdown.vue';
   import SubcategoryPills from '@/components/category/SubcategoryPills.vue';
@@ -19,74 +19,94 @@
   const sentinel = ref<HTMLElement | null>(null);
   let observer: IntersectionObserver | null = null;
 
-  // flag to tell the watch "this URL change came from scroll, don't re-fetch from scratch"
-  let isInternalUpdate = false;
+  // Flag to stop infinite scroll URL pushes from re-triggering initial load
+  let isInternalScroll = false;
 
-  const loadInitialData = async () => {
+  // 1. Fetch Category Info (Only when the SLUG changes)
+  const loadCategoryDetails = async (slug: string) => {
+    if (!slug) return;
+    await Promise.all([
+      categoryStore.fetchCategoryBySlug(slug),
+      categoryStore.fetchCategoryChildren(slug),
+    ]);
+  };
+
+  // 2. Fetch Initial Products (When slug, search, sort, or page changes)
+  const loadProductData = async () => {
     const slug = route.params.slug as string;
     const search = route.query.search as string | undefined;
     const sort = (route.query.sort as string) || 'recommend';
     const page = Number(route.query.page) || 1;
 
-    await Promise.all([
-      categoryStore.fetchCategoryBySlug(slug),
-      categoryStore.fetchCategoryChildren(slug),
-      productStore.fetchProductsByCategory(slug, {
-        sort,
-        page: String(page),
-        ...(search ? { search } : {}),
-      }),
-    ]);
+    await productStore.fetchProductsByCategory(slug, {
+      sort,
+      page: String(page),
+      ...(search ? { search } : {}),
+    });
   };
 
+  // 3. Infinite Scroll Page Loader
   const loadNextPage = async () => {
     if (productStore.loadingMore || !productStore.pagination?.hasNextPage) return;
+    
     const slug = route.params.slug as string;
     const search = route.query.search as string | undefined;
 
     currentPage.value += 1;
+    isInternalScroll = true; 
 
-    isInternalUpdate = true; 
-    router.replace({
+    // Update route query without triggering initial fetch
+    await router.replace({
       query: { ...route.query, page: String(currentPage.value) },
     });
-    setTimeout(async () => {
-      await productStore.fetchMoreProductByCategory(slug, {
-        sort: currentSort.value,
-        page: String(currentPage.value),
-        ...(search ? { search } : {}),
-      });
-    }, 300);
+
+    await productStore.fetchMoreProductByCategory(slug, {
+      sort: currentSort.value,
+      page: String(currentPage.value),
+      ...(search ? { search } : {}),
+    });
+
+    isInternalScroll = false;
   };
 
-  function setupObserver() {
+  const setupObserver = () => {
     observer?.disconnect();
 
-    observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]?.isIntersecting) {
-          loadNextPage();
-        }
-      },
-    );
+    observer = new IntersectionObserver((entries) => {
+      if (entries[0]?.isIntersecting) {
+        loadNextPage();
+      }
+    });
 
     if (sentinel.value) {
       observer.observe(sentinel.value);
     }
-  }
+  };
 
+  // ✅ WATCHER 1: Category Info (Runs ONLY when category slug changes)
   watch(
-    () => [route.params.slug, route.query.search, route.query.sort],
-    () => {
-      if (isInternalUpdate) {
-        isInternalUpdate = false; 
-        return;
+    () => route.params.slug,
+    (newSlug) => {
+      if (newSlug) {
+        loadCategoryDetails(newSlug as string);
       }
-      loadInitialData();
     },
     { immediate: true },
   );
 
+  // ✅ WATCHER 2: Product List (Runs on filters, search, or category changes)
+  watch(
+    () => [route.params.slug, route.query.search, route.query.sort],
+    () => {
+      if (isInternalScroll) return; // Skip fetch if triggered by infinite scroll
+      
+      currentPage.value = Number(route.query.page) || 1;
+      loadProductData();
+    },
+    { immediate: true },
+  );
+
+  // Setup observer once loading completes
   watch(
     () => categoryStore.loading || productStore.loading,
     async (isLoading) => {
@@ -97,9 +117,9 @@
     },
   );
 
+  // Sync Sort Dropdown with Router
   watch(currentSort, (newSort) => {
     if (newSort !== route.query.sort) {
-      isInternalUpdate = false; 
       router.replace({ query: { ...route.query, sort: newSort, page: '1' } });
     }
   });
@@ -149,4 +169,3 @@
     </div>
   </div>
 </template>
-

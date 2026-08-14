@@ -33,10 +33,11 @@ export const getAllProducts = asyncHandler(
 
 export const getProductById = asyncHandler(async(req: Request<{ id: string }>, res: Response, next: NextFunction): Promise<void> => {
   const { id } = req.params;
+  console.log(id);
   const reviewPage = Math.max(1, Number(req.query.reviewPage) || 1);
   const reviewLimit = 10;
 
-  const product = await ProductModel.findOne(({ _id: id, isActive: true })).populate('categoryId', 'name slug').lean();
+  const product = await ProductModel.findOne(({ _id: id, status: 'active' })).populate('categoryId', 'name slug').lean();
   if(!product) {
     return next(new AppError('Product not found', 404));
   }

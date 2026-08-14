@@ -85,7 +85,7 @@
                         </RouterLink>
                     </li>
                         <li v-for="cat in categoryStore.topLevelCategories" :key="cat._id">
-                            <RouterLink :to="`/category/${cat.slug}`" class="text-sm cursor-pointer flex gap-2 hover:underline dark:text-gray-200 text-gray-700 hover:text-gray-500 transition-colors">
+                            <RouterLink :to="`/products/category/${cat.slug}`" class="text-sm cursor-pointer flex gap-2 hover:underline dark:text-gray-200 text-gray-700 hover:text-gray-500 transition-colors">
                             <i :class="getCategoryIcon(cat.slug)"></i>
                             <span>{{ cat.name }}</span>
                             </RouterLink>

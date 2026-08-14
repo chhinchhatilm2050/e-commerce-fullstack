@@ -60,7 +60,7 @@
         <RouterLink
           v-if="seeMoreLink"
           :to="seeMoreLink"
-          class="text-sm font-semibold  hidden sm:inline-flex subCategory-button"
+          class="text-sm font-medium hidden sm:inline-flex subCategory-button"
         >
           SEE MORE
         </RouterLink>
