@@ -58,7 +58,7 @@
                         </RouterLink>
                     </li>
                     <li v-for="cat in categoryStore.topLevelCategories" :key="cat._id">
-                       <RouterLink :to="`/category/${cat.slug}`" @click="close"
+                       <RouterLink :to="`/products/category/${cat.slug}`" @click="close"
                             class="flex items-center gap-2 text-[16px] md:text-[17px] px-4 py-3 rounded-sm font-medium hover:bg-gray-100 text-gray-700 dark:text-gray-300 dark:hover:bg-surface-100 transition-colors cursor-pointer"
                             active-class="bg-gray-200 dark:bg-surface-100"
                         >

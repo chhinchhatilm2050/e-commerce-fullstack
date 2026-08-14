@@ -7,6 +7,9 @@ const VerifyEmailView = () => import('@/views/auth/VerifyEmailView.vue');
 const ForgetPasswordView = () => import('@/views/auth/ForgetPasswordView.vue');
 const CategoryPage = () => import('@/views/CategoryPage.vue');
 const SerchPageResult = () => import('@/views/SearchResultsPage.vue');
+const ProductDetail = () => import('@/views/ProductDetailPageView.vue');
+const CustomerServiceView = () => import('@/views/feature/CustomerServiceView.vue');
+const NotFoundPageView = () => import('@/views/NotFoundView.vue');
 
 const routes: RouteRecordRaw[] = [
   {
@@ -40,7 +43,7 @@ const routes: RouteRecordRaw[] = [
     meta: { title: 'ChhatStore - Home', guestOnly: true },
   },
   {
-    path: '/category/:slug',
+    path: '/products/category/:slug',
     name: 'category',
     component: CategoryPage,
     meta: { title: 'ChhatStore - Category', guestOnly: true },
@@ -50,6 +53,30 @@ const routes: RouteRecordRaw[] = [
     name: 'search',
     component: SerchPageResult,
     meta: { title: 'ChhatStore - Category', guestOnly: true },
+  },
+  {
+    path: '/products/:id',
+    name: 'productDetail',
+    component: ProductDetail,
+    meta: { title: 'ChhatStore - Category', guestOnly: true },
+  },
+  {
+    path: '/category/:categorySlug/products/:id',
+    name: 'productDetailInCategory',
+    component: ProductDetail,
+    meta: { title: 'ChhatStore - Product Detail' },
+  },
+  {
+    path: '/support',
+    name: 'CustomerServiceView',
+    component: CustomerServiceView,
+    meta: { title: 'ChhatStore - Product Detail' },
+  },
+  
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'notFound',
+    component: NotFoundPageView,
   },
 ];
 

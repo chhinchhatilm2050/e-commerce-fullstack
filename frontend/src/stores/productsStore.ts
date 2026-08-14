@@ -16,23 +16,31 @@ export const useProductsStore = defineStore('products', () => {
   const reviews = ref<IReview[]>([]);
   const reviewPagination = ref<IPagination | null>(null);
   const pagination = ref<IPagination | null>(null);
+
   const loading = ref<boolean>(false);
+  const loadingDetail = ref<boolean>(false);
+  const loadingMore = ref<boolean>(false);
+  const loadingRelated = ref<boolean>(false);
   const error = ref<string>('');
+
   const featureProducts = ref<IProduct[]>([]);
   const homeSections = ref<Record<string, IProduct[]>>({});
+  const relatedProducts = ref<IProduct[]>([]);
 
   const fetchProductsByCategory = async (slug: string, query: Record<string, string | number> = {}) => {
+    const params = new URLSearchParams(query as Record<string, string>).toString();
     loading.value = true;
     error.value = '';
     try {
-      const params = new URLSearchParams(query as Record<string, string>).toString();
       const { data } = await api.get<IProductListResponse>(`/products/category/${slug}?${params}`);
-      console.log(data);
+
       products.value = data.data;
       pagination.value = data.pagination;
       return true;
     } catch (err) {
-      error.value = axios.isAxiosError(err) ? err.response?.data?.message ?? 'Failed to load products' : 'Failed to load products';
+      error.value = axios.isAxiosError(err)
+        ? err.response?.data?.message ?? 'Failed to load products'
+        : 'Failed to load products';
       products.value = [];
       pagination.value = null;
       return false;
@@ -42,16 +50,20 @@ export const useProductsStore = defineStore('products', () => {
   };
 
   const fetchAllProducts = async (query: Record<string, string | number> = {}) => {
+    const params = new URLSearchParams(query as Record<string, string>).toString();
     loading.value = true;
     error.value = '';
+
     try {
-      const params = new URLSearchParams(query as Record<string, string>).toString();
       const { data } = await api.get<IProductListResponse>(`/products?${params}`);
+
       products.value = data.data;
       pagination.value = data.pagination;
       return true;
     } catch (err) {
-      error.value = axios.isAxiosError(err) ? err.response?.data?.message ?? 'Failed to load products' : 'Failed to load products';
+      error.value = axios.isAxiosError(err)
+        ? err.response?.data?.message ?? 'Failed to load products'
+        : 'Failed to load products';
       products.value = [];
       pagination.value = null;
       return false;
@@ -61,26 +73,28 @@ export const useProductsStore = defineStore('products', () => {
   };
 
   const fetchProductDetail = async (id: string, reviewPage = 1) => {
-    loading.value = true;
+    loadingDetail.value = true;
     error.value = '';
     try {
       const { data } = await api.get<IProductDetailResponse>(`/products/${id}?reviewPage=${reviewPage}`);
+
       currentProduct.value = data.data.product;
       reviews.value = data.data.reviews;
       reviewPagination.value = data.data.reviewPagination;
       return true;
     } catch (err) {
-      error.value = axios.isAxiosError(err) ? err.response?.data?.message ?? 'Failed to load product detail' : 'Failed to load product detail';
+      error.value = axios.isAxiosError(err)
+        ? err.response?.data?.message ?? 'Failed to load product detail'
+        : 'Failed to load product detail';
       currentProduct.value = null;
       reviews.value = [];
       reviewPagination.value = null;
       return false;
     } finally {
-      loading.value = false;
+      loadingDetail.value = false;
     }
   };
 
-  const loadingMore = ref<boolean>(false);
   const fetchMoreProductByCategory = async (slug: string, query: Record<string, string | number> = {}) => {
     if (loadingMore.value) return false;
     loadingMore.value = true;
@@ -89,24 +103,7 @@ export const useProductsStore = defineStore('products', () => {
     try {
       const params = new URLSearchParams(query as Record<string, string>).toString();
       const { data } = await api.get<IProductListResponse>(`/products/category/${slug}?${params}`);
-      products.value.push(...data.data);
-      pagination.value = data.pagination;
-      return true;
-    } catch (err) {
-      error.value = axios.isAxiosError(err) ? err.response?.data?.message ?? 'Failed to load more products' : 'Failed to load more products';
-      return false;
-    } finally {
-      loadingMore.value = false;
-    }
-  };
 
-  // Fix: swap loading → loadingMore throughout fetchMoreAllProducts
-  const fetchMoreAllProducts = async (query: Record<string, string> = {}) => {
-    if (loadingMore.value) return false;
-    loadingMore.value = true;
-    try {
-      const params = new URLSearchParams(query).toString();
-      const { data } = await api.get<IProductListResponse>(`/products?${params}`);
       products.value.push(...data.data);
       pagination.value = data.pagination;
       return true;
@@ -120,25 +117,64 @@ export const useProductsStore = defineStore('products', () => {
     }
   };
 
-  const fetchFeaturenProducts = async () => {
+  const fetchMoreAllProducts = async (query: Record<string, string | number> = {}) => {
+    if (loadingMore.value) return false;
+    loadingMore.value = true;
+    error.value = '';
+
+    try {
+      const params = new URLSearchParams(query as Record<string, string>).toString();
+      const { data } = await api.get<IProductListResponse>(`/products?${params}`);
+
+      products.value.push(...data.data);
+      pagination.value = data.pagination;
+      return true;
+    } catch (err) {
+      error.value = axios.isAxiosError(err)
+        ? err.response?.data?.message ?? 'Failed to load more products'
+        : 'Failed to load more products';
+      return false;
+    } finally {
+      loadingMore.value = false;
+    }
+  };
+
+  const fetchFeaturedProducts = async (forceRefresh = false) => {
+    if (!forceRefresh && featureProducts.value.length > 0) return;
     try {
       const { data } = await api.get<IProductListResponse>('/products?minRating=4.7&sort=recommend&limit=20');
       featureProducts.value = data.data;
     } catch {
       featureProducts.value = [];
-    }
+    } 
   };
 
   const fetchProductSection = async (key: string, query: Record<string, string>, forceRefresh = false) => {
     if (!forceRefresh && (homeSections.value[key]?.length ?? 0) > 0) {
       return;
-    };
+    }
     try {
       const params = new URLSearchParams(query).toString();
       const { data } = await api.get<IProductListResponse>(`/products?${params}`);
       homeSections.value[key] = data.data;
     } catch {
       homeSections.value[key] = [];
+    }
+  };
+
+  const fetchRelatedProducts = async (categorySlug: string, currentProductId: string) => {
+    loadingRelated.value = true;
+    try {
+      const { data } = await api.get<IProductListResponse>(
+        `/products/category/${categorySlug}?limit=21`,
+      );
+      relatedProducts.value = data.data
+        .filter((product: IProduct) => product._id !== currentProductId)
+        .slice(0, 20);
+    } catch {
+      relatedProducts.value = [];
+    } finally {
+      loadingRelated.value = false;
     }
   };
 
@@ -150,15 +186,20 @@ export const useProductsStore = defineStore('products', () => {
     pagination,
     loading,
     loadingMore,
+    loadingDetail,
+    loadingRelated,
     error,
     featureProducts,
     homeSections,
+    relatedProducts,
     fetchProductsByCategory,
     fetchAllProducts,
     fetchProductDetail,
     fetchMoreProductByCategory,
     fetchMoreAllProducts,
-    fetchFeaturenProducts,
+    fetchFeaturedProducts,
     fetchProductSection,
+    fetchRelatedProducts,
   };
 });
+
