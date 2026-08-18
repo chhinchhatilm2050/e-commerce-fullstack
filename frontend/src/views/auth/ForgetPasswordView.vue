@@ -110,6 +110,7 @@
     :title="$t('register.verifyResetCode')"
     size="max-w-lg"
     :z-index="60"
+    cancel-text="" confirm-disabled confirm-text="" :show-footer="false"
   >
     <VerifyResetCodeView
       :email="email"
@@ -123,6 +124,7 @@
     :title="$t('login.resetPassword')"
     size="max-w-lg"
     :z-index="60"
+    cancel-text="" confirm-disabled confirm-text="" :show-footer="false"
   >
     <ResetPasswordView
       :email="email"
