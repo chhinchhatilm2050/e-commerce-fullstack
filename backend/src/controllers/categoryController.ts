@@ -8,6 +8,7 @@ import type { ICategory } from '../interface/icategory.js';
 import mongoose from 'mongoose';
 import { deleteFromCaloudinay } from '../utils/deleteFromCloudinary.js';
 import ProductModel from '../model/product.js';
+import QueryBuilder from '../utils/queryBuilder.js';
 
 export const getTopLevelCategories = asyncHandler(async( req: Request, res: Response, next: NextFunction): Promise<void> => {
   const categories = await CategoryModel.find({parentId: null, status: 'active'});
@@ -149,30 +150,45 @@ export const createCategory = asyncHandler(async(req: Request<unknown, unknown,I
   });
 });
 
-export const getAllCategoriesAdmin = asyncHandler(async(req: Request, res: Response, next: NextFunction): Promise<void> => {
-  const categories = await CategoryModel.find().sort({ createdAt: -1 });
-  if(!categories) {
-    return next(new AppError('No categorise found.', 404));
-  };
+export const getAllCategoriesAdmin = asyncHandler(
+  async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
+    const result = await new QueryBuilder(CategoryModel, req.query, {
+      isAdmin: true,
+      allowedStatuses: ['active', 'inactive'],
+      defaultStatus: 'active',
+    })
+      .filter()
+      .sort()
+      .paginate()
+      .execute();
 
-  res.status(200).json({
-    success: true,
-    data: {categories}
-  });
-});
+    res.status(200).json({
+      success: true,
+      data: result.data,
+      pagination: result.pagination,
+    });
+  }
+);
 
-export const getCategoryTreeAdmin = asyncHandler(async(req: Request, res: Response, next: NextFunction): Promise<void> => {
-  const categories = await CategoryModel.find();
-  const tree = buildTree(categories, null);
-  if(!tree) {
-    return next(new AppError('Cannot find CategoryTree', 404));
-  };
+export const getCategoryTreeAdmin = asyncHandler(
+  async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
+    const builder = new QueryBuilder(CategoryModel, req.query, {
+      isAdmin: true,
+      allowedStatuses: ['active', 'inactive'],
+      defaultStatus: 'active',
+    })
+      .filter()
+      .sort();
 
-  res.status(200).json({
-    success: true,
-    data: { tree }
-  });
-});
+    const categories = await builder.getQuery().exec();
+    const tree = buildTree(categories, null);
+
+    res.status(200).json({
+      success: true,
+      data: { tree },
+    });
+  }
+);
 
 export const getCategoryById = asyncHandler(async(req: Request, res: Response, next: NextFunction): Promise<void> => {
   const { id } = req.params;

@@ -81,7 +81,7 @@
       <div class="grid grid-cols-2 md:grid-cols-4 gap-6 animate-slide-up" style="animation-delay:0.5s">
         <RouterLink
           v-for="cat in categoryStore.topLevelCategories"
-          :key="cat._id" :to="`/category/${cat.slug}`"
+          :key="cat._id" :to="`/products/category/${cat.slug}`"
           class="group relative overflow-hidden aspect-[3/3] block"
         >
           <img :src="cat.image" :alt="cat.name" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">

@@ -3,7 +3,6 @@ import { CODE_EXPIRY_MINUTES, RESET_CODE_EXPIRY_MINUTES } from './verificationCo
 import AppError from './appError.js';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-
 export const sendVerificationEmail = async(email: string, code: string): Promise<void> => {
   const { error } = await resend.emails.send({
     from: process.env.MAIL_FROM ?? 'onboarding@resend.dev',
