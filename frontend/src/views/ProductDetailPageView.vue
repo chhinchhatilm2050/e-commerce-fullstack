@@ -2,20 +2,30 @@
   import { ref, watch, computed } from 'vue';
   import { useRoute, useRouter } from 'vue-router';
   import { useProductsStore } from '@/stores/productsStore.js';
+  import { useReviewStore } from '@/stores/reviewStore.js'; // Adjust path as needed
   import ProductImageGallery from '@/components/products/ProductImageGallery.vue';
   import ProductSpecification from '@/components/products/ProductSpecification.vue';
   import ProductRatingSummary from '@/components/products/ProductRatingSummary.vue';
   import TopLoader from '@/components/common/TopLoader.vue';
   import ProductSlider from '@/components/products/ProductSlider.vue';
+  import ProductReview from '@/components/products/ProductReview.vue';
+  import ProductReviewList from '@/components/products/ProductReviewList.vue';
 
   const route = useRoute();
   const router = useRouter();
   const productStore = useProductsStore();
+  const reviewStore = useReviewStore();
 
   const quantity = ref(1);
   const selectedSize = ref<string | null>(null);
   const selectedColor = ref<string | null>(null);
   const openSection = ref<'description' | 'specification' | null>('description');
+  const isReviewModelOpen = ref<boolean>(false);
+  const page = ref<number>(1);
+
+  const openReviewModel = () => {
+    isReviewModelOpen.value = true;
+  };
 
   const categorySlug = computed(() => {
     const cat = productStore.currentProduct?.categoryId;
@@ -28,8 +38,9 @@
     await productStore.fetchProductDetail(id);
 
     if (productStore.currentProduct) {
-      const slug = categorySlug.value;
+      reviewStore.fetchReview(id, page.value);
 
+      const slug = categorySlug.value;
       if (slug) {
         await productStore.fetchRelatedProducts(categorySlug.value, id);
       }
@@ -41,7 +52,6 @@
         });
       }
     }
-    
   };
 
   watch(() => route.params.id, loadProduct, { immediate: true });
@@ -74,40 +84,19 @@
     selectedColor.value = colors[0] ?? null;
   }, { immediate: true });
 
-  const selectSize = (size: string) => {
-    selectedSize.value = size;
-  };
-
-  const selectColor = (color: string) => {
-    selectedColor.value = color;
-  };
-
+  const selectSize = (size: string) => { selectedSize.value = size; };
+  const selectColor = (color: string) => { selectedColor.value = color; };
   const toggleSection = (section: 'description' | 'specification') => {
     openSection.value = openSection.value === section ? null : section;
   };
-
   const increaseQty = () => {
-    if (product.value && quantity.value < product.value.stock) {
-      quantity.value++;
-    }
+    if (product.value && quantity.value < product.value.stock) quantity.value++;
   };
-
   const decreaseQty = () => {
-    if (quantity.value > 1) {
-      quantity.value--;
-    }
+    if (quantity.value > 1) quantity.value--;
   };
-
   function handleAddToCart() {
     if (!product.value) return;
-
-    // pass the selected variant info along, once your cart store exists
-    // const payload = {
-    //   productId: product.value._id,
-    //   quantity: quantity.value,
-    //   size: selectedSize.value,
-    //   color: selectedColor.value,
-    // };
   }
 </script>
 
@@ -140,7 +129,6 @@
 
         <div class="mt-3 flex justify-between">
           <ProductRatingSummary :rating-avg="product.ratingAvg" :rating-count="product.ratingCount" />
-          <button class="subCategory-button font-medium flex justify-center gap-1 items-center"><span><i class="ri-star-half-line"></i></span><span>Review</span></button>
         </div>
 
         <p class="mt-4 text-sm" :class="product.stock > 0 ? 'text-black/80 dark:text-white/80' : 'text-red-500'">
@@ -237,6 +225,13 @@
       </div>
     </div>
   </div>
+
+  <ProductReviewList
+    v-if="product"
+    :productId="product._id"
+    @open-review-modal="openReviewModel"
+  />
+
   <div>
     <ProductSlider 
       :products="productStore.relatedProducts || []"
@@ -245,4 +240,9 @@
       :see-more-link="`/products/category/${categorySlug}`"
     />
   </div>
+  <ProductReview
+    v-if="product"
+    v-model="isReviewModelOpen"
+    :product="product"
+  />
 </template>

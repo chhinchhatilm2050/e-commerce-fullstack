@@ -43,9 +43,8 @@
     }
   }, { immediate: true });
 </script>
-
 <template>
-  <BaseDialog v-model="open" :title="isLogin ? $t('login.login') : $t('register.siginup')" size="max-w-lg">
+  <BaseDialog v-model="open" :title="isLogin ? $t('login.login') : $t('register.siginup')" size="max-w-lg" cancel-text="" confirm-disabled confirm-text="" :show-footer="false">
     <LoginView
       v-if="isLogin"
       @go-reginster="isLogin = false"
@@ -59,7 +58,7 @@
       @go-verify="(email) => { pendingEmail = email; showVerify = true}" 
     />
   </BaseDialog>
-  <BaseDialog v-model="showVerify" :title="$t('register.verifyEmail')" size="max-w-lg" :z-index="60">
+  <BaseDialog v-model="showVerify" :title="$t('register.verifyEmail')" size="max-w-lg" :z-index="60" cancel-text="" confirm-disabled confirm-text="" :show-footer="false">
     <VerifyEmailView :email = "pendingEmail" @close="showVerify = false" @go-login="isLogin = true"/>
   </BaseDialog>
 </template>

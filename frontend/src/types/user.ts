@@ -1,6 +1,6 @@
 
 export interface User {
-  id: number;
+  _id: string;
   firstName: string;
   lastName: string;
   gender: 'male' | 'female' | 'other' | null;

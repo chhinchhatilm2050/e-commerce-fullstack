@@ -6,14 +6,24 @@
     title?: string,
     size?: string,
     zIndex?: number,
+    cancelText: string,
+    confirmText: string,
+    confirmDisabled: boolean,
+    showFooter: boolean,
   }>(), {
     title: '',
     size: 'max-w-md',
     zIndex: 50,
+    cancelText: 'Cancel',
+    confirmText: 'Confirm',
+    confirmDisabled: false,
+    showFooter: false,
   });
 
   defineEmits<{
-    'update:modelValue': [value: boolean]
+    'update:modelValue': [value: boolean];
+    'confirm' : [];
+    'cancel': [];
   }>();
 
   watchEffect(() => {
@@ -54,6 +64,26 @@
         <div class="text-gray-600 text-sm">
           <slot />
         </div>
+
+        <div v-if="showFooter" class="flex justify-end gap-2 mt-6">
+          <slot name="footer">
+            <button
+              class="subCategory-button px-3 text-red-700"
+              @click="$emit('cancel')"
+            >
+              {{ cancelText }}
+            </button>
+            <button
+              :disabled="confirmDisabled"
+              class="subCategory-button px-3
+                    transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              @click="$emit('confirm')"
+            >
+              {{ confirmText }}
+            </button>
+          </slot>
+        </div>
+
       </div>
     </div>
   </Teleport>
