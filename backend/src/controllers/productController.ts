@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import asyncHandler from 'express-async-handler';
 import ProductModel from '../model/product.js';
-import ReviewModel from '../model/review.js';
 import { getAllDescendantIds } from '../utils/categoryTree.js';
 import { uploadTopCloudinary } from '../utils/uploadTocloudinary.js';
 import { deleteFromCaloudinay } from '../utils/deleteFromCloudinary.js';
@@ -12,12 +11,13 @@ import { CategoryModel } from '../model/category.js';
 
 export const getAllProducts = asyncHandler(
   async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
+    const isAdmin = req.user?.role === 'admin';
     let result;
 
     if (QueryBuilder.isDiscountSort(req.query.sort)) {
-      result = await QueryBuilder.executeDiscountSort(ProductModel, req.query);
+      result = await QueryBuilder.executeDiscountSort(ProductModel, req.query, { isAdmin });
     } else {
-      result = await new QueryBuilder(ProductModel, req.query)
+      result = await new QueryBuilder(ProductModel, req.query, { isAdmin })
         .filter()
         .sort()
         .paginate()
@@ -26,44 +26,25 @@ export const getAllProducts = asyncHandler(
 
     res.status(200).json({
       success: true,
-      ...result,
+      data: result.data,
+      pagination: result.pagination,
     });
   }
 );
 
 export const getProductById = asyncHandler(async(req: Request<{ id: string }>, res: Response, next: NextFunction): Promise<void> => {
   const { id } = req.params;
-  console.log(id);
-  const reviewPage = Math.max(1, Number(req.query.reviewPage) || 1);
-  const reviewLimit = 10;
 
-  const product = await ProductModel.findOne(({ _id: id, status: 'active' })).populate('categoryId', 'name slug').lean();
+  const product = await ProductModel.findOne(({ _id: id })).populate('categoryId', 'name slug').lean();
   if(!product) {
     return next(new AppError('Product not found', 404));
   }
 
-  const [ review, totalReviews ] = await Promise.all([
-    ReviewModel.find({ productId: id })
-      .populate('userId', 'firstName, lastName avatar')
-      .sort('-createdAt')
-      .skip((reviewPage - 1) * reviewLimit)
-      .limit(reviewLimit)
-      .lean(),
-    ReviewModel.countDocuments({ productId: id }),
-  ]);
-
   res.status(200).json({
     success: true,
     data: {
-      product,
-      review,
-      reviewPagination: {
-        total: totalReviews,
-        page: reviewPage,
-        limit: reviewLimit,
-        totalPage: Math.ceil(totalReviews / reviewLimit) || 1,
-      },
-    },
+      product
+    }
   });
 });
 
@@ -157,15 +138,27 @@ export const createProduct = asyncHandler(async(req: Request<unknown, unknown, C
   });
 });
 
-export const getAllProductsAdmin = asyncHandler(async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
-  const result = await new QueryBuilder(ProductModel, req.query)
-    .filter()
-    .sort()
-    .paginate()
-    .execute();
-  res.status(200).json({ success: true, ...result });
-});
+export const getAllProductsAdmin = asyncHandler(
+  async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
+    let result;
 
+    if (QueryBuilder.isDiscountSort(req.query.sort)) {
+      result = await QueryBuilder.executeDiscountSort(ProductModel, req.query, { isAdmin: true });
+    } else {
+      result = await new QueryBuilder(ProductModel, req.query, { isAdmin: true })
+        .filter()
+        .sort()
+        .paginate()
+        .execute();
+    }
+
+    res.status(200).json({
+      success: true,
+      data: result.data,
+      pagination: result.pagination,
+    });
+  }
+);
 export const getProductByIdAdmin = asyncHandler(async (req: Request<{ id: string }>,res: Response, next: NextFunction): Promise<void> => {
   const { id } = req.params;
   const product = await ProductModel.findById(id).populate('categoryId', 'name slug').lean();

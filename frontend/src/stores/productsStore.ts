@@ -4,7 +4,6 @@ import axios from 'axios';
 import api from '@/composables/useFetch.js';
 import type {
   IProduct,
-  IReview,
   IPagination,
   IProductListResponse,
   IProductDetailResponse,
@@ -13,8 +12,6 @@ import type {
 export const useProductsStore = defineStore('products', () => {
   const products = ref<IProduct[]>([]);
   const currentProduct = ref<IProduct | null>(null);
-  const reviews = ref<IReview[]>([]);
-  const reviewPagination = ref<IPagination | null>(null);
   const pagination = ref<IPagination | null>(null);
 
   const loading = ref<boolean>(false);
@@ -72,23 +69,19 @@ export const useProductsStore = defineStore('products', () => {
     }
   };
 
-  const fetchProductDetail = async (id: string, reviewPage = 1) => {
+  const fetchProductDetail = async (id: string) => {
     loadingDetail.value = true;
     error.value = '';
     try {
-      const { data } = await api.get<IProductDetailResponse>(`/products/${id}?reviewPage=${reviewPage}`);
+      const { data } = await api.get<IProductDetailResponse>(`/products/${id}`);
 
       currentProduct.value = data.data.product;
-      reviews.value = data.data.reviews;
-      reviewPagination.value = data.data.reviewPagination;
       return true;
     } catch (err) {
       error.value = axios.isAxiosError(err)
         ? err.response?.data?.message ?? 'Failed to load product detail'
         : 'Failed to load product detail';
       currentProduct.value = null;
-      reviews.value = [];
-      reviewPagination.value = null;
       return false;
     } finally {
       loadingDetail.value = false;
@@ -157,8 +150,10 @@ export const useProductsStore = defineStore('products', () => {
       const params = new URLSearchParams(query).toString();
       const { data } = await api.get<IProductListResponse>(`/products?${params}`);
       homeSections.value[key] = data.data;
+      return true;
     } catch {
       homeSections.value[key] = [];
+      return false;
     }
   };
 
@@ -171,8 +166,10 @@ export const useProductsStore = defineStore('products', () => {
       relatedProducts.value = data.data
         .filter((product: IProduct) => product._id !== currentProductId)
         .slice(0, 20);
+      return true;
     } catch {
       relatedProducts.value = [];
+      return false;
     } finally {
       loadingRelated.value = false;
     }
@@ -181,8 +178,6 @@ export const useProductsStore = defineStore('products', () => {
   return {
     products,
     currentProduct,
-    reviews,
-    reviewPagination,
     pagination,
     loading,
     loadingMore,

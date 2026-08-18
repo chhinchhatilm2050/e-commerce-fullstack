@@ -15,7 +15,7 @@ const reviewSchema = new mongoose.Schema<IReview, IReviewModel>({
   },
   rating: {
     type: Number,
-    required: true,
+    // required: true,
     min: 1,
     max: 5,
   },
@@ -25,6 +25,14 @@ const reviewSchema = new mongoose.Schema<IReview, IReviewModel>({
     default: '',
     maxlength: 500,
   },
+  images: [
+    {
+      url: { type: String, required: true },
+      publicId: { type: String, required: true },
+      isPrimary: { type: Boolean, default: false },
+      order: { type: Number, default: 0 },
+    }
+  ],
   verifiedPurchase: {
     type: Boolean,
     default: false,

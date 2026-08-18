@@ -20,16 +20,6 @@ export interface IProduct {
   status: 'draft' | 'active' | 'out_of_stock';
 }
 
-export interface IReview {
-  _id: string;
-  productId: string;
-  userId: { firstName: string; lastName: string; avatar?: string };
-  rating: number;
-  comment?: string;
-  verifiedPurchase: boolean;
-  createdAt: string;
-}
-
 export interface IPagination {
   total: number;
   page: number;
@@ -49,7 +39,6 @@ export interface IProductDetailResponse {
   success: boolean;
   data: {
     product: IProduct;
-    reviews: IReview[];
     reviewPagination: IPagination;
   };
 }

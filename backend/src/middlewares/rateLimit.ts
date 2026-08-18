@@ -24,14 +24,14 @@ const authLimiter = rateLimit({
   },
 });
 const registerLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 5,
+  windowMs: 10 * 60 * 1000,
+  max: 2,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
     status: 'fail',
     code: 'RATE_LIMIT_EXCEEDED',
-    message: 'Too many registration requests, please try again after 15 minutes.',
+    message: 'Too many registration requests, please try again after 10 minutes.',
   },
 });
 

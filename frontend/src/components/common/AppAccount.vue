@@ -51,6 +51,7 @@
     :title="$t('profile.account')"
     size="max-w-md"
     :z-index="60"
+    cancel-text="" confirm-disabled confirm-text="" :show-footer="false"
   >
     <hr class="border-gray-100 dark:border-surface-100 my-1" />
     <div class="relative w-full max-w-md animate-slide-up">
@@ -170,6 +171,7 @@
     :title="$t('profile.myProfile')"
     size="max-w-md"
     :z-index="60"
+    cancel-text="" confirm-disabled confirm-text="" :show-footer="false"
   >
     <ProfileView @close="showProfile = false" />
   </BaseDialog>
@@ -178,6 +180,7 @@
     :title="$t('profile.myProfile')"
     size="max-w-md"
     :z-index="60"
+    cancel-text="" confirm-disabled confirm-text="" :show-footer="false"
   >
     <EditeProfileView @close="showEditProfile = false" />
   </BaseDialog>

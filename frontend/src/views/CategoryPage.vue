@@ -22,7 +22,6 @@
   // Flag to stop infinite scroll URL pushes from re-triggering initial load
   let isInternalScroll = false;
 
-  // 1. Fetch Category Info (Only when the SLUG changes)
   const loadCategoryDetails = async (slug: string) => {
     if (!slug) return;
     await Promise.all([
@@ -31,7 +30,7 @@
     ]);
   };
 
-  // 2. Fetch Initial Products (When slug, search, sort, or page changes)
+  // Fetch Initial Products (When slug, search, sort, or page changes)
   const loadProductData = async () => {
     const slug = route.params.slug as string;
     const search = route.query.search as string | undefined;
@@ -45,7 +44,6 @@
     });
   };
 
-  // 3. Infinite Scroll Page Loader
   const loadNextPage = async () => {
     if (productStore.loadingMore || !productStore.pagination?.hasNextPage) return;
     
@@ -55,7 +53,6 @@
     currentPage.value += 1;
     isInternalScroll = true; 
 
-    // Update route query without triggering initial fetch
     await router.replace({
       query: { ...route.query, page: String(currentPage.value) },
     });
@@ -83,7 +80,6 @@
     }
   };
 
-  // ✅ WATCHER 1: Category Info (Runs ONLY when category slug changes)
   watch(
     () => route.params.slug,
     (newSlug) => {
@@ -94,7 +90,6 @@
     { immediate: true },
   );
 
-  // ✅ WATCHER 2: Product List (Runs on filters, search, or category changes)
   watch(
     () => [route.params.slug, route.query.search, route.query.sort],
     () => {
@@ -117,7 +112,6 @@
     },
   );
 
-  // Sync Sort Dropdown with Router
   watch(currentSort, (newSort) => {
     if (newSort !== route.query.sort) {
       router.replace({ query: { ...route.query, sort: newSort, page: '1' } });

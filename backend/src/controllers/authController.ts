@@ -92,8 +92,10 @@ export const register = asyncHandler(
     await user.save();
 
     try {
+      console.log(user.email, code);
       await sendVerificationEmail(user.email, code);
-    } catch {
+    } catch (err) {
+      console.error('DEBUG: Exact Email Error ->', err);
       user.verificationCodeHash = null;
       user.verificationCodeExpires = null;
       await user.save({ validateBeforeSave: false });
