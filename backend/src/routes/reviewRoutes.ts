@@ -20,7 +20,7 @@ const reviewRouter = Router();
 
 reviewRouter.get('/:id', productIdValidator, getProductReview);
 reviewRouter.use(authenticate);
-reviewRouter.post('/:id', creaateReviewValidator, upload.array('images', 3), createReview);
+reviewRouter.post('/:id', upload.array('images', 3), creaateReviewValidator, createReview);
 reviewRouter.put('/:reviewId', updateReviewValidator, checkOwnership(ReviewModel, 'userId', 'reviewId'),upload.array('images', 3), updateReview);
 reviewRouter.delete('/:reviewId', reviewIdValidator, checkOwnership(ReviewModel, 'userId', 'reviewId'), deleteReview);
 

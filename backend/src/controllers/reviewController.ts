@@ -8,27 +8,6 @@ import type { IProductImage } from '../interface/iproducts.js';
 import { uploadTopCloudinary } from '../utils/uploadTocloudinary.js';
 import { deleteFromCaloudinay } from '../utils/deleteFromCloudinary.js';
 
-export const getProductById = asyncHandler(
-  async (req: Request<{ id: string }>, res: Response, next: NextFunction): Promise<void> => {
-    const { id } = req.params;
-
-    const product = await ProductModel.findById(id)
-      .populate('categoryId', 'name slug')
-      .lean();
-
-    if (!product) {
-      return next(new AppError('Product not found', 404));
-    }
-
-    res.status(200).json({
-      success: true,
-      data: {
-        product,
-      },
-    });
-  }
-);
-
 export const getProductReview = asyncHandler(
   async (
     req: Request<{ id: string }, { page?: string; limit?: string }>,
@@ -37,7 +16,7 @@ export const getProductReview = asyncHandler(
   ): Promise<void> => {
     const { id } = req.params;
     const page = Math.max(1, Number(req.query.page) || 1);
-    const limit = Math.min(50, Math.max(1, Number(req.query.limit) || 3));
+    const limit = Math.min(50, Math.max(1, Number(req.query.limit) || 5));
 
     const productExists = await ProductModel.exists({ _id: id });
     if (!productExists) {
@@ -75,9 +54,9 @@ export const getProductReview = asyncHandler(
 
 export const createReview = asyncHandler(async(req: Request<{ id: string }, unknown, { rating: number; comment?: string }>, res: Response, next: NextFunction): Promise<void> => {
   const { id } = req.params;
-  const { rating, comment } = req.body;
+  const { comment } = req.body;
   const userId = req.user!._id;
-
+  const rating = Number(req.body.rating);
   const product = await ProductModel.findById(id);
   if (!product) {
     return next(new AppError('Product not found', 404));
@@ -99,14 +78,14 @@ export const createReview = asyncHandler(async(req: Request<{ id: string }, unkn
       order: index
     }));
   }
-  // const existingReview = await ReviewModel.findOne({ productId: id, userId });
-  // if (existingReview) {
-  //   return next(new AppError('You already reviewed this product', 400));
-  // }
+  const existingReview = await ReviewModel.findOne({ productId: id, userId });
+  if (existingReview) {
+    return next(new AppError('You already reviewed this product', 400));
+  }
 
   // const verifiedPurchase = await checkVerifiedPurchase(userId, product._id);
 
-  const review = new ReviewModel({
+  const reviews = new ReviewModel({
     productId: id,
     userId,
     rating,
@@ -114,13 +93,13 @@ export const createReview = asyncHandler(async(req: Request<{ id: string }, unkn
     images
   });
 
-  await review.save();
+  await reviews.save();
   await ReviewModel.recalculateProductRating(product._id);
 
   res.status(201).json({
     success: true,
     message: 'Review added successfully',
-    data: { review },
+    data: { reviews },
   });
 }); 
 
@@ -161,7 +140,6 @@ export const updateReview = asyncHandler(async(req: Request<{ id: string; review
   res.status(200).json({
     success: true,
     message: 'Review updatted successfully',
-    data: { review },
   });
 });
 

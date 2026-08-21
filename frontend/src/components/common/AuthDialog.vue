@@ -8,13 +8,14 @@
 
   const props = withDefaults(defineProps<{
     modelValue: boolean
-    startRegister: boolean
+    startRegister?: boolean
   }>(), {
     startRegister: false,
   }); 
 
   const emit = defineEmits<{
-    'update:modelValue': [value: boolean]
+    'update:modelValue': [value: boolean],
+    'successLogin': [],
   }>();
 
   const open = computed<boolean>({
