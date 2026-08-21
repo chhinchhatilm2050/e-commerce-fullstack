@@ -4,54 +4,83 @@
   import TopLoader from '@/components/common/TopLoader.vue';
   import { useAuthStore } from '@/stores/authStore';
   import type { IReview } from '@/types/review';
+  import { useAlert } from '@/composables/useAlert.ts';
+  import ConfirmDialog from '../common/ConfirmDialog.vue';
+  import { useProductsStore } from '@/stores/productsStore.ts';
 
   const props = defineProps<{
     productId: string;
   }>();
 
   const emit = defineEmits<{
-    (e: 'open-review-modal'): void;
-    (e: 'edit-review', review: IReview): void; 
+    'open-review-modal': [];
+    'edit-review' : [review: IReview]; 
   }>();
 
   const reviewStore = useReviewStore();
   const authStore = useAuthStore();
+  const productStore = useProductsStore();
+  const { showAlert } = useAlert();
+  
   const currentUser = computed(() => authStore.currentUser?._id);
   const page = ref<number>(1);
-  const isOwnReview = (review: IReview) => {
-    if (!currentUser.value) return false;
-
-    const reviewUserId = typeof review.userId === 'object' 
-      ? (review.userId?._id) 
-      : review.userId;
-
-    return reviewUserId === currentUser.value;
-  };
   const deletingId = ref<string | null>(null);
 
-  const handleDelete = async (reviewId: string) => {
-    if (!confirm('Are you sure you want to delete this review?')) return;
+  const isOwnReview = (review: IReview) => {
+    if (!currentUser.value) return false;
+    const reviewUserId = typeof review.userId === 'object' 
+      ? review.userId?._id 
+      : review.userId;
+    return reviewUserId === currentUser.value;
+  };
 
-    deletingId.value = reviewId;
-    const success = await reviewStore.deleteReview(reviewId);
-    deletingId.value = null;
+  const hasUserReviewed = computed(() => {
+    if (!currentUser.value || !Array.isArray(reviewStore.reviews)) return false;
+    return reviewStore.reviews.some((review) => {
+      const reviewUserId = typeof review.userId === 'object' 
+        ? review.userId?._id 
+        : review.userId;
+      return reviewUserId === currentUser.value;
+    });
+  });
 
-    if (success) {
-      reviewStore.fetchReview(props.productId, page.value);
+  const showDeleteConfirm = ref(false);
+  const targetReviewId = ref<string | null>(null);
+  const openDeleteModal = (reviewId: string) => {
+    targetReviewId.value = reviewId;
+    showDeleteConfirm.value = true;
+  };
+
+  const confirmDelete = async () => {
+    if (!targetReviewId.value) return;
+    const result = await reviewStore.deleteReview(targetReviewId.value);
+    showDeleteConfirm.value = false;
+    if (result.success) {
+      if (reviewStore.reviews.length === 0 && page.value > 1) {
+        page.value -= 1;
+      }
+      await Promise.all([
+        productStore.fetchProductDetail(props.productId),
+        reviewStore.fetchReview(props.productId, page.value, true),
+      ]);
+      showAlert(result.message, { type: 'success' });
     }
+  };
+
+  const changePage = (newPage: number) => {
+    page.value = newPage;
+    reviewStore.fetchReview(props.productId, newPage);
   };
   watch(
     () => props.productId,
     (newId) => {
       if (newId) {
-        reviewStore.fetchReview(newId, page.value);
+        page.value = 1;
+        reviewStore.fetchReview(newId, 1);
       }
     },
     { immediate: true },
   );
-  const changePage = (page: number) => {
-    reviewStore.fetchReview(`${props.productId}`, page);
-  };
 </script>
 
 <template>
@@ -64,10 +93,19 @@
         </p>
       </div>
       <button 
+        :disabled="hasUserReviewed"
         @click="emit('open-review-modal')" 
-        class="subCategory-button gap-2 cursor-pointer"
+        class="subCategory-button gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed group relative"
       >
-        <i class="ri-edit-line"></i> Write a Review
+        <i :class="hasUserReviewed ? 'ri-checkbox-line' : ' ri-edit-line '"></i> 
+        {{ hasUserReviewed ? 'Reviewed' : 'Review' }}
+
+        <span 
+          v-if="hasUserReviewed"
+          class="absolute -top-8 left-1/2 -translate-x-1/2 hidden group-hover:block bg-black dark:bg-white text-white dark:text-black text-xs px-2 py-1 rounded shadow-md whitespace-nowrap z-10 pointer-events-none"
+        >
+          You have already reviewed this product
+        </span>
       </button>
     </div>
 
@@ -75,7 +113,7 @@
       <TopLoader :isLoading="reviewStore.loading" />
     </div>
 
-    <div v-else-if="!reviewStore.reviews.length" class="text-center py-12 dark:bg-white/5 bg-black/5  rounded-sm">
+    <div v-else-if="!reviewStore.reviews.length" class="text-center py-12 bg-black/2 shadow-md dark:bg-white/3  rounded-sm">
       <i class="ri-chat-1-line text-4xl text-black/50 dark:text-white/50"></i>
       <p class="mt-2 text-sm text-black/50 dark:text-white/50">No reviews yet. Be the first to review this product!</p>
     </div>
@@ -85,7 +123,7 @@
       <div 
         v-for="review in reviewStore.reviews" 
         :key="review._id" 
-        class="p-6 bg-black/5 dark:bg-white/5 rounded-sm space-y-3"
+        class="p-6 bg-black/2 shadow-md dark:bg-white/3 rounded-sm space-y-3"
       >
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
@@ -127,13 +165,21 @@
      
                  <!-- Delete -->
                  <button 
-                     @click="handleDelete(review._id)"
+                     @click="openDeleteModal(review._id)"
                      :disabled="deletingId === review._id"
                      class="text-xs font-medium text-red-600/80 hover:text-red-600 dark:text-red-400/80 dark:hover:text-red-400 transition flex items-center gap-1 cursor-pointer disabled:opacity-40"
                  >
                      <i :class="deletingId === review._id ? 'ri-loader-4-line animate-spin' : 'ri-delete-bin-line'"></i>
                      {{ deletingId === review._id ? 'Deleting...' : 'Delete' }}
                  </button>
+                 <ConfirmDialog
+                    :is-open="showDeleteConfirm"
+                    title="Delete Review"
+                    message="Are you sure you want to delete this review? This action cannot be reverce."
+                    :loading="reviewStore.deleteLoding"
+                    @confirm="confirmDelete"
+                    @cancel="showDeleteConfirm = false"
+                 />
             </div>
            </div>
         </div>
@@ -154,7 +200,7 @@
        
       <!-- Pagination -->
       <div 
-        v-if="reviewStore.reviewPagination && reviewStore.reviewPagination.total > 1" 
+        v-if="reviewStore.reviewPagination && reviewStore.reviewPagination.totalPage > 1" 
         class="flex items-center justify-center gap-4 pt-6"
       >
         <button 

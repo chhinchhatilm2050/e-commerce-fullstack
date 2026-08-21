@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { ref, reactive, onMounted } from 'vue';
   import { useAuthStore } from '@/stores/authStore.js';
-  import { useRouter } from 'vue-router';
+  import { useRouter, useRoute } from 'vue-router';
   import { useAlert } from '@/composables/useAlert.js';
   import { API_URL } from '@/composables/useFetch.js';
 
@@ -16,6 +16,7 @@
   const errors = reactive<Errors>({});
   const authStore = useAuthStore();
   const router = useRouter();
+  const route = useRoute();
   const { showAlert } = useAlert();
 
   const emailRegex: RegExp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -63,7 +64,10 @@
 
     const result = await authStore.login(email.value, password.value);
     if (result.success) {
-      router.push('/');
+      const redirectUrl = route.query.redirect as string;
+      if (redirectUrl) {
+        router.push(redirectUrl);
+      }
       emit('successLogin');
       showAlert(result.message, { type: 'success' });
     }

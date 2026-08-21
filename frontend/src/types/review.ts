@@ -13,8 +13,30 @@ export interface IReview {
 
 export interface IReviewRespone {
   success: boolean,
+  message: string,
   data : {
     reviews: IReview[];
     pagination: IPagination;
   }
 };
+
+export interface ICreateReview {
+  productId: string;
+  rating: number;
+  comment: string;
+  images: File[] ;
+  removeImageIds: string[];
+  _id?: string;
+}
+
+export interface IDeleteReview {
+  success: boolean;
+  message: string;
+}
+
+export interface IUpdateReview {
+  rating: number;
+  comment: string;
+  images: File[];
+  removeImageIds: string[];
+}

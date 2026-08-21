@@ -15,7 +15,7 @@
 </script>
 <template>
   <div class="container-xl px-8 py-8 animate-slide-up">
-    <div class="text-center mb-16">
+    <div class="text-center mb-10">
       <h1 class="text-4xl font-extrabold text-black/80 dark:text-white/80 tracking-tight">HOW CAN I HELP YOU?</h1>
       <p class="text-black/60 dark:text-white/60 mt-2 text-lg">Everything you need to know about shopping with CHHATStore.</p>
     </div>

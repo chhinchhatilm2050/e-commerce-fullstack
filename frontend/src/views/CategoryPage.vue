@@ -13,7 +13,7 @@
   const productStore = useProductsStore();
   const categoryStore = useCategoryStore();
 
-  const currentSort = ref((route.query.sort as string) || 'recommend');
+  const currentSort = ref('recommend');
   const currentPage = ref(Number(route.query.page) || 1);
 
   const sentinel = ref<HTMLElement | null>(null);
