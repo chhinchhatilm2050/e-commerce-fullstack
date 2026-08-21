@@ -62,7 +62,7 @@
           :to="seeMoreLink"
           class="text-sm font-medium hidden sm:inline-flex subCategory-button"
         >
-          SEE MORE
+          See More
         </RouterLink>
       </div>
 

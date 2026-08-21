@@ -2,31 +2,48 @@
   import { ref, watch, computed } from 'vue';
   import { useRoute, useRouter } from 'vue-router';
   import { useProductsStore } from '@/stores/productsStore.js';
-  import { useReviewStore } from '@/stores/reviewStore.js'; // Adjust path as needed
+  import { useReviewStore } from '@/stores/reviewStore.js'; 
   import ProductImageGallery from '@/components/products/ProductImageGallery.vue';
+  import { useAuthStore } from '@/stores/authStore';
   import ProductSpecification from '@/components/products/ProductSpecification.vue';
   import ProductRatingSummary from '@/components/products/ProductRatingSummary.vue';
   import TopLoader from '@/components/common/TopLoader.vue';
   import ProductSlider from '@/components/products/ProductSlider.vue';
   import ProductReview from '@/components/products/ProductReview.vue';
   import ProductReviewList from '@/components/products/ProductReviewList.vue';
+  import AuthDialog from '@/components/common/AuthDialog.vue';
+  import { useAlert } from '@/composables/useAlert';
+  import type { ICreateReview, IReview } from '@/types/review';
 
   const route = useRoute();
   const router = useRouter();
   const productStore = useProductsStore();
   const reviewStore = useReviewStore();
+  const authStore = useAuthStore();
+  const { showAlert } = useAlert();
 
   const quantity = ref(1);
   const selectedSize = ref<string | null>(null);
   const selectedColor = ref<string | null>(null);
   const openSection = ref<'description' | 'specification' | null>('description');
   const isReviewModelOpen = ref<boolean>(false);
+  const isAuthModelOpen = ref<boolean>(false);
   const page = ref<number>(1);
+  const editingReview = ref<IReview | null>(null);
 
   const openReviewModel = () => {
+    if (!authStore.isLoggedIn) {
+      isAuthModelOpen.value = true;
+      return;
+    }
+    editingReview.value = null;
     isReviewModelOpen.value = true;
   };
 
+  const handleAuthSuccess = () => {
+    isAuthModelOpen.value = false;
+    isReviewModelOpen.value = true; 
+  };
   const categorySlug = computed(() => {
     const cat = productStore.currentProduct?.categoryId;
     if (!cat) return '';
@@ -38,8 +55,6 @@
     await productStore.fetchProductDetail(id);
 
     if (productStore.currentProduct) {
-      reviewStore.fetchReview(id, page.value);
-
       const slug = categorySlug.value;
       if (slug) {
         await productStore.fetchRelatedProducts(categorySlug.value, id);
@@ -97,7 +112,38 @@
   };
   function handleAddToCart() {
     if (!product.value) return;
-  }
+  };
+
+  const handleReviewSubmit = async (payload: ICreateReview): Promise<void> => {
+    let result;
+    if (payload._id) {
+      result = await reviewStore.updateReview(payload._id, {
+        rating: payload.rating,
+        comment: payload.comment,
+        images: payload.images,
+        removeImageIds: payload.removeImageIds,
+      });
+    } else {
+      result = await reviewStore.createReview(payload);
+    }
+    if (result.success) {
+      isReviewModelOpen.value = false;
+      editingReview.value = null;
+      const currentId = route.params.id as string;
+      
+      await Promise.all([
+        productStore.fetchProductDetail(currentId),
+        reviewStore.fetchReview(currentId, page.value, true),
+      ]);
+      showAlert(result.message, { type: 'success' });
+    } else {
+      showAlert(result.message, { type: 'error' });
+    }
+  };
+  const handleEditReview = (review: IReview) => {
+    editingReview.value = review;
+    isReviewModelOpen.value = true;
+  };
 </script>
 
 <template >
@@ -230,19 +276,21 @@
     v-if="product"
     :productId="product._id"
     @open-review-modal="openReviewModel"
+    @edit-review="handleEditReview"
   />
 
-  <div>
-    <ProductSlider 
-      :products="productStore.relatedProducts || []"
-      title="Related Products"
-      icon="ri-chat-smile-line"
-      :see-more-link="`/products/category/${categorySlug}`"
-    />
-  </div>
+  <ProductSlider 
+    :products="productStore.relatedProducts || []"
+    title="Related Products"
+    icon="ri-chat-smile-line"
+    :see-more-link="`/products/category/${categorySlug}`"
+  />
   <ProductReview
     v-if="product"
     v-model="isReviewModelOpen"
     :product="product"
+    :editingReview="editingReview"
+    @submit-review="handleReviewSubmit"
   />
+  <AuthDialog v-model="isAuthModelOpen" @success-login="handleAuthSuccess" />
 </template>

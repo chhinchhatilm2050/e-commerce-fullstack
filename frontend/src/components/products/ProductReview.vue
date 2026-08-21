@@ -2,10 +2,14 @@
   import type { IProduct } from '@/types/product.ts';
   import BaseDialog from '../common/BaseDialog.vue';
   import { reactive, ref, computed, watch } from 'vue';
+  import type { ICreateReview, IReview } from '@/types/review.ts';
+  import { useAlert } from '@/composables/useAlert.ts';
+  import imageCompression from 'browser-image-compression';
 
   const props = defineProps<{
     product: IProduct;
     modelValue: boolean;
+    editingReview?: IReview | null;
   }>();
 
   const isOpen = computed({
@@ -15,23 +19,14 @@
 
   const emit = defineEmits<{
     'update:modelValue': [value: boolean];
-    'submit-review': [
-      payload: {
-        productId: string | undefined;
-        rating: number;
-        comment: string;
-        images: File[];
-      }
-    ];
-      
+    'submit-review': [payload: ICreateReview];
   }>();
 
   const hoverRating = ref<number>(0);
-  const imagePreview = ref<string[]>([]);
 
   interface ICommentForm {
     rating: number;
-    comment: string;
+    comment: string | undefined;
     images: File[];
   }
 
@@ -41,54 +36,106 @@
     images: [],
   });
 
+  const existingImages = ref<{ url: string; publicId: string }[]>([]);
+  const removeImageIds = ref<string[]>([]);
+  const newImagePreviews = ref<string[]>([]);
+  const addImgLoading = ref<boolean>(false);
+
   const ratingLabel = computed<string>(() => {
     const activeRating = hoverRating.value || form.rating;
     const labels = ['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'];
     return labels[activeRating] ?? '';
   });
 
-  const handleFileUpload = (event: Event) => {
+  const MAX_FILE_SIZE = 5 * 1024 * 1024; 
+  const { showAlert } = useAlert();
+
+  const handleFileUpload = async (event: Event) => {
     const target = event.target as HTMLInputElement;
     const files = Array.from(target.files || []);
-    const availableSlots = 3 - form.images.length;
+    const availableSlots = 3 - (existingImages.value.length + form.images.length);
     const filesToProcess = files.slice(0, availableSlots);
 
-    filesToProcess.forEach((file) => {
-      if (file.type.startsWith('image/')) {
-        form.images.push(file);
-        imagePreview.value.push(URL.createObjectURL(file));
+    const compressionOptions = {
+      maxSizeMB: 1,           
+      maxWidthOrHeight: 1200, 
+      useWebWorker: true,    
+    };
+
+    for (const file of filesToProcess) {
+      if (!file.type.startsWith('image/')) {
+        showAlert('Only image files are allowed', { type: 'error' });
+        continue;
       }
-    });
+
+      try {
+        addImgLoading.value = true;
+        const compressedFile = await imageCompression(file, compressionOptions);
+
+        // 2. Validate compressed file against your limit
+        if (compressedFile.size > MAX_FILE_SIZE) {
+          showAlert(`Image "${file.name}" exceeds the 5MB limit after compression.`, { type: 'error' });
+          continue;
+        }
+
+        // 3. Store compressed file and create preview
+        form.images.push(compressedFile);
+        newImagePreviews.value.push(URL.createObjectURL(compressedFile));
+        addImgLoading.value = false;
+      } catch {
+        showAlert(`Failed to upload image "${file.name}".`, { type: 'error' });
+      }
+    }
+    // Reset file input value so selecting the same file again works
+    target.value = '';
   };
 
-  const removeImage = (index: number) => {
-    URL.revokeObjectURL(imagePreview.value[index] || '');
-    imagePreview.value.splice(index, 1);
+  const removeExistingImage = (index: number) => {
+    const removed = existingImages.value.splice(index, 1)[0];
+    if (removed?.publicId) {
+      removeImageIds.value.push(removed.publicId);
+    }
+  };
+
+  const removeNewImage = (index: number) => {
+    URL.revokeObjectURL(newImagePreviews.value[index] || '');
+    newImagePreviews.value.splice(index, 1);
     form.images.splice(index, 1);
   };
 
   watch(
     () => props.modelValue,
-    (val) => {
-      if (val) {
-        form.rating = 0;
-        form.comment = '';
+    (isOpen) => {
+      if (isOpen) {
+        removeImageIds.value = [];
         form.images = [];
-        imagePreview.value.forEach((url) => URL.revokeObjectURL(url));
-        imagePreview.value = [];
-        hoverRating.value = 0;
+        // Clean up previous blob URLs before resetting
+        newImagePreviews.value.forEach((url) => URL.revokeObjectURL(url));
+        newImagePreviews.value = [];
+
+        if (props.editingReview) {
+          form.rating = props.editingReview.rating;
+          form.comment = props.editingReview.comment;
+          existingImages.value = props.editingReview.images ? [...props.editingReview.images] : [];
+        } else {
+          form.rating = 0;
+          form.comment = '';
+          existingImages.value = [];
+        }
       }
     },
   );
 
   const submitReview = () => {
-    if (!form.rating || !form.comment.trim()) return;
+    if (!form.rating || !form.comment?.trim()) return;
 
     emit('submit-review', {
-      productId: props.product?._id,
+      _id: props.editingReview?._id,
+      productId: props.product._id,
       rating: form.rating,
       comment: form.comment.trim(),
       images: form.images,
+      removeImageIds: removeImageIds.value,
     });
 
     emit('update:modelValue', false);
@@ -98,12 +145,12 @@
 <template>
   <BaseDialog
     v-model="isOpen"
-    :title="$t('review.review') || 'Write a Review'"
+    :title="editingReview ? 'Edit Review': 'Write a Review'"
     size="max-w-lg"
     :show-footer="true"
-    :cancel-text="$t('review.cancel') || 'Cancel'"
-    :confirm-text="$t('review.submit') || 'Submit Review'"
-    :confirm-disabled="!form.rating || !form.comment.trim()"
+    :cancel-text="'Cancel'"
+    :confirm-text="editingReview ? 'Update' : 'Confirm'"
+    :confirm-disabled="!form.rating || !form.comment?.trim()"
     @confirm="submitReview"
     @cancel="$emit('update:modelValue', false)"
   >
@@ -120,7 +167,7 @@
           <h4 class="font-semibold text-gray-900 dark:text-gray-100 text-sm truncate">
             {{ product?.name }}
           </h4>
-          <p v-if="product?.price" class="text-xs text-gray-500 dark:text-gray-400 mt-1 font-medium">
+          <p v-if="product?.price" class="text-xs text-red-600 mt-1 font-medium">
             US ${{ product?.price?.toFixed(2) }}
           </p>
         </div>
@@ -128,7 +175,7 @@
   
       <div class="mb-5">
         <label class="label mb-1 uppercase">
-          {{ $t('review.rating') || 'Overall Rating' }} <span class="text-rose-500">*</span>
+          {{ $t('review.rating') || 'Overall Rating' }} <span class="text-red-600">*</span>
         </label>
         <div class="flex items-center gap-1.5">
           <div class="flex gap-1" @mouseleave="hoverRating = 0">
@@ -162,7 +209,7 @@
   
       <div class="mb-5">
         <label class="label mb-1 uppercase">
-          {{ $t('review.comment') || 'Your Review' }} <span class="text-rose-500">*</span>
+          {{ $t('review.comment') || 'Your Review' }} <span class="text-red-600">*</span>
         </label>
         <textarea
           v-model="form.comment"
@@ -174,41 +221,66 @@
       </div>
   
       <div class="mb-2">
-        <label class="label uppercase mb-2">
-          Add Photos <span class="text-black/50 dark:text-white/50 font-normal lowercase">(optional, max 3)</span>
-        </label>
-  
-        <div class="flex flex-wrap gap-3">
-          <div
-            v-for="(img, index) in imagePreview"
-            :key="index"
-            class="relative w-16 h-16 rounded-sm overflow-hidden border border-gray-200 dark:border-white/10 group "
+      <label class="label uppercase mb-2">
+        Add Photos <span class="text-black/50 dark:text-white/50 font-normal lowercase">(optional, max 3)</span>
+      </label>
+
+      <div class="flex flex-wrap gap-3">
+        <!-- Render existing images -->
+        <div
+          v-for="(img, index) in existingImages"
+          :key="img.publicId || index"
+          class="relative w-16 h-16 rounded-sm overflow-hidden border border-gray-200 dark:border-white/10 group"
+        >
+          <img :src="img.url" class="w-full h-full object-cover" />
+          <button
+            type="button"
+            class="absolute inset-0 cursor-pointer bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+            @click="removeExistingImage(index)"
           >
-            <img :src="img" class="w-full h-full object-cover" />
-            <button
-              type="button"
-              class="absolute inset-0 cursor-pointer  bg-black/50  text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-              @click="removeImage(index)"
-            >
-              <i class="ri-delete-bin-line text-base"></i>
-            </button>
-          </div>
-  
-          <label
-            v-if="form.images.length < 3"
-            class="w-16 h-16 flex flex-col items-center justify-center border-2 border-dashed input cursor-pointer transition-colors bg-gray-50 dark:bg-gray-800/40 group"
-          >
-            <i class="ri-camera-4-line text-lg text-black/50 dark:text-white/50 transition-colors"></i>
-            <span class="text-[10px] text-black/50 dark:text-white/50 mt-0.5 font-medium">Add</span>
-            <input
-              type="file"
-              accept="image/*"
-              multiple
-              class="hidden"
-              @change="handleFileUpload"
-            />
-          </label>
+            <i class="ri-delete-bin-line text-base"></i>
+          </button>
         </div>
+
+        <!-- Render newly uploaded images -->
+        <div
+          v-for="(img, index) in newImagePreviews"
+          :key="index"
+          class="relative w-16 h-16 rounded-sm overflow-hidden border border-gray-200 dark:border-white/10 group"
+        >
+          <img :src="img" class="w-full h-full object-cover" />
+          <button
+            type="button"
+            class="absolute inset-0 cursor-pointer bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+            @click="removeNewImage(index)"
+          >
+            <i class="ri-delete-bin-line text-base"></i>
+          </button>
+        </div>
+
+        <!-- Add File Button -->
+        <label
+          v-if="existingImages.length + form.images.length < 3"
+          class="w-16 h-16 flex flex-col items-center justify-center border-2 border-dashed input transition-colors bg-gray-50 dark:bg-gray-800/40 group"
+          :class="addImgLoading ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'"
+        >
+          <i 
+            class="text-lg text-black/50 dark:text-white/50" 
+            :class="addImgLoading ? 'ri-loader-4-line animate-spin': 'ri-camera-4-line'"
+          ></i>
+          <span class="text-[10px] text-black/50 dark:text-white/50 mt-0.5 font-medium">
+            {{ addImgLoading ? 'Adding' : 'Add' }}
+          </span>
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            class="hidden"
+            @change="handleFileUpload"
+            :disabled="addImgLoading"
+          />
+        </label>
+      </div>
       </div>
     </div>
   </BaseDialog>
