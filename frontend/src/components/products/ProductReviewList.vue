@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import { watch, ref, computed } from 'vue';
+  import { useRoute } from 'vue-router';
   import { useReviewStore } from '@/stores/reviewStore.js';
   import TopLoader from '@/components/common/TopLoader.vue';
   import { useAuthStore } from '@/stores/authStore';
@@ -21,6 +22,7 @@
   const authStore = useAuthStore();
   const productStore = useProductsStore();
   const { showAlert } = useAlert();
+  const route = useRoute();
   
   const currentUser = computed(() => authStore.currentUser?._id);
   const page = ref<number>(1);
@@ -58,9 +60,10 @@
     if (result.success) {
       if (reviewStore.reviews.length === 0 && page.value > 1) {
         page.value -= 1;
-      }
+      };
+      const currectSlug = route.params.slug as string;
       await Promise.all([
-        productStore.fetchProductDetail(props.productId),
+        productStore.fetchProductDetail(currectSlug),
         reviewStore.fetchReview(props.productId, page.value, true),
       ]);
       showAlert(result.message, { type: 'success' });

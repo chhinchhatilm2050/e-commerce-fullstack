@@ -10,6 +10,7 @@ const SerchPageResult = () => import('@/views/SearchResultsPage.vue');
 const ProductDetail = () => import('@/views/ProductDetailPageView.vue');
 const CustomerServiceView = () => import('@/views/feature/CustomerServiceView.vue');
 const NotFoundPageView = () => import('@/views/NotFoundView.vue');
+const WishlistView = () => import('@/views/WishlistView.vue');
 
 const routes: RouteRecordRaw[] = [
   {
@@ -55,13 +56,13 @@ const routes: RouteRecordRaw[] = [
     meta: { title: 'ChhatStore - Category', guestOnly: true },
   },
   {
-    path: '/products/:id',
+    path: '/products/:slug',
     name: 'productDetail',
     component: ProductDetail,
     meta: { title: 'ChhatStore - Category', guestOnly: true },
   },
   {
-    path: '/category/:categorySlug/products/:id',
+    path: '/category/:categorySlug/products/:slug',
     name: 'productDetailInCategory',
     component: ProductDetail,
     meta: { title: 'ChhatStore - Product Detail' },
@@ -70,9 +71,14 @@ const routes: RouteRecordRaw[] = [
     path: '/support',
     name: 'CustomerServiceView',
     component: CustomerServiceView,
-    meta: { title: 'ChhatStore - Product Detail' },
+    meta: { title: 'ChhatStore - Support' },
   },
-  
+  {
+    path: '/wishlist',
+    name: 'wishlist',
+    component: WishlistView,
+    meta: { title: 'ChhatStore - Wishlist' },
+  },
   {
     path: '/:pathMatch(.*)*',
     name: 'notFound',

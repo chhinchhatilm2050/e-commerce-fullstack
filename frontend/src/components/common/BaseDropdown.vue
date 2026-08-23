@@ -1,7 +1,7 @@
 <template>
   <div class="relative w-full " ref="dropdownRef">
     <button type="button" @click="isOpen = !isOpen"
-      class="w-full flex justify-between px-3 py-2 rounded-sm border text-sm transition-all duration-200 input"
+      class="w-full flex justify-between px-3 py-2 rounded-sm border text-sm transition-all cursor-pointer duration-200 input"
       :class="isOpen
       ? ' ring-2 ring-gray-300  bg-white dark:bg-surface-800'
       : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-surface-800'"
@@ -17,7 +17,7 @@
       <div name="dropdown">
         <ul
           v-if="isOpen"
-          class="absolute z-50 w-full mt-1 bg-white dark:bg-surface-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg overflow-hidden"
+          class="absolute z-50 w-full mt-1 bg-white dark:bg-surface-800 border border-gray-200 dark:border-gray-700 rounded-sm shadow-lg overflow-hidden"
         >
           <li
             v-for="option in options"

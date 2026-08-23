@@ -131,7 +131,7 @@
 
     emit('submit-review', {
       _id: props.editingReview?._id,
-      productId: props.product._id,
+      productId: props.product._id ,
       rating: form.rating,
       comment: form.comment.trim(),
       images: form.images,
@@ -266,7 +266,7 @@
         >
           <i 
             class="text-lg text-black/50 dark:text-white/50" 
-            :class="addImgLoading ? 'ri-loader-4-line animate-spin': 'ri-camera-4-line'"
+            :class="addImgLoading ? 'ri-loader-line animate-spin': 'ri-camera-4-line'"
           ></i>
           <span class="text-[10px] text-black/50 dark:text-white/50 mt-0.5 font-medium">
             {{ addImgLoading ? 'Adding' : 'Add' }}

@@ -16,6 +16,7 @@ export interface IProduct {
   ratingAvg: number;
   ratingCount: number;
   stock: number;
+  slug: string,
   specification?: Record<string, unknown>;
   status: 'draft' | 'active' | 'out_of_stock';
 }

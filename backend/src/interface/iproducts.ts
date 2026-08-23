@@ -14,6 +14,7 @@ export interface IProduct extends Document {
   price: number;
   comparePrice?: number;             
   images: IProductImage[];   
+  code: string,
   ratingAvg: number;
   ratingCount: number;
   stock: number;

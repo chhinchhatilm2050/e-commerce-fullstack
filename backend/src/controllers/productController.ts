@@ -32,10 +32,11 @@ export const getAllProducts = asyncHandler(
   }
 );
 
-export const getProductById = asyncHandler(async(req: Request<{ id: string }>, res: Response, next: NextFunction): Promise<void> => {
-  const { id } = req.params;
+export const getProductById = asyncHandler(async(req: Request<{ slug: string }>, res: Response, next: NextFunction): Promise<void> => {
+  const { slug } = req.params;
+  console.log(slug);
 
-  const product = await ProductModel.findOne(({ _id: id })).populate('categoryId', 'name slug').lean();
+  const product = await ProductModel.findOne({ slug }).populate('categoryId', 'name slug').lean();
   if(!product) {
     return next(new AppError('Product not found', 404));
   }
