@@ -237,6 +237,12 @@ const categoryConfig: CategoryConfig[] = [
 
 const PRODUCT_PER_SUBCATEGORY = 100;
 
+// Incrementing counter used to assign each seeded product a unique 10-digit
+// code without needing a DB round-trip (unlike the pre('save') hook, which
+// checks uniqueness via ProductModel.exists() on every real product creation).
+// Declared once at module scope so it persists across the whole seed run.
+let codeCounter = 1_000_000_000;
+
 function generateFakeImages(keyword: string, count: number) {
   return Array.from({ length: count }).map((_, i) => ({
     url: faker.image.urlLoremFlickr({ width: 400, height: 600, category: keyword }),
@@ -304,6 +310,7 @@ const seed = async () => {
 
         await ProductModel.create({
           name: sub.productNameFn(),
+          code: (codeCounter++).toString(), // pre-assigned, skips the hook's exists() check
           description: faker.commerce.productDescription(),
           categoryId: subDoc._id,
           price: Number(faker.commerce.price({ min: 5, max: 1000 })),
@@ -326,7 +333,9 @@ const seed = async () => {
   console.log('Seeding complete');
   const catCount = await CategoryModel.countDocuments();
   const prodCount = await ProductModel.countDocuments();
+  const distinctCodes = await ProductModel.distinct('code');
   console.log(`Total categories: ${catCount}, Total products: ${prodCount}`);
+  console.log(`Distinct product codes: ${distinctCodes.length} (should match total products)`);
   await mongoose.disconnect();
   process.exit(0);
 };

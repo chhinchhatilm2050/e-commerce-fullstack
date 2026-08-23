@@ -14,12 +14,14 @@
   import AuthDialog from '@/components/common/AuthDialog.vue';
   import { useAlert } from '@/composables/useAlert';
   import type { ICreateReview, IReview } from '@/types/review';
+  import { useWishlistStore } from '@/stores/wishlist';
 
   const route = useRoute();
   const router = useRouter();
   const productStore = useProductsStore();
   const reviewStore = useReviewStore();
   const authStore = useAuthStore();
+  const wishlistStore = useWishlistStore();
   const { showAlert } = useAlert();
 
   const quantity = ref(1);
@@ -40,6 +42,22 @@
     isReviewModelOpen.value = true;
   };
 
+  const handleToggleWishlist = async () => {
+    if (!authStore.isLoggedIn) {
+      isAuthModelOpen.value = true;
+      return;
+    };
+
+    if (!product.value?._id) return;
+
+    const result = await wishlistStore.toggleWishlist(product.value._id);
+    if (result.success) {
+      showAlert(result.message, { type: 'success' });
+    } else {
+      showAlert(result.message, { type: 'error' });
+    }
+  };
+
   const handleAuthSuccess = () => {
     isAuthModelOpen.value = false;
     isReviewModelOpen.value = true; 
@@ -51,13 +69,13 @@
   });
 
   const loadProduct = async () => {
-    const id = route.params.id as string;
-    await productStore.fetchProductDetail(id);
+    const slug = route.params.slug as string;
+    await productStore.fetchProductDetail(slug);
 
     if (productStore.currentProduct) {
       const slug = categorySlug.value;
       if (slug) {
-        await productStore.fetchRelatedProducts(categorySlug.value, id);
+        await productStore.fetchRelatedProducts(categorySlug.value, slug);
       }
 
       if (slug && !route.params.categorySlug) {
@@ -69,7 +87,7 @@
     }
   };
 
-  watch(() => route.params.id, loadProduct, { immediate: true });
+  watch(() => route.params.slug, loadProduct, { immediate: true });
 
   const product = computed(() => productStore.currentProduct);
 
@@ -116,6 +134,7 @@
 
   const handleReviewSubmit = async (payload: ICreateReview): Promise<void> => {
     let result;
+    
     if (payload._id) {
       result = await reviewStore.updateReview(payload._id, {
         rating: payload.rating,
@@ -126,14 +145,15 @@
     } else {
       result = await reviewStore.createReview(payload);
     }
+
     if (result.success) {
       isReviewModelOpen.value = false;
       editingReview.value = null;
-      const currentId = route.params.id as string;
+      const currentSlug = route.params.slug as string;
       
       await Promise.all([
-        productStore.fetchProductDetail(currentId),
-        reviewStore.fetchReview(currentId, page.value, true),
+        productStore.fetchProductDetail(currentSlug),
+        reviewStore.fetchReview(payload.productId, page.value, true),
       ]);
       showAlert(result.message, { type: 'success' });
     } else {
@@ -147,8 +167,9 @@
 </script>
 
 <template >
+  <TopLoader :isLoading="wishlistStore.loading"/>
   <div v-if="productStore.loadingDetail" class="text-center py-20">
-    <TopLoader :isLoading="productStore.loadingDetail"/>
+    <TopLoader :isLoading="productStore.loadingDetail || wishlistStore.loading"/>
   </div>
   <div v-else-if="!product" class="text-center py-20 text-gray-500">
     Product not found.
@@ -242,8 +263,11 @@
           >
             {{ product.stock > 0 ? 'Add to Cart' : 'Out of Stock' }}
           </button>
-          <button class="w-12 h-12 subCategory-button flex items-center justify-center cursor-pointer">
-            <i class="ri-poker-hearts-line text-lg"></i>
+          <button 
+            class="w-12 h-12 subCategory-button flex items-center justify-center cursor-pointer transition-colors"
+            @click="handleToggleWishlist"
+          >
+            <i :class="product && wishlistStore.isWishlisted(product._id) ? 'ri-heart-fill text-xl' : 'ri-poker-hearts-line text-lg'"></i>
           </button>
         </div>
 

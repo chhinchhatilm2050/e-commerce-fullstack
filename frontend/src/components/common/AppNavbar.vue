@@ -96,7 +96,7 @@
                         <i v-if="!themeStore.darkMode" class="ri-moon-line text-gray-500 text-lg"></i>
                         <i v-else class="ri-sun-line text-gray-300"></i>
                     </button>
-                    <button class="btn-ghost w-8 h-8 flex items-center justify-center rounded-full dark:hover:bg-surface-100">
+                    <button @click="router.push('/wishlist')" class="btn-ghost w-8 h-8 flex items-center justify-center rounded-full dark:hover:bg-surface-100">
                         <i class="ri-poker-hearts-line text-gray-500 text-lg dark:text-gray-300"></i>
                     </button>
                     <RouterLink to="/cart" class="relative btn-ghost w-8 h-8 p-0 flex items-center justify-center rounded-full dark:hover:bg-surface-100">
