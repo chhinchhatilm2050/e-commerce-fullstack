@@ -41,6 +41,10 @@ const productSchema = new mongoose.Schema<IProduct>({
       order: { type: Number, default: 0 },
     }
   ],
+  code: {
+    type: String,
+    unique: true,
+  },
   ratingAvg: {
     type: Number,
     default: 0,
@@ -94,7 +98,7 @@ const productSchema = new mongoose.Schema<IProduct>({
 });
 
 productSchema.index({ name: 'text', description: 'text' });
-productSchema.index({ categoryId: 1, isActive: 1 });
+productSchema.index({ categoryId: 1, status: 1 });
 productSchema.index({ status: 1 });
 
 productSchema.pre('save', async function (this: IProduct): Promise<void> {
@@ -119,6 +123,27 @@ productSchema.pre('save', async function (this: IProduct): Promise<void> {
 
     this.slug = slug;
   }
+});
+
+productSchema.pre('save', async function (this: IProduct): Promise<void> {
+  if (!this.isNew || this.code) return; // skip if already has a code, or this is an update
+
+  const MAX_ATTEMPTS = 5;
+  let attempts = 0;
+  let code: string;
+  let exists = true;
+
+  while (exists && attempts < MAX_ATTEMPTS) {
+    code = Math.floor(1_000_000_000 + Math.random() * 9_000_000_000).toString();
+    exists = await ProductModel.exists({ code }).then(Boolean);
+    attempts++;
+  }
+
+  if (exists) {
+    throw new Error('Failed to generate a unique product code, please try again');
+  }
+
+  this.code = code!;
 });
 
 productSchema.pre('save', function () {

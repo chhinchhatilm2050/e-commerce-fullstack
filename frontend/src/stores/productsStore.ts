@@ -17,7 +17,7 @@ export const useProductsStore = defineStore('products', () => {
   const loading = ref<boolean>(false);
   const loadingDetail = ref<boolean>(false);
   const loadingMore = ref<boolean>(false);
-  const loadingRelated = ref<boolean>(false);
+  const loadingRelated = ref<boolean>(false); 
   const error = ref<string>('');
 
   const featureProducts = ref<IProduct[]>([]);
@@ -69,11 +69,11 @@ export const useProductsStore = defineStore('products', () => {
     }
   };
 
-  const fetchProductDetail = async (id: string) => {
+  const fetchProductDetail = async (slug: string) => {
     loadingDetail.value = true;
     error.value = '';
     try {
-      const { data } = await api.get<IProductDetailResponse>(`/products/${id}`);
+      const { data } = await api.get<IProductDetailResponse>(`/products/${slug}`);
 
       currentProduct.value = data.data.product;
       return true;
