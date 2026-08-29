@@ -30,7 +30,6 @@ export const useProductsStore = defineStore('products', () => {
     error.value = '';
     try {
       const { data } = await api.get<IProductListResponse>(`/products/category/${slug}?${params}`);
-
       products.value = data.data;
       pagination.value = data.pagination;
       return true;

@@ -137,7 +137,8 @@
       <div class="flex items-center justify-between gap-4 pb-4 border-gray-200">
         <div class="flex flex-row items-center gap-3">
           <div class="max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap">
-            {{ categoryStore.currentCategory?.name?.toUpperCase() }} ( {{ categoryStore.currentCategory?.productCount || 0 }} Items )
+            <span class="font-bold">{{ categoryStore.currentCategory?.name }} </span> 
+            <span class="text-sm text-black/70 dark:text-white/70"> [{{ categoryStore.currentCategory?.productCount || 0 }} Items]</span>
           </div>
           <SubcategoryPills 
             :subcategories="categoryStore.subcategories"

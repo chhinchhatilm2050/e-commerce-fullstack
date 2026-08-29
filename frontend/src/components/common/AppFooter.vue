@@ -124,7 +124,7 @@
                         :placeholder="$t('footer.email_placeholder')"
                         class= " input flex-1 "
                     />
-                    <button @click="subscribe" class="default-button">
+                    <button @click="subscribe" class="default-button text-sm">
                         {{ $t('footer.subscribe') }}
                     </button>
                 </div>

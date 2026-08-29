@@ -3,13 +3,13 @@
   const { alerts, removeAlert } = useAlert();
   const notificationClass = (type: string) =>
     ({
-      success: 'bg-gray-200 border border-gray-300',
-      error: 'bg-red-50 text-red-600 border border-red-200',
+      success: 'bg-black/90 border shadow-lg border-green-300',
+      error: 'bg-black/90 text-red-600 border border-red-300',
     })[type] ?? 'bg-green-50 text-green-600 border border-green-200';
 
   const notificationText = (type: string) =>
     ({
-      success: 'text-gray-600',
+      success: 'text-green-600',
       error: 'text-red-600',
     })[type] ?? 'text-bg-primary-600';
 
@@ -28,7 +28,7 @@
         <div
           v-for="alert in alerts"
           :key="alert.id"
-          class="flex items-center gap-3 px-3 py-2 rounded-xl shadow-lg text-white text-sm"
+          class="flex items-center gap-3 px-3 py-2 rounded-sm shadow-lg text-white text-sm"
           :class="notificationClass(alert.type)"
           @click="removeAlert(alert.id)"
         >

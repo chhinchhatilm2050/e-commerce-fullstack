@@ -10,11 +10,16 @@
   import SearchDialog from './SearchDialog.vue';
   import { useCategoryStore } from '@/stores/categoryStore.ts';
   import { useRoute, useRouter } from 'vue-router';
+  import { useAuthStore } from '@/stores/authStore.ts';
+  import CartDrawer from './CartDrawer.vue';
+  import { useCartStore } from '@/stores/cartStore.ts';
 
   const themeStore = useThemeStore();
   const categoryStore = useCategoryStore();
+  const authStore = useAuthStore();
   const route = useRoute();
   const router = useRouter();
+  const cartStore = useCartStore();
 
   onMounted(() => {
     if (categoryStore.topLevelCategories.length === 0) {
@@ -33,6 +38,7 @@
   const openSearch = () => open() ;
 
   const mobileMenuOpen = ref<boolean>(false);
+  const cartOpen = ref<boolean>(false);
 
   const handleSearchSubmit = (query: string) => {
     if (!query.trim()) return;
@@ -48,6 +54,14 @@
       });
     }
     close();
+  };
+
+  const handleToWishlist = () => {
+    if (authStore.currentUser) {
+      router.push('/wishlist');
+    } else {
+      openLogin();
+    }
   };
 </script>
 
@@ -68,19 +82,19 @@
                     <img class="w-[90px] h-[20px] sm:w-[140px] sm:h-[25px] block dark:hidden" src="../../assets/image/torilogo.png" alt="">
                     <img class="w-[90px] h-[20px] sm:w-[140px] sm:h-[25px] hidden dark:block" src="../../assets/image/torilogowhite.png" alt="">
                 </RouterLink>
-                <ul class="hidden lg:flex items-center gap-4">
+                <ul class="hidden lg:flex items-center gap-6">
                     <li>
                         <RouterLink to="/"
-                            class="rounded-sm text-[17px] hover:underline hover:shadow-xl font-semibold transition-all duration-200 cursor-pointer"
-                            :class="{ underline: route.path === '/' }"
+                            class="rounded-sm text-[16px] hover:shadow-xl font-semibold transition-all duration-200 cursor-pointer text-black dark:text-white"
+                            active-class="!text-red-600"
                         >
                             HOME
                         </RouterLink>
                     </li>
                     <li v-for="cat in categoryStore.topLevelCategories" :key="cat._id">
                         <RouterLink :to="`/products/category/${cat.slug}`"
-                            class="rounded-sm text-[17px] hover:shadow-xl hover:underline font-semibold transition-all duration-200 cursor-pointer"
-                            :class="{ underline: route.path === `/products/category/${cat.slug}` }"
+                            class="rounded-sm text-[16px] hover:shadow-xl font-semibold transition-all duration-200 cursor-pointer text-black dark:text-white"
+                            active-class="!text-red-600"
                         >
                             {{ cat.name.toUpperCase() }}
                         </RouterLink>
@@ -90,20 +104,21 @@
                 <div class="flex items-center gap-1 sm:gap-3">
                     <LangDropdown/>
                     <button @click="openSearch" class="btn-ghost w-8 h-8 flex items-center justify-center rounded-full dark:hover:bg-surface-100">
-                        <i class="ri-search-line text-gray-500 text-lg dark:text-gray-300"></i>
+                        <i class="ri-search-line text-black text-lg dark:text-white"></i>
                     </button>
                     <button @click="themeStore.toggleDarkMode()" class="btn-ghost w-8 h-8 flex items-center justify-center rounded-full dark:hover:bg-surface-100">
-                        <i v-if="!themeStore.darkMode" class="ri-moon-line text-gray-500 text-lg"></i>
-                        <i v-else class="ri-sun-line text-gray-300"></i>
+                        <i v-if="!themeStore.darkMode" class="ri-moon-line text-black text-lg"></i>
+                        <i v-else class="ri-sun-line text-black dark:text-white"></i>
                     </button>
-                    <button @click="router.push('/wishlist')" class="btn-ghost w-8 h-8 flex items-center justify-center rounded-full dark:hover:bg-surface-100">
-                        <i class="ri-poker-hearts-line text-gray-500 text-lg dark:text-gray-300"></i>
+                    <button @click="handleToWishlist" class="btn-ghost w-8 h-8 flex items-center justify-center rounded-full dark:hover:bg-surface-100">
+                        <i class="ri-poker-hearts-line text-black text-lg dark:text-white"></i>
                     </button>
-                    <RouterLink to="/cart" class="relative btn-ghost w-8 h-8 p-0 flex items-center justify-center rounded-full dark:hover:bg-surface-100">
-                        <i class="ri-shopping-bag-line text-lg dark:text-gray-300 text-gray-500"></i>
+                    <button @click="cartOpen = true" class="relative btn-ghost w-8 h-8 p-0 flex items-center justify-center rounded-full dark:hover:bg-surface-100">
+                        <i class="ri-shopping-bag-line text-lg dark:text-gray-300 text-black"></i>
                         <span class="absolute -top-0 -right-0.5 w-4.5 h-4.5 bg-red-600 animate-bounce-sm text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-                       99+</span>
-                    </RouterLink>
+                       {{ cartStore.totalItems
+                        }}</span>
+                    </button>
 
                     <AuthButton 
                         @open-register="openRegister" 
@@ -122,6 +137,7 @@
             @open-login="openLogin"
             @open-register="openRegister"
         />
+        <CartDrawer v-model="cartOpen"/>
     </header>
 </template>
 
