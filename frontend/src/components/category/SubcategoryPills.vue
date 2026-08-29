@@ -122,19 +122,26 @@
       v-for="sub in subcategories"
       :key="sub._id"
       :data-slug="sub.slug"
-      class="whitespace-nowrap subCategory-button"
-      :class="{ 'border border-black-600': isActive(sub) }"
+      class="whitespace-nowrap cursor-pointer"
+      :class="{ 'text-red-600': isActive(sub) }"
       @click="goToSubcategory(sub.slug)"
     >
-      <div>
-        <span>{{ sub.name }}</span>
-        <span v-if="sub.productCount" class="text-suface-800 font-normal">
-          ({{ sub.productCount }})
-        </span>
+      <div class="flex justify-center items-center gap-2">
+        <img
+          class="w-8 h-8 rounded-sm object-cover object-center flex-shrink-0 bg-gray-100"
+          :src="sub.image"
+          :alt="sub.name"
+          loading="lazy"
+        />
+        <div>
+          <span>{{ sub.name }}</span>
+          <!-- <span v-if="sub.productCount" class="text-suface-800 font-normal">
+            ({{ sub.productCount }})
+          </span> -->
+        </div>
       </div>
     </button>
   </div>
-
   <button v-if="isScrollable" class="cursor-pointer" @click="scrollRight">
     <i class="ri-arrow-right-s-line text-2xl font-medium"></i>
   </button>

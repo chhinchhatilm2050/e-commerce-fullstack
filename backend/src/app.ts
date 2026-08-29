@@ -3,7 +3,7 @@ import express, { Request, Response, NextFunction } from 'express';
 import globalErrorHandler from './middlewares/globalErrorHandler.js';
 import notFound from './middlewares/notFound.js';
 import requestLogger from './middlewares/logger.js';
-// import { globalLimiter } from './middlewares/rateLimit.js';
+import { globalLimiter } from './middlewares/rateLimit.js';
 import mongoSanitize from 'express-mongo-sanitize';
 import helmet from 'helmet';
 import sanitizeHtml from './middlewares/sanitizeHtml.js';
@@ -22,7 +22,7 @@ app.use(helmet());
 app.use(express.json());
 app.use(cookieParser());
 app.use(requestLogger);
-// app.use(globalLimiter);
+app.use(globalLimiter);
 app.use((req: Request, res: Response, next: NextFunction) => {
   mongoSanitize.sanitize(req.body, { replaceWith: '_' });   
   mongoSanitize.sanitize(req.params, { replaceWith: '_' }); 

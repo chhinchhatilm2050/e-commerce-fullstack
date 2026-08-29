@@ -45,7 +45,7 @@
   });
 </script>
 <template>
-  <div class="group">
+  <div class="group  animate-slide-up">
     <div class="aspect-[3.1/4] overflow-hidden bg-gray-100 relative">
       <span
         v-if="discountPrice > 0"

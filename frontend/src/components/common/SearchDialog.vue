@@ -18,6 +18,23 @@
   const inputRef = ref<HTMLInputElement | null>(null);
   const { searchHistory, addSearchTerm, removeSearchTerm, clearHistory } = useSearchHistory();
 
+  const close = () => {
+    emit('update:modelValue', false);
+  };
+  
+  const submitSearch = (term?: string) => {
+    const finalTerm = (term ?? query.value).trim();
+    if (!finalTerm) return;
+    addSearchTerm(finalTerm);
+    emit('search', finalTerm);
+    close();
+  };
+  
+  const handleRemove = (term: string, event: Event) => {
+    event.stopPropagation();
+    removeSearchTerm(term);
+  };
+
   watchEffect(() => {
     if (props.modelValue) {
       const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
@@ -30,23 +47,6 @@
       query.value = '';
     }
   });
-
-  const close = () => {
-    emit('update:modelValue', false);
-  };
-
-  const submitSearch = (term?: string) => {
-    const finalTerm = (term ?? query.value).trim();
-    if (!finalTerm) return;
-    addSearchTerm(finalTerm);
-    emit('search', finalTerm);
-    close();
-  };
-
-  const handleRemove = (term: string, event: Event) => {
-    event.stopPropagation();
-    removeSearchTerm(term);
-  };
 </script>
 
 <template>

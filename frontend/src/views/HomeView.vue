@@ -58,14 +58,14 @@
                 {{ $t('home.hero_subtitle') }}
                 </p>
                 <div class="hidden lg:flex flex-wrap gap-4 animate-slide-up" style="animation-delay:0.5s">
-                <RouterLink to="/category/books" class="default-button px-4 inline-block">
+                <RouterLink to="/category/books" class="default-button text-sm px-4 inline-block">
                     {{ $t('home.hero_cta') }}
                 </RouterLink>
                 </div>
                 <div class="hidden lg:flex gap-10 mt-14 animate-slide-up" style="animation-delay:0.5s">
                     <div @click="goToCustomerService" v-for="fea in feature" :key="fea.icon" class="flex flex-col justify-center items-center cursor-pointer">
                         <p class="font-display text-[20px] text-gray-70 dark:text-gray-200" v-html="fea.icon"></p>
-                        <p class="text-[17px] underline">{{ $t(fea.title) }}</p>
+                        <p class="text-[17px] shadow-lg">{{ $t(fea.title) }}</p>
                     </div>
                 </div>
             </div>
@@ -92,7 +92,7 @@
       </RouterLink>
     </div>
   </section>
-  <section>
+  <section class="mt-5">
     <ProductSlider
       :products="productStore.featureProducts"
       title="Top Rating"

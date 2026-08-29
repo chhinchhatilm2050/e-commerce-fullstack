@@ -39,14 +39,14 @@
   <div class="relative" ref="langMenuRef">
     <button @click="langMenuOpen = !langMenuOpen" class="btn-ghost flex items-center gap-1.5 text-sm dark:hover:bg-surface-100">
       <img :src="`https://flagcdn.com/w40/${currentLanguage?.flag}.png`" :alt="currentLanguage?.name" class="w-7 h-5 rounded-sm object-cover ring-1 ring-gray-400"/>
-      <span class="hidden sm:inline font-semibold dark:text-gray-300">{{ currentLanguage?.code.toUpperCase() }}</span>
-      <svg class="w-3.5 h-3.5 text-gray-400 transition-transform" :class="{ 'rotate-180': langMenuOpen }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <span class="hidden sm:inline text-black font-semibold dark:text-white">{{ currentLanguage?.code.toUpperCase() }}</span>
+      <svg class="w-3.5 h-3.5 text-black dark:text-white transition-transform" :class="{ 'rotate-180': langMenuOpen }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
       </svg>
     </button>
     <div v-if="langMenuOpen" class="absolute right-0 top-full mt-1 w-27 bg-white dark:bg-surface-800 rounded-md shadow-card-lg border border-gray-100 dark:border-surface-700 overflow-hidden z-50">
       <button v-for="lang in languages" :key="lang.code" @click="setLanguage(lang.code)"
-        class="cursor-pointer w-full flex items-center gap-2.5 px-2 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-surface-700 transition-colors"
+        class="cursor-pointer w-full flex items-center gap-2.5 px-2 py-2 text-sm text-black dark:text-white hover:bg-gray-100 dark:hover:bg-surface-700 transition-colors"
         :class="{ 'font-semibold bg-gray-200 dark:bg-surface-100': localeStore.locale === lang.code }"
       >
         <img :src="`https://flagcdn.com/w40/${lang.flag}.png`" class="w-7 h-5 rounded-sm object-cover ring-1 ring-gray-400"/>

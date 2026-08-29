@@ -101,7 +101,7 @@
     class="bg-black/2 dark:bg-white/5 rounded-sm p-4 flex flex-col sm:flex-row gap-4 relative shadow-xl"
   >
     <button
-      class="absolute top-3 cursor-pointer right-3 flex items-center justify-center z-10"
+      class="absolute top-3 cursor-pointer right-3 flex text-red-600 hover:text-red-700 items-center justify-center z-10"
       @click="handleRemove"
     >
       <i class="ri-delete-bin-line text-lg"></i>
@@ -109,7 +109,7 @@
 
     <router-link
       :to="`/products/${props.item.productId.slug}`"
-      class="w-full sm:w-35 lg:w-45 shrink-0 aspect-[3/4] sm:aspect-[3/4] rounded-sm overflow-hidden bg-gray-100 max-w-45 mx-auto sm:mx-0"
+      class="w-full sm:w-35 lg:w-45 shrink-0 aspect-[3/4] sm:aspect-[3/4] overflow-hidden bg-gray-100 max-w-45 mx-auto sm:mx-0"
     >
       <img
         v-if="product.images?.[0]"
@@ -122,7 +122,7 @@
     <div class="flex-1 min-w-0 sm:h-[292px] pr-10 sm:pr-10 flex flex-col">
       <div>
         <div class="flex flex-wrap items-center gap-1">
-          <span class="text-red-500 font-bold text-md">
+          <span :class="discountPercent > 0 ? 'text-red-600': 'text-black/90'" class="font-bold text-md">
             US ${{ product.price.toFixed(2) }}
           </span>
           <span v-if="discountPercent > 0" class="text-red-500 font-semibold text-sm">
@@ -154,9 +154,9 @@
       </div>
 
       <button
-        class="mt-4 sm:mt-auto w-full sm:w-32 bg-black/90 dark:border border-white/30 text-white py-2 rounded font-medium disabled:opacity-40 cursor-pointer "
+        class="mt-4 text-sm sm:mt-auto w-full sm:w-32 bg-black/90 dark:border border-white/30 text-white py-2 rounded font-medium disabled:opacity-40 cursor-pointer "
       >
-        Move to Cart
+        Move to bag
       </button>
     </div>
   </div>

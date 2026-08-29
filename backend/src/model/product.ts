@@ -126,7 +126,7 @@ productSchema.pre('save', async function (this: IProduct): Promise<void> {
 });
 
 productSchema.pre('save', async function (this: IProduct): Promise<void> {
-  if (!this.isNew || this.code) return; // skip if already has a code, or this is an update
+  if (!this.isNew || this.code) return;
 
   const MAX_ATTEMPTS = 5;
   let attempts = 0;

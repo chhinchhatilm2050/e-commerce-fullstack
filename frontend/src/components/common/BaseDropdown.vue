@@ -1,10 +1,10 @@
 <template>
   <div class="relative w-full " ref="dropdownRef">
     <button type="button" @click="isOpen = !isOpen"
-      class="w-full flex justify-between px-3 py-2 rounded-sm border text-sm transition-all cursor-pointer duration-200 input"
+      class="w-full flex justify-between px-1.5 py-1.5 rounded-sm border text-sm transition-all cursor-pointer duration-200 input"
       :class="isOpen
-      ? ' ring-2 ring-gray-300  bg-white dark:bg-surface-800'
-      : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-surface-800'"
+      ? ' ring-1 ring-black/20  bg-white dark:bg-surface-800'
+      : ' ring-black/20'"
 
     >
       <span class="text-gray-700 dark:text-gray-300">

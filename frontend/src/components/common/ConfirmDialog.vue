@@ -27,7 +27,7 @@
       @click="handleBackdropClick"
     >
       <div
-        class="relative bg-white dark:bg-surface-800 rounded-lg max-w-sm w-full p-6  border border-black/10 dark:border-white/10 animate-scale-in"
+        class="relative bg-white dark:bg-surface-800 rounded-lg max-w-sm w-full p-6  border border-black/10 dark:border-white/10 animate-scale-in animate-slide-up"
       >
         <!-- Close Icon Button -->
         <button
@@ -40,15 +40,15 @@
         </button>
 
         <!-- Content -->
-        <h3 class="text-lg font-semibold text-black/90 dark:text-white pr-6">
+        <h3 class="text-lg font-semibold text-black/90 dark:text-white pr-6 animate-slide-up" >
           {{ title || 'Confirm Action' }}
         </h3>
-        <p class="mt-2 text-sm text-black/80 dark:text-gray-300">
+        <p class="mt-2 text-sm text-black/80 dark:text-gray-300 animate-slide-up">
           {{ message || 'Are you sure you want to proceed?' }}
         </p>
 
         <!-- Actions -->
-        <div class="mt-6 flex justify-end gap-3">
+        <div class="mt-6 flex justify-end gap-3 animate-slide-up">
           <button
             @click="emit('cancel')"
             :disabled="loading"
