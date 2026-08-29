@@ -60,9 +60,9 @@
         <RouterLink
           v-if="seeMoreLink"
           :to="seeMoreLink"
-          class="text-sm font-medium hidden sm:inline-flex subCategory-button"
+          class="text-sm flex gap-2 font-medium hidden sm:inline-flex subCategory-button"
         >
-          See More
+          <i class="ri-stack-fill"></i> See More
         </RouterLink>
       </div>
 
@@ -73,7 +73,7 @@
       <div v-else class="relative">
         <button
           v-if="canScrollLeft"
-          class="absolute left-2 top-[40%] -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 transition"
+          class="absolute left-2 top-[40%] -translate-y-1/2 z-10 w-9 h-9 rounded-sm bg-black/60 text-white flex items-center justify-center hover:bg-black/80 transition"
           @click="scrollLeft"
         >
           <i class="ri-arrow-left-s-line text-xl"></i>
@@ -110,7 +110,7 @@
 
         <button
           v-if="canScrollRight"
-          class="absolute right-2 top-[40%] -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 transition"
+          class="absolute right-2 top-[40%] -translate-y-1/2 z-10 w-9 h-9 rounded-sm cursor-pointer bg-black/60 text-white flex items-center justify-center hover:bg-black/80 transition"
           @click="scrollRight"
         >
           <i class="ri-arrow-right-s-line text-xl"></i>

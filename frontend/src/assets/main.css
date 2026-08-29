@@ -104,7 +104,8 @@
 
 
   .default-button {
-    @apply bg-gray-200 text-gray-800 dark:bg-surface-100 dark:text-gray-200 hover:bg-gray-300
+    @apply bg-black/90 text-white dark:bg-surface-100 dark:text-gray-200 hover:bg-black/70
+    dark:hover:bg-gray-200/50
     dark:hover:bg-surface-900
     font-medium px-2 py-2 rounded-sm cursor-pointer transition-all dark:hover:shadow-glow
     duration-200 shadow-sm  disabled:opacity-50 disabled:cursor-not-allowed
@@ -112,7 +113,7 @@
     inline-flex items-center justify-center
   }
   .subCategory-button {
-    @apply bg-gray-200 text-gray-800 dark:bg-surface-100 dark:text-gray-200 hover:bg-gray-300
+    @apply bg-black/90 text-white dark:bg-surface-100 dark:text-gray-200 hover:bg-black/70
     dark:hover:bg-gray-200/50
     font-medium px-3 py-2 rounded-sm cursor-pointer transition-all dark:hover:shadow-glow
     duration-200 shadow-sm  disabled:opacity-50 disabled:cursor-not-allowed

@@ -15,6 +15,7 @@
   import { useAlert } from '@/composables/useAlert';
   import type { ICreateReview, IReview } from '@/types/review';
   import { useWishlistStore } from '@/stores/wishlist';
+  import { useCartStore } from '@/stores/cartStore';
 
   const route = useRoute();
   const router = useRouter();
@@ -22,6 +23,7 @@
   const reviewStore = useReviewStore();
   const authStore = useAuthStore();
   const wishlistStore = useWishlistStore();
+  const cartStore = useCartStore();
   const { showAlert } = useAlert();
 
   const quantity = ref(1);
@@ -122,15 +124,6 @@
   const toggleSection = (section: 'description' | 'specification') => {
     openSection.value = openSection.value === section ? null : section;
   };
-  const increaseQty = () => {
-    if (product.value && quantity.value < product.value.stock) quantity.value++;
-  };
-  const decreaseQty = () => {
-    if (quantity.value > 1) quantity.value--;
-  };
-  function handleAddToCart() {
-    if (!product.value) return;
-  };
 
   const handleReviewSubmit = async (payload: ICreateReview): Promise<void> => {
     let result;
@@ -164,12 +157,47 @@
     editingReview.value = review;
     isReviewModelOpen.value = true;
   };
+
+  const handleAddToBag = async () => {
+    if (!authStore.isLoggedIn) {
+      isAuthModelOpen.value = true;
+      return;
+    };
+
+    if (!product.value) return;
+
+    if (availableColors.value.length > 0 && !selectedColor.value) {
+      showAlert('Please select a color', { type: 'error' });
+      return;
+    }
+
+    if (availableSizes.value.length > 0 && !selectedSize.value) {
+      showAlert('Please select a size', { type: 'error' });
+      return;
+    };
+
+    const selectedAttributes: Record<string, string> = {};
+    if (selectedColor.value) selectedAttributes.color = selectedColor.value;
+    if (selectedSize.value) selectedAttributes.size = selectedSize.value;
+
+    const result = await cartStore.addToCart(
+      product.value._id,
+      quantity.value,
+      selectedAttributes,
+    );
+
+    if (result.success) {
+      showAlert('The item has been added', { type: 'success' });
+    } else {
+      showAlert(result.message || 'Failed to add item to bag', { type: 'error' });
+    }
+  };
 </script>
 
 <template >
-  <TopLoader :isLoading="wishlistStore.loading"/>
+  <TopLoader :isLoading="wishlistStore.loading || cartStore.loading || cartStore.getCartLoadingg || cartStore.updateCartLoading"/>
   <div v-if="productStore.loadingDetail" class="text-center py-20">
-    <TopLoader :isLoading="productStore.loadingDetail || wishlistStore.loading"/>
+    <TopLoader :isLoading="productStore.loadingDetail || wishlistStore.loading "/>
   </div>
   <div v-else-if="!product" class="text-center py-20 text-gray-500">
     Product not found.
@@ -236,8 +264,8 @@
             <button
               v-for="size in availableSizes"
               :key="size"
-              class="w-18 h-10 subCategory-button whitespace-nowrap flex items-center justify-center text-sm transition"
-              :class="size === selectedSize ? 'border border-black/50 dark:border-white/50 font-medium' : ''"
+              class="w-auto px-3 h-8 border border-black/20 dark:border-white/20 rounded-sm cursor-pointer  whitespace-nowrap flex items-center justify-center text-sm transition"
+              :class="size === selectedSize ? 'subCategory-button' : ''"
               @click="selectSize(size)"
             >
               {{ size }}
@@ -245,23 +273,33 @@
           </div>
         </div>
 
-        <!-- Quantity -->
-        <div class="mt-6">
-          <span class="text-sm font-medium block mb-2">Quantity</span>
-          <div class="flex items-center gap-3">
-            <button class="w-9 h-9 subCategory-button flex items-center justify-center" @click="decreaseQty">−</button>
-            <span class="w-8 text-center">{{ quantity }}</span>
-            <button class="w-9 h-9 subCategory-button flex items-center justify-center" @click="increaseQty">+</button>
-          </div>
-        </div>
-
         <div class="flex items-center gap-3 mt-6">
           <button
-            class="flex-1 bg-black/90 dark:border border-white/30 text-white py-3 rounded font-semibold disabled:opacity-40 cursor-pointer "
-            :disabled="product.stock === 0"
-            @click="handleAddToCart"
+            class="flex-1 flex items-center justify-center gap-2 bg-black/90 hover:bg-black/80 dark:border border-white/30 text-white py-3 rounded font-semibold disabled:opacity-40 cursor-pointer "
+            :disabled="product.stock === 0 || cartStore.loading"
+            @click="handleAddToBag"
           >
-            {{ product.stock > 0 ? 'Add to Cart' : 'Out of Stock' }}
+           <svg
+              class="w-4 h-4 animate-spin"
+              fill="none"
+              viewBox="0 0 24 24"
+              v-if="cartStore.loading"
+            >
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              />
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+              />
+            </svg>
+            {{ product.stock > 0 ? 'Add to bag' : 'Out of Stock' }}
           </button>
           <button 
             class="w-12 h-12 subCategory-button flex items-center justify-center cursor-pointer transition-colors"

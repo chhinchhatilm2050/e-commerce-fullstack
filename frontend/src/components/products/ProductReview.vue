@@ -264,6 +264,7 @@
           class="w-16 h-16 flex flex-col items-center justify-center border-2 border-dashed input transition-colors bg-gray-50 dark:bg-gray-800/40 group"
           :class="addImgLoading ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'"
         >
+        
           <i 
             class="text-lg text-black/50 dark:text-white/50" 
             :class="addImgLoading ? 'ri-loader-line animate-spin': 'ri-camera-4-line'"

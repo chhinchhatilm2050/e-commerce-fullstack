@@ -21,6 +21,7 @@
 
   const activeIndex = ref<number>(0);
   const isTransitioning = ref<boolean>(true);
+  const isAnimating = ref(false);
 
   // Smoothly scroll the thumbnail column so the active thumbnail is always visible
   const scrollActiveThumbIntoView = () => {
@@ -70,16 +71,17 @@
   };
 
   const prevImage = () => {
+    if (isAnimating.value) return;
+    isAnimating.value = true;
     isTransitioning.value = true;
     if (activeIndex.value === 0) {
-      // Instantly jump to the clone at the end, then slide backward
       isTransitioning.value = false;
       activeIndex.value = sortedImages.value.length;
       nextTick(() => {
-        // Re-enable transition after DOM updates
         requestAnimationFrame(() => {
           isTransitioning.value = true;
           activeIndex.value = sortedImages.value.length - 1;
+          isAnimating.value = false; // real transition now running, unlock when it ends too (see below)
         });
       });
     } else {
@@ -88,6 +90,8 @@
   };
 
   const nextImage = () => {
+    if (isAnimating.value) return;
+    isAnimating.value = true;
     isTransitioning.value = true;
     activeIndex.value++;
   };
@@ -95,9 +99,14 @@
   // Handle seamless reset when reaching the clone image
   const handleTransitionEnd = () => {
     if (activeIndex.value === sortedImages.value.length) {
-      // Disable transition momentarily and jump back to actual index 0
       isTransitioning.value = false;
       activeIndex.value = 0;
+      // let the instant jump paint before allowing another click
+      requestAnimationFrame(() => {
+        isAnimating.value = false;
+      });
+    } else {
+      isAnimating.value = false;
     }
   };
 
@@ -117,7 +126,7 @@
       <button
         v-for="(img, index) in sortedImages"
         :key="img.publicId"
-        class="border-1 overflow-hidden aspect-[2.8/4] flex-shrink-0 animate-slide-card"
+        class="border-1 overflow-hidden aspect-[2.8/4] flex-shrink-0 animate-slide-card cursor-pointer"
         :class="(activeIndex % sortedImages.length) === index ? 'border-black dark:border-white' : 'border-gray-200 dark:border-surface-900'"
         @click="selectImage(index)"
         :style="{ animationDelay: `${(index % 20) * 0.02}s` }"
@@ -143,7 +152,7 @@
 
       <button
         v-if="sortedImages.length > 1"
-        class="absolute z-10 left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full subCategory-button flex items-center justify-center shadow"
+        class="absolute z-10 left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-sm cursor-pointer bg-black/60 text-white flex items-center justify-center shadow"
         @click="prevImage"
       >
         <i class="ri-arrow-left-s-line"></i>
@@ -151,7 +160,7 @@
 
       <button
         v-if="sortedImages.length > 1"
-        class="absolute z-10 right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full subCategory-button flex items-center justify-center shadow"
+        class="absolute z-10 right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-sm cursor-pointer bg-black/60 text-white flex items-center justify-center shadow"
         @click="nextImage"
       >
         <i class="ri-arrow-right-s-line"></i>

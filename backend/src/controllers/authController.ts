@@ -116,7 +116,7 @@ export const login = asyncHandler(
       '+password email role isVerified status',
     );
     if (!user || !(await user.isMatch(password))) {
-      return next(new AppError('User or password incorrect', 400));
+      return next(new AppError('Email or password incorrect', 400));
     }
     if (!user.isVerified) {
       return next(new AppError('Please verify your email before login.', 403));

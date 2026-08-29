@@ -43,11 +43,11 @@
 <template>
   <Teleport to="body">
     <div v-if="props.modelValue"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 "
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
       :style="{ zIndex: props.zIndex }"
       @click.self="$emit('update:modelValue', false)"
     >
-      <div :class="`bg-white dark:bg-surface-800 rounded-xl shadow-xl  overflow-y-auto max-h-[100vh] w-full ${props.size} mx-4 p-10`">
+      <div :class="`bg-white dark:bg-surface-800 rounded-xl shadow-xl  animate-slide-up  overflow-y-auto max-h-[100vh] w-full ${props.size} mx-4 p-10`">
         <div class="flex items-center justify-between mb-4">
         <h3 v-if="title" class="text-lg font-semibold text-gray-800 dark:text-gray-100">
           {{ title }}

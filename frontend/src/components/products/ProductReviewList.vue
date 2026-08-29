@@ -98,7 +98,7 @@
       <button 
         :disabled="hasUserReviewed"
         @click="emit('open-review-modal')" 
-        class="subCategory-button gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed group relative"
+        class="subCategory-button text-sm gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed group relative"
       >
         <i :class="hasUserReviewed ? 'ri-checkbox-line' : ' ri-edit-line '"></i> 
         {{ hasUserReviewed ? 'Reviewed' : 'Review' }}

@@ -33,7 +33,7 @@
       <router-link to="/products/category/books" class="mt-4 inline-block underline font-medium ">Continue Shopping</router-link>
     </div>
 
-    <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-slide-up">
       <WishlistCard
         v-for="item in wishlistStore.items"
         :key="item._id"
