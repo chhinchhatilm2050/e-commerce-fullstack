@@ -3,6 +3,8 @@
   import { useRoute, useRouter } from 'vue-router';
   import { useProductsStore } from '@/stores/productsStore';
   import { useCategoryStore } from '@/stores/categoryStore';
+  import { useCartStore } from '@/stores/cartStore';
+  import { useWishlistStore } from '@/stores/wishlist';
   import ProductGrid from '@/components/category/ProductGrid.vue';
   import SortDropdown from '@/components/category/SortDropdown.vue';
   import SubcategoryPills from '@/components/category/SubcategoryPills.vue';
@@ -12,6 +14,8 @@
   const router = useRouter();
   const productStore = useProductsStore();
   const categoryStore = useCategoryStore();
+  const catStore = useCartStore();
+  const wishlistStore = useWishlistStore();
 
   const currentSort = ref('recommend');
   const currentPage = ref(Number(route.query.page) || 1);
@@ -131,8 +135,10 @@
 
 <template>
   <div>
-    <TopLoader :isLoading="categoryStore.loading || productStore.loading || productStore.loadingMore" />
-
+    <TopLoader :isLoading="categoryStore.loading || productStore.loading || 
+      productStore.loadingMore || catStore.getCartLoadingg || 
+      catStore.removeCartLoading || catStore.updateCartLoading || wishlistStore.loading"
+    />
     <div class="container-xl px-8 py-6">
       <div class="flex items-center justify-between gap-4 pb-4 border-gray-200">
         <div class="flex flex-row items-center gap-3">

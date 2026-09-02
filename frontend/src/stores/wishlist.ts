@@ -16,8 +16,8 @@ export const useWishlistStore = defineStore('wishlist', () => {
   const wishlistCount = computed<number>(() => items.value.length);
   const itemsCache = ref<IWishlistItem[]>([]);
 
-  const fetchWishlist = async (): Promise<boolean> => {
-    if (itemsCache.value.length > 0) {
+  const fetchWishlist = async (forcrRefresh: boolean = true): Promise<boolean> => {
+    if (itemsCache.value.length > 0 && forcrRefresh) {
       loading.value = true;
       items.value = itemsCache.value;
       await delay(300);
@@ -58,6 +58,7 @@ export const useWishlistStore = defineStore('wishlist', () => {
         if (data.populated) {
           items.value.push(data.populated);
         }
+        await fetchWishlist(false);
         return { success: data.success, message: data.message };
       }
     } catch (err) {
