@@ -160,6 +160,7 @@ export const getAllProductsAdmin = asyncHandler(
     });
   }
 );
+
 export const getProductByIdAdmin = asyncHandler(async (req: Request<{ id: string }>,res: Response, next: NextFunction): Promise<void> => {
   const { id } = req.params;
   const product = await ProductModel.findById(id).populate('categoryId', 'name slug').lean();

@@ -43,11 +43,12 @@
   const getScrollAmount = () => {
     if (!scrollContainer.value) return 0;
     const firstCard = scrollContainer.value.querySelector('.snap-start') as HTMLElement | null;
-    return firstCard ? firstCard.offsetWidth + 24 : scrollContainer.value.clientWidth;
+    return firstCard ? firstCard.offsetWidth + 40 : scrollContainer.value.clientWidth;
   };
 
   const scrollLeft = () => smoothScroll(-getScrollAmount());
   const scrollRight = () => smoothScroll(getScrollAmount());
+
 </script>
 
 <template>
@@ -81,7 +82,7 @@
 
         <div
           ref="scrollContainer"
-          class="grid grid-flow-col auto-cols-[calc(100%-0.75rem)] sm:auto-cols-[calc(50%-0.75rem)] lg:auto-cols-[calc(25%-1.125rem)] gap-6 overflow-x-auto scrollbar-hide"
+          class="grid grid-flow-col auto-cols-[calc(100%-0.75rem)] sm:auto-cols-[calc(50%-0.75rem)] lg:auto-cols-[calc(25%-4rem)] gap-2 overflow-x-auto scrollbar-hide"
           @scroll="updateScrollStatus"
         >
           <div
@@ -91,21 +92,6 @@
           >
             <ProductCard :product="product" />
           </div>
-
-          <RouterLink
-            v-if="seeMoreLink"
-            :to="seeMoreLink"
-            class="snap-start relative overflow-hidden rounded aspect-[3/4] group bg-gray-100"
-          >
-            <img
-              v-if="products[0]?.images?.[0]?.url"
-              :src="products[0].images[0].url"
-              class="w-full h-full object-cover opacity-50 group-hover:opacity-30 transition"
-            />
-            <div class="absolute inset-0 flex items-center justify-center">
-              <span class="text-gray-900 dark:text-white font-bold text-lg tracking-wide">SEE MORE</span>
-            </div>
-          </RouterLink>
         </div>
 
         <button

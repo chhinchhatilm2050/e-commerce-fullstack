@@ -42,71 +42,65 @@ const REFRESH_COOKIE_OPTIONS = {
   path: '/',
 };
 
-export const register = asyncHandler(
-  async (
-    req: Request<unknown, unknown, CreateUserBody>,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> => {
-    const { firstName, lastName, phoneNumber, email, password, gender } =
-      req.body;
-    const existingUser = await UserModel.findOne({ email });
-    if (existingUser) {
-      if (existingUser.isVerified) {
-        return next(new AppError('This email already in use', 409));
-      }
-      existingUser.firstName = firstName;
-      existingUser.lastName = lastName;
-      existingUser.phoneNumber = phoneNumber;
-      existingUser.password = password;
-      existingUser.gender = gender;
-
-      const code = generateVerificationCode();
-      existingUser.verificationCodeHash = await hashVerificationCode(code);
-      existingUser.verificationCodeExpires = new Date(
-        Date.now() + CODE_EXPIRY_MINUTES * 60 * 1000,
-      );
-      existingUser.verificationAttempts = 0;
-
-      await existingUser.save();
-      await sendVerificationEmail(email, code);
-      res.status(200).json({
-        success: true,
-        message: 'Account created. Check your email for a verification code.',
-      });
-      return;
+export const register = asyncHandler(async (req: Request<unknown, unknown, CreateUserBody>,res: Response, next: NextFunction): Promise<void> => {
+  const { firstName, lastName, phoneNumber, email, password, gender } = req.body;
+  const existingUser = await UserModel.findOne({ email });
+  if (existingUser) {
+    if (existingUser.isVerified) {
+      return next(new AppError('This email already in use', 409));
     }
-    const user = new UserModel({
-      firstName,
-      lastName,
-      phoneNumber,
-      email,
-      password,
-      gender,
-    });
+    existingUser.firstName = firstName;
+    existingUser.lastName = lastName;
+    existingUser.phoneNumber = phoneNumber;
+    existingUser.password = password;
+    existingUser.gender = gender;
+
     const code = generateVerificationCode();
-    user.verificationCodeHash = await hashVerificationCode(code);
-    user.verificationCodeExpires = new Date(
+    existingUser.verificationCodeHash = await hashVerificationCode(code);
+    existingUser.verificationCodeExpires = new Date(
       Date.now() + CODE_EXPIRY_MINUTES * 60 * 1000,
     );
-    await user.save();
+    existingUser.verificationAttempts = 0;
 
-    try {
-      console.log(user.email, code);
-      await sendVerificationEmail(user.email, code);
-    } catch (err) {
-      console.error('DEBUG: Exact Email Error ->', err);
-      user.verificationCodeHash = null;
-      user.verificationCodeExpires = null;
-      await user.save({ validateBeforeSave: false });
-      return next(new AppError('Failed to send verification email. Please try again.', 500));
-    }
-
-    res.status(201).json({
+    await existingUser.save();
+    await sendVerificationEmail(email, code);
+    res.status(200).json({
       success: true,
       message: 'Account created. Check your email for a verification code.',
     });
-  },
+    return;
+  }
+  const user = new UserModel({
+    firstName,
+    lastName,
+    phoneNumber,
+    email,
+    password,
+    gender,
+  });
+  const code = generateVerificationCode();
+  user.verificationCodeHash = await hashVerificationCode(code);
+  user.verificationCodeExpires = new Date(
+    Date.now() + CODE_EXPIRY_MINUTES * 60 * 1000,
+  );
+  await user.save();
+
+  try {
+    console.log(user.email, code);
+    await sendVerificationEmail(user.email, code);
+  } catch (err) {
+    console.error('DEBUG: Exact Email Error ->', err);
+    user.verificationCodeHash = null;
+    user.verificationCodeExpires = null;
+    await user.save({ validateBeforeSave: false });
+    return next(new AppError('Failed to send verification email. Please try again.', 500));
+  }
+
+  res.status(201).json({
+    success: true,
+    message: 'Account created. Check your email for a verification code.',
+  });
+},
 );
 
 export const login = asyncHandler(
@@ -201,7 +195,6 @@ export const refresh = asyncHandler(
     const user = await UserModel.findById(decode.sub).select(
       'refreshToken email role',
     );
-
     if (!user || user.refreshToken !== refreshToken) {
       return next(new AppError('Invalid refresh token', 401));
     }
@@ -269,6 +262,7 @@ export const googleCallBack = asyncHandler(async (req: Request, res: Response, _
 
   user.refreshToken = refreshToken;
   user.status = 'active';
+  user.isVerified = true;
   await user.save();
 
   res.cookie('refreshToken', refreshToken, {
@@ -308,6 +302,7 @@ export const githubCallBack = asyncHandler(async(req: Request, res: Response, _n
 
   user.refreshToken = refreshToken;
   user.status = 'active';
+  user.isVerified = true;
   await user.save();
 
   res.cookie('refreshToken', refreshToken, {
@@ -349,6 +344,7 @@ export const facebookCallBack = asyncHandler(async(req: Request, res: Response, 
 
   user.refreshToken = refreshToken;
   user.status = 'active';
+  user.isVerified = true;
   await user.save();
 
   res.cookie('refreshToken', refreshToken, {
@@ -498,17 +494,16 @@ export const verifyResetcode = asyncHandler(async(req: Request<unknown, unknown,
 export const resetPassword = asyncHandler(async(req: Request<unknown, unknown, { email: string, resetToken: string, password: string}>, res: Response, next: NextFunction): Promise<void> => {
   const { email, resetToken, password } = req.body;
 
-  const hashedToken = await bcrypt.hash(resetToken, 10);
   const user = await UserModel.findOne({
     email,
-    passwordResetExpires: { $gt: new Date()},
+    passwordResetExpires: { $gt: new Date() },
   }).select('+passwordResetCode +passwordResetExpires');
 
-  if(!user || !user.passwordResetCode) {
+  if (!user || !user.passwordResetCode) {
     return next(new AppError('Expired session. Invalid or expired reset token. Please start over.', 400));
   }
 
-  const isValid = await bcrypt.compare(hashedToken, user.passwordResetCode);
+  const isValid = await bcrypt.compare(resetToken, user.passwordResetCode);
   if (!isValid) {
     return next(new AppError('Expired session. Invalid or expired reset token. Please start over.', 400));
   }

@@ -17,6 +17,7 @@ export const useCartStore = defineStore('cart', () => {
   const loading = ref<boolean>(false);
   const getCartLoadingg = ref<boolean>(false);
   const updateCartLoading = ref<boolean>(false);
+  const removeCartLoading = ref<boolean>(false);
   const error = ref<string>('');
   const storedTotalItems = ref<number>(readStoredTotalItems());
   const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -102,7 +103,7 @@ export const useCartStore = defineStore('cart', () => {
   };
 
   const removeFromCart = async (itemId: string) => {
-    loading.value = true;
+    removeCartLoading.value = true;
     error.value = '';
     try {
       const { data } = await api.delete<ICartRespone>(`/carts/item/${itemId}`);
@@ -114,7 +115,7 @@ export const useCartStore = defineStore('cart', () => {
       error.value = message;
       return { success: false, message };
     } finally {
-      loading.value = false;
+      removeCartLoading.value = false;
     }
   };
 
@@ -134,6 +135,7 @@ export const useCartStore = defineStore('cart', () => {
     amount,
     getCartLoadingg,
     updateCartLoading,
+    removeCartLoading,
     fetchCart,
     addToCart,
     removeFromCart,

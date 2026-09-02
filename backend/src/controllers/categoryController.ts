@@ -96,23 +96,23 @@ export const getCategorySyblings = asyncHandler(async (req: Request<{ slug: stri
   };
 
   const siblings = await CategoryModel.find({ parentId: currentCategory.parentId, status: 'active' }).lean();
-  const allCategories = await CategoryModel.find().lean();
+  // const allCategories = await CategoryModel.find().lean();
 
-  const siblingsWithCounts = await Promise.all(
-    siblings.map(async (sibling) => {
-      const descendantIds = getAllDescendantIds(allCategories, String(sibling._id));
-      const categoryIds = [sibling._id, ...descendantIds];
+  // const siblingsWithCounts = await Promise.all(
+  //   siblings.map(async (sibling) => {
+  //     const descendantIds = getAllDescendantIds(allCategories, String(sibling._id));
+  //     const categoryIds = [sibling._id, ...descendantIds];
 
-      const productCount = await ProductModel.countDocuments({
-        categoryId: { $in: categoryIds },
-        status: 'active',
-      });
+  //     const productCount = await ProductModel.countDocuments({
+  //       categoryId: { $in: categoryIds },
+  //       status: 'active',
+  //     });
 
-      return { ...sibling, productCount };
-    })
-  );
+  //     return { ...sibling, productCount };
+  //   })
+  // );
 
-  res.status(200).json({ success: true, data: { siblings: siblingsWithCounts } });
+  res.status(200).json({ success: true, data: { siblings } });
 });
 
 export const createCategory = asyncHandler(async(req: Request<unknown, unknown,ICategory>, res: Response, next: NextFunction): Promise<void> => {

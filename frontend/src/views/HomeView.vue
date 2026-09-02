@@ -2,11 +2,14 @@
   import { onMounted } from 'vue';
   import { useCategoryStore } from '@/stores/categoryStore';
   import { useProductsStore } from '@/stores/productsStore';
+  import TopLoader from '@/components/common/TopLoader.vue';
   import ProductSlider from '@/components/products/ProductSlider.vue';
   import { useRouter } from 'vue-router';
+  import { useCartStore } from '@/stores/cartStore';
 
   const categoryStore = useCategoryStore();
   const productStore = useProductsStore();
+  const cartStore = useCartStore();
   const router = useRouter();
 
   onMounted(() => {
@@ -40,7 +43,8 @@
   };
 </script>
 
-<template>
+<template> 
+    <TopLoader :is-loading="cartStore.getCartLoadingg || cartStore.updateCartLoading || cartStore.removeCartLoading"/>
     <section>
         <div class="top-banner max-w-[1316px] mx-auto fixed right-0 left-0 z-40 h-7
             bg-gradient-to-r from-gray-500 via-surface-800 to-gray-500
@@ -78,16 +82,16 @@
     </section>
     <section class="py-5 px-8 container-xl">
       <h2 class="section-title mb-5"><i class="ri-chat-smile-ai-line"></i>  {{ $t('home.categories_title') }}</h2>
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-6 animate-slide-up" style="animation-delay:0.5s">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 animate-slide-up " style="animation-delay:0.5s">
         <RouterLink
           v-for="cat in categoryStore.topLevelCategories"
           :key="cat._id" :to="`/products/category/${cat.slug}`"
-          class="group relative overflow-hidden aspect-[3/3] block"
+          class="group relative overflow-hidden aspect-[3/2.7] block rounded-md shadow-xl"
         >
           <img :src="cat.image" :alt="cat.name" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
           <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
           <div class="absolute bottom-0 left-0 right-0 p-4">
-            <p class="text-white font-display font-bold text-lg">{{ $t(cat.name).toUpperCase() }}</p>
+            <p class="text-white font-display font-bold text-md">{{ $t(cat.name).toUpperCase() }}</p>
           </div>
       </RouterLink>
     </div>
