@@ -10,14 +10,20 @@ export const useUserStore = defineStore('user', () => {
   const loading = ref<boolean>(false);
   const currentUser = ref<User | null>(null);
   const authStore = useAuthStore();
+  const currentUserCached = ref<User | null>(null);
   const delay = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
 
   const fetchProfile = async(): Promise<boolean> => {
     if (!authStore.token) return false;
+    if (currentUserCached.value) {
+      currentUser.value = currentUserCached.value;
+      return true;
+    }
     loading.value = true;
     try {
       const { data } = await api.get<MeResponse>('/users/me');
       currentUser.value = data.data.user;
+      currentUserCached.value = data.data.user;
       return true;
     } catch (err) {
       userError.value = axios.isAxiosError(err) ? (err.response?.data?.message ?? 'Session expired. Please log in again.') : 'Session expired. Please log in again.';
@@ -35,6 +41,7 @@ export const useUserStore = defineStore('user', () => {
       const { data } = await api.patch<UpdateProfilePayload>('users/me', payload);
       await delay(1500);
       currentUser.value = data.data.user;
+      currentUserCached.value = data.data.user;
       return { success: true, message: data.message };
     } catch (err) {
       const message = axios.isAxiosError(err) ? (err.response?.data.message ?? 'Failed to update profile.') : 'An unexpected error occurred.';

@@ -1,18 +1,25 @@
 <script setup lang="ts">
-  import type { IWishlistItem } from '@/types/wishlist';
   import { computed, ref, watch } from 'vue';
+  import { useCartStore } from '@/stores/cartStore';
+  import type { IWishlistItem } from '@/types/wishlist';
   import BaseDropdown from '@/components/common/BaseDropdown.vue';
+
+  const cartStore = useCartStore();
 
   const props = defineProps<{
     item: IWishlistItem;
   }>();
 
   const emit = defineEmits<{
-    (e: 'remove', productId: string): void;
+    'remove': [productId: string],
+    'open-cart': [],
+    'move-cart': [productId: string]
   }>();
 
   // track selected option per spec key (colors, sizes)
   const selected = ref<Record<string, string>>({});
+  const quantity = ref<number>(1);
+  const cartOpen = ref<boolean>(false);
 
   const product = computed(() => props.item.productId);
 
@@ -93,6 +100,27 @@
   const handleRemove = () => {
     if (product.value) emit('remove', product.value._id);
   };
+
+  const isMoving = ref(false);
+  const handleMoveToBag = async() => {
+    if (!product.value || isMoving.value) return;
+    isMoving.value = true;
+    try {
+      const result = await cartStore.addToCart(
+        product.value._id,
+        quantity.value,
+        selected.value,
+      );
+      cartOpen.value = true;
+
+      if (result.success) {
+        emit('open-cart');
+        emit('move-cart',product.value._id);
+      }
+    } finally {
+      isMoving.value = false;
+    }
+  };
 </script>
 
 <template>
@@ -154,9 +182,31 @@
       </div>
 
       <button
-        class="mt-4 text-sm sm:mt-auto w-full sm:w-32 bg-black/90 dark:border border-white/30 text-white py-2 rounded font-medium disabled:opacity-40 cursor-pointer "
+        @click="handleMoveToBag"
+        :disabled="isMoving"
+        class="mt-4 text-sm flex items-center justify-center gap-2 sm:mt-auto w-full sm:w-32 bg-black/90 dark:border border-white/30 text-white py-2 rounded font-medium disabled:opacity-40 cursor-pointer"
       >
-        Move to bag
+        <svg
+          v-if="isMoving"
+          class="w-4 h-4 animate-spin"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            class="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="4"
+          />
+          <path
+            class="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+          />
+        </svg>
+        <span>{{ isMoving ? 'Moving...' : 'Move to bag' }}</span>
       </button>
     </div>
   </div>

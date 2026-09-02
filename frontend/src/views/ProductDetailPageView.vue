@@ -3,8 +3,12 @@
   import { useRoute, useRouter } from 'vue-router';
   import { useProductsStore } from '@/stores/productsStore.js';
   import { useReviewStore } from '@/stores/reviewStore.js'; 
-  import ProductImageGallery from '@/components/products/ProductImageGallery.vue';
   import { useAuthStore } from '@/stores/authStore';
+  import { useCartStore } from '@/stores/cartStore';
+  import { useWishlistStore } from '@/stores/wishlist';
+  import { useAlert } from '@/composables/useAlert';
+  import type { ICreateReview, IReview } from '@/types/review';
+  import ProductImageGallery from '@/components/products/ProductImageGallery.vue';
   import ProductSpecification from '@/components/products/ProductSpecification.vue';
   import ProductRatingSummary from '@/components/products/ProductRatingSummary.vue';
   import TopLoader from '@/components/common/TopLoader.vue';
@@ -12,10 +16,7 @@
   import ProductReview from '@/components/products/ProductReview.vue';
   import ProductReviewList from '@/components/products/ProductReviewList.vue';
   import AuthDialog from '@/components/common/AuthDialog.vue';
-  import { useAlert } from '@/composables/useAlert';
-  import type { ICreateReview, IReview } from '@/types/review';
-  import { useWishlistStore } from '@/stores/wishlist';
-  import { useCartStore } from '@/stores/cartStore';
+  import CartDrawer from '@/components/common/CartDrawer.vue';
 
   const route = useRoute();
   const router = useRouter();
@@ -34,6 +35,7 @@
   const isAuthModelOpen = ref<boolean>(false);
   const page = ref<number>(1);
   const editingReview = ref<IReview | null>(null);
+  const cartOpen = ref<boolean>(false);
 
   const openReviewModel = () => {
     if (!authStore.isLoggedIn) {
@@ -186,6 +188,8 @@
       selectedAttributes,
     );
 
+    cartOpen.value = true;
+
     if (result.success) {
       showAlert('The item has been added', { type: 'success' });
     } else {
@@ -195,7 +199,10 @@
 </script>
 
 <template >
-  <TopLoader :isLoading="wishlistStore.loading || cartStore.loading || cartStore.getCartLoadingg || cartStore.updateCartLoading"/>
+  <TopLoader :isLoading="wishlistStore.loading || cartStore.loading ||
+    cartStore.getCartLoadingg || cartStore.updateCartLoading 
+    || cartStore.removeCartLoading"
+  />
   <div v-if="productStore.loadingDetail" class="text-center py-20">
     <TopLoader :isLoading="productStore.loadingDetail || wishlistStore.loading "/>
   </div>
@@ -355,4 +362,5 @@
     @submit-review="handleReviewSubmit"
   />
   <AuthDialog v-model="isAuthModelOpen" @success-login="handleAuthSuccess" />
+  <CartDrawer v-model="cartOpen"/>
 </template>
