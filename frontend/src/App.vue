@@ -12,6 +12,7 @@
   const authStore = useAuthStore();
   const { showAlert } = useAlert();
   const isForgotPasswordRoute = computed(() => router.currentRoute.value.path.startsWith('/forget-password'));
+  const isCheckoutRoute = computed(() => router.currentRoute.value.path.startsWith('/checkout'));
   const isNotFoundPage = computed(() => route.name === 'notFound');
 
   onMounted(async () => {
@@ -48,8 +49,8 @@
 </script>
 
 <template>
-  <app-navbar />
+  <app-navbar v-if="!isCheckoutRoute"/>
   <base-alert />
   <router-view />
-  <app-footer v-if="!isForgotPasswordRoute && !isNotFoundPage" />
+  <app-footer v-if="!isForgotPasswordRoute && !isNotFoundPage && !isCheckoutRoute" />
 </template>
