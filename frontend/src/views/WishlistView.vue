@@ -1,32 +1,32 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
-import { useWishlistStore } from "@/stores/wishlist";
-import { useCartStore } from "@/stores/cartStore";
-import { useAlert } from "@/composables/useAlert";
-import TopLoader from "@/components/common/TopLoader.vue";
-import WishlistCard from "@/components/wishlists/WishlistCard.vue";
-import CartDrawer from "@/components/cart/CartDrawer.vue";
+  import { onMounted, ref } from 'vue';
+  import { useWishlistStore } from '@/stores/wishlist';
+  import { useCartStore } from '@/stores/cartStore';
+  import { useAlert } from '@/composables/useAlert';
+  import TopLoader from '@/components/common/TopLoader.vue';
+  import WishlistCard from '@/components/wishlists/WishlistCard.vue';
+  import CartDrawer from '@/components/cart/CartDrawer.vue';
 
-const wishlistStore = useWishlistStore();
-const cartStore = useCartStore();
-const { showAlert } = useAlert();
+  const wishlistStore = useWishlistStore();
+  const cartStore = useCartStore();
+  const { showAlert } = useAlert();
 
-onMounted(async () => {
-  await wishlistStore.fetchWishlist(true);
-});
+  onMounted(async () => {
+    await wishlistStore.fetchWishlist(true);
+  });
 
-const isCartOpen = ref<boolean>(false);
-const handleRemove = async (productId: string) => {
-  const res = await wishlistStore.toggleWishlist(productId);
-  showAlert(res.message, { type: res.success ? "success" : "error" });
-};
+  const isCartOpen = ref<boolean>(false);
+  const handleRemove = async (productId: string) => {
+    const res = await wishlistStore.toggleWishlist(productId);
+    showAlert(res.message, { type: res.success ? 'success' : 'error' });
+  };
 
-const handleMoveToCart = async (productId: string) => {
-  const res = await wishlistStore.toggleWishlist(productId);
-  if (res.success) {
-    showAlert("Item move to bag successfully", { type: "success" });
-  }
-};
+  const handleMoveToCart = async (productId: string) => {
+    const res = await wishlistStore.toggleWishlist(productId);
+    if (res.success) {
+      showAlert('Item move to bag successfully', { type: 'success' });
+    }
+  };
 </script>
 
 <template>
