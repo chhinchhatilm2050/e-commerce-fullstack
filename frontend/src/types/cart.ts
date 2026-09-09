@@ -4,14 +4,17 @@ export interface ICartProduct {
   _id: string,
   name: string,
   price: number,
+  comparePrice: number,
   images: IProductImage[],
   code: string,
+  slug: string,
   stock: number,
   specification?: Record<string, unknown>;
 };
 
 export interface ICartItem {
   _id: string,
+  id: string,
   productId: ICartProduct,
   selectedAttributes: Record<string, string>;
   quantity: number;

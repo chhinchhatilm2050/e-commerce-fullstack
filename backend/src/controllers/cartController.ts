@@ -12,9 +12,11 @@ export const getCart = asyncHandler(async(req: Request, res: Response, next: Nex
     select: {
       name: 1,
       price: 1,
+      comparePrice: 1,
       stock: 1,
       specification: 1,
       code: 1,
+      slug: 1,
       images: { $slice: 1 }
     }
   });
