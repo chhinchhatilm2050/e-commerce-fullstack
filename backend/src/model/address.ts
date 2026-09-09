@@ -9,11 +9,17 @@ const addressSchema = new mongoose.Schema<IAddress>(
       required: true,
       index: true,
     },
-    label: {
+    firstName: {
       type: String,
-      trim: true,
-      default: 'Home',
-      maxlength: 30,
+      required: true,
+      minLength: 2,
+      maxLength: 50,
+    },
+    lastName: {
+      type: String,
+      required: true,
+      minLength: 2,
+      maxLength: 50,
     },
     phoneNumber: {
       type: String,

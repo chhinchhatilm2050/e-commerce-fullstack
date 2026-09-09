@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import api from '@/composables/useFetch';
 import { ref, computed, watch } from 'vue';
 import axios from 'axios';
-import type { ICart, ICartRespone } from '@/types/cart';
+import type { ICart, ICartItem, ICartRespone } from '@/types/cart';
 
 const TOTAL_ITEMS_STORAGE_KEY = 'cart:totalItems';
 
@@ -24,6 +24,28 @@ export const useCartStore = defineStore('cart', () => {
 
   const cartItems = computed(() => cart.value?.items || []);
 
+  const originalTotal = computed(() => {
+    const raw = cartItems.value.reduce((acc, item) => {
+      const price = Number(item.productId?.price || 0);
+      const comparePrice = Number(item.productId?.comparePrice || 0);
+      const basePrice = (comparePrice > price) ? comparePrice : price;
+      return acc + (basePrice * item.quantity);
+    }, 0);
+    return Number(raw.toFixed(2));
+  });
+
+  const totalSavings = computed(() => {
+    const raw = cartItems.value.reduce((acc, item) => {
+      const price = Number(item.productId?.price || 0);
+      const comparePrice = Number(item.productId?.comparePrice || 0);
+      if (comparePrice > price) {
+        return acc + ((comparePrice - price) * item.quantity);
+      }
+      return acc;
+    }, 0);
+    return Number(raw.toFixed(2));
+  });
+
   const totalItems = computed(() =>
     cart.value
       ? cartItems.value.reduce((sum, item) => sum + item.quantity, 0)
@@ -41,20 +63,20 @@ export const useCartStore = defineStore('cart', () => {
 
   const amount = computed(() =>
     cartItems.value.reduce((sum, item) => {
-      const price = item.productId.price || 0;
+      const price = Number(item.productId?.price || 0);
       return sum + price * item.quantity;
     }, 0),
   );
 
   const fetchCart = async (forceRefresh: boolean = false) => {
-    if (cart.value && !forceRefresh ) {
+    if (cart.value && !forceRefresh) {
       return { success: true, cart: cart.value };
     }
     getCartLoadingg.value = true;
     error.value = '';
     try {
       const { data } = await api.get<ICartRespone>('/carts');
-      cart.value =  data.data.cart;
+      cart.value = data.data.cart;
       await delay(500);
       return true;
     } catch {
@@ -65,7 +87,7 @@ export const useCartStore = defineStore('cart', () => {
     }
   };
 
-  const addToCart = async(productId: string, quantity: number = 1, selectedAttributes: Record<string, string> = {}) => {
+  const addToCart = async (productId: string, quantity: number = 1, selectedAttributes: Record<string, string> = {}) => {
     loading.value = true;
     error.value = '';
     try {
@@ -90,9 +112,51 @@ export const useCartStore = defineStore('cart', () => {
     error.value = '';
     try {
       const { data } = await api.patch<ICartRespone>(`/carts/item/${itemId}`, payload);
-      cart.value = data.data.cart;
+      // Merge returned cart while preserving existing populated productId fields
+      if (cart.value && data.data.cart?.items) {
+        const mergedItems: ICartItem[] = data.data.cart.items.map((newItem: ICartItem) => {
+          const oldItem = cart.value?.items.find(
+            (i: ICartItem) => (i._id || i.id) === (newItem._id || newItem.id),
+          );
+
+          // 1. If backend returned a raw ID string instead of populated object
+          if (typeof newItem.productId === 'string' && oldItem?.productId) {
+            return { ...newItem, productId: oldItem.productId } as ICartItem;
+          }
+
+          // Convert through unknown to safely convert ICartProduct to Record
+          const oldRecord = oldItem?.productId as unknown as Record<string, unknown> | undefined;
+          const newRecord = newItem.productId as unknown as Record<string, unknown> | undefined;
+
+          // 2. If backend response stripped comparePrice, preserve the old one
+          if (
+            newRecord &&
+            typeof newRecord === 'object' &&
+            oldRecord &&
+            typeof oldRecord === 'object' &&
+            'comparePrice' in oldRecord &&
+            !('comparePrice' in newRecord)
+          ) {
+            return {
+              ...newItem,
+              productId: {
+                ...newRecord,
+                comparePrice: oldRecord.comparePrice,
+              },
+            } as ICartItem;
+          }
+
+          return newItem;
+        });
+
+        cart.value = { ...data.data.cart, items: mergedItems };
+      } else {
+        cart.value = data.data.cart;
+      }
+
       await delay(500);
       return { success: true };
+
     } catch (err) {
       const message = axios.isAxiosError(err) ? (err.response?.data?.message ?? 'Fail to Update item to cart.') : 'An unexpected error occurred.';
       error.value = message;
@@ -136,6 +200,8 @@ export const useCartStore = defineStore('cart', () => {
     getCartLoadingg,
     updateCartLoading,
     removeCartLoading,
+    originalTotal,
+    totalSavings,
     fetchCart,
     addToCart,
     removeFromCart,

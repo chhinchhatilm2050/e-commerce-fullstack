@@ -1,40 +1,3 @@
-<template>
-  <div class="relative w-full " ref="dropdownRef">
-    <button type="button" @click="isOpen = !isOpen"
-      class="w-full flex justify-between px-1.5 py-1.5 rounded-sm border text-sm transition-all cursor-pointer duration-200 input"
-      :class="isOpen
-      ? ' ring-1 ring-black/20  bg-white dark:bg-surface-800'
-      : ' ring-black/20'"
-
-    >
-      <span class="text-gray-700 dark:text-gray-300">
-        {{ selectedLabel }}
-      </span>
-      <i class="ri-arrow-down-s-line text-gray-400 transition-transform duration-200"
-        :class="isOpen ? 'rotate-180' : ''"
-      ></i>
-    </button>
-      <div name="dropdown">
-        <ul
-          v-if="isOpen"
-          class="absolute z-50 w-full mt-1 bg-white dark:bg-surface-800 border border-gray-200 dark:border-gray-700 rounded-sm shadow-lg overflow-hidden"
-        >
-          <li
-            v-for="option in options"
-            :key="option.value"
-            @click="select(option)"
-            class="flex items-center justify-between px-3 py-2 text-sm cursor-pointer transition-colors duration-150"
-            :class="option.value === modelValue
-              ? 'bg-gray-200 text-gray-600 dark:text-gray-600 font-medium'
-              : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-surface-100'"
-          >
-            {{$t(option.label) }}
-            <i v-if="option.value === modelValue" class="ri-check-line  dark:text-gray-600"></i>
-          </li>
-        </ul>
-      </div>
-  </div>
-</template>
 <script setup lang="ts">
   import { ref, computed } from 'vue';
   import { onClickOutside } from '@vueuse/core';
@@ -47,21 +10,34 @@
 
   const { t } = useI18n();
 
-  const props = defineProps<{
-    modelValue?: string;
-    options: DropdownOption[];
-  }>();
+  const props = withDefaults(
+    defineProps<{
+      modelValue?: string;
+      options: DropdownOption[];
+      placeholder?: string;
+    }>(),
+    {
+      modelValue: '',
+      placeholder: 'Select an option',
+    },
+  );
 
   const emit = defineEmits<{
-    'update:modelValue': [value: string]
+    (e: 'update:modelValue', value: string): void;
   }>();
 
   const isOpen = ref(false);
   const dropdownRef = ref<HTMLElement | null>(null);
 
+  const selectedOption = computed(() => {
+    return props.options.find((o) => o.value === props.modelValue);
+  });
+
   const selectedLabel = computed(() => {
-    const found = props.options.find(o => o.value === props.modelValue);
-    return found ? t(found.label) : '';
+    if (selectedOption.value) {
+      return selectedOption.value.label;
+    }
+    return props.placeholder ? t(props.placeholder) : '';
   });
 
   const select = (option: DropdownOption) => {
@@ -69,5 +45,45 @@
     isOpen.value = false;
   };
 
-  onClickOutside(dropdownRef, () => isOpen.value = false);
+  onClickOutside(dropdownRef, () => (isOpen.value = false));
 </script>
+
+<template>
+  <div class="relative w-full" ref="dropdownRef">
+    <button 
+      type="button" 
+      @click="isOpen = !isOpen"
+      class="w-full flex justify-between items-center px-2 py-1.5 rounded-sm border text-sm transition-all cursor-pointer duration-200 input"
+      :class="isOpen ? 'ring-1 ring-black/20 bg-white dark:bg-surface-800' : 'ring-black/20'"
+    >
+      <span :class="selectedOption ? 'text-gray-900 dark:text-gray-100 font-medium' : 'text-gray-400 dark:text-gray-500'">
+        {{ selectedLabel }}
+      </span>
+      <i 
+        class="ri-arrow-down-s-line text-gray-400 transition-transform duration-200"
+        :class="isOpen ? 'rotate-180' : ''"
+      ></i>
+    </button>
+
+    <div name="dropdown">
+      <ul
+        v-if="isOpen"
+        class="absolute z-50 w-full mt-1 max-h-60 overflow-y-auto bg-white dark:bg-surface-800 border border-gray-200 dark:border-gray-700 rounded-sm shadow-lg"
+      >
+        <li
+          v-for="option in options"
+          :key="option.value"
+          @click="select(option)"
+          class="flex items-center justify-between px-3 py-2 text-sm cursor-pointer transition-colors duration-150"
+          :class="option.value === modelValue
+            ? 'bg-gray-100 text-gray-900 dark:bg-surface-700 dark:text-white font-medium'
+            : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-surface-700'"
+        >
+          <span>{{ option.label }}</span>
+          <i v-if="option.value === modelValue" class="ri-check-line text-black dark:text-white"></i>
+        </li>
+      </ul>
+    </div>
+  </div>
+</template>
+

@@ -192,7 +192,7 @@
                 :class="[
                   star <= (hoverRating || form.rating)
                     ? 'ri-star-fill text-amber-600 dark:text-amber-600'
-                    : 'ri-star-line text-black/50 dark:text-white/50'
+                    : 'ri-star-line text-black/60 dark:text-white/50'
                 ]"
               />
             </button>

@@ -25,10 +25,17 @@ export const saveAddressValidator = [
     .notEmpty()
     .withMessage('Phone number is required')
     .withMessage('Invalid phone number format'),
-  body('label')
-    .optional()
+  body('firstName')
+    .notEmpty()
+    .withMessage('First name is required')
     .trim()
     .isLength({ min: 2, max: 50 })
-    .withMessage('Label must be between 2 and 50 characters'),
+    .withMessage('First name must be between 2 and 50 characters'),
+  body('lastName')
+    .notEmpty()
+    .withMessage('Last name is required')
+    .trim()
+    .isLength({ min: 2, max: 50 })
+    .withMessage('Last name must be between 2 and 50 characters'),
   validateRequest,
 ];

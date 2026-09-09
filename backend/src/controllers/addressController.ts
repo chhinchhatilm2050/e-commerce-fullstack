@@ -18,7 +18,7 @@ export const getMyAddress = asyncHandler(async (req: Request, res: Response, nex
 
 export const saveMyAddress = asyncHandler(async (req: Request<unknown, unknown, IAddress>, res: Response, next: NextFunction): Promise<void> => {
   const userId = req.user!._id;
-  const { phoneNumber, streetAddress, province, district, commune, label } = req.body;
+  const { phoneNumber, streetAddress, province, district, commune, firstName, lastName } = req.body;
   if (!phoneNumber || !streetAddress || !province || !district || !commune) {
     return next(new AppError('Missing required fields', 400));
   };  
@@ -32,14 +32,15 @@ export const saveMyAddress = asyncHandler(async (req: Request<unknown, unknown, 
       province,
       district,
       commune,
-      label: label || 'Home',
+      firstName,
+      lastName,
       updatedBy: userId,
       isDeleted: false,
       deletedAt: null,
       deletedBy: null,
     },
     {
-      new: true,
+      returnDocument: 'after',
       upsert: true,
       runValidators: true,
       setDefaultsOnInsert: true,
