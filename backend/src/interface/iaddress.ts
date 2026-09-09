@@ -2,6 +2,8 @@ import { Document, Types } from 'mongoose';
 
 export interface IAddress extends Document {
   userId: Types.ObjectId;
+  firstName: string,
+  lastName: string,
   label: string; 
   streetAddress: string;
   phoneNumber: string;

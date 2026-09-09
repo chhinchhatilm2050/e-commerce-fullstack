@@ -68,15 +68,14 @@
         <div v-if="showFooter" class="flex justify-end gap-2 mt-6">
           <slot name="footer">
             <button
-              class="subCategory-button px-3 text-red-700"
+              class="subCategory-button px-4 py-1.5 text-red-600 text-sm"
               @click="$emit('cancel')"
             >
               {{ cancelText }}
             </button>
             <button
               :disabled="confirmDisabled"
-              class="subCategory-button px-3
-                    transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              class="subCategory-button px-4 py-2 text-sm disabled:cursor-not-allowed"
               @click="$emit('confirm')"
             >
               {{ confirmText }}
