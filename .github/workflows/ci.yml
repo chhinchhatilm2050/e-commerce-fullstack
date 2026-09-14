@@ -1,5 +1,4 @@
 name: CI Pipeline
-
 on:
   push:
     branches: [develop, 'feature/**']
@@ -13,7 +12,6 @@ on:
       - 'backend/**'
       - 'frontend/**'
       - '.github/workflows/**'
-
 jobs:
   backend:
     runs-on: ubuntu-latest

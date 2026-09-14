@@ -48,6 +48,7 @@ export const useAddressStore = defineStore('address', () => {
     try {
       const { data } = await api.delete<IAddressResponse>('/addresses/me');
       address.value = null;
+      await delay(800);
       return { success: true, message: data.message };
     } catch (err) { 
       const message = axios.isAxiosError(err) ? err.response?.data?.message ?? 'Failed to delete address.' : 'Failed to delete address.';

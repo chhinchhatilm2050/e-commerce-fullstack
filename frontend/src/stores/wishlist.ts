@@ -51,6 +51,7 @@ export const useWishlistStore = defineStore('wishlist', () => {
         const { data } = await api.delete<IDeleteRespone>(`/wishlists/${productId}`);
         items.value = items.value.filter((item) => item?.productId?._id !== productId);
         await delay(300);
+        itemsCache.value = [];
         return { success: data.success, message: data.message };
       } else {
         const { data } = await api.post<IAddRespone>(`/wishlists/${productId}`);

@@ -24,6 +24,7 @@
   const props = defineProps<{
     isOpen: boolean;
     initialData?: AddressData | null;
+    isDeleteOpen: boolean;
   }>();
 
   const emit = defineEmits<{
@@ -139,16 +140,24 @@
     },
   );
 
+  const isFormValid = computed(() => {
+    return (
+      form.value.firstName.trim() !== '' &&
+      form.value.lastName.trim() !== '' &&
+      form.value.phoneNumber.trim() !== '' &&
+      form.value.provinceId !== '' &&
+      form.value.districtId !== '' &&
+      form.value.communeId !== '' &&
+      form.value.streetAddress.trim() !== ''
+    );
+  });
+
   const handleSave = () => {
-    // if (!form.value.fullName || !form.value.phone || !form.value.provinceId) {
-    //   return;
-    // }
+    if (!isFormValid.value || addressStore.loading) return;
     emit('save', { ...form.value });
   };
-
   const handleDelete = () => {
     emit('delete');
-    isConfirmingDelete.value = false;
   };
 </script>
 
@@ -159,14 +168,16 @@
     class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
   >
     <div class="animate-slide-up w-full flex flex-col items-center justify-center pointer-events-auto">
-      <div v-if="isConfirmingDelete" class="bg-white dark:bg-surface-800 rounded-lg p-6 w-full max-w-sm space-y-4 text-center">
+      <!-- In AddressModal.vue -->
+      <div v-if="props.isDeleteOpen" class="bg-white dark:bg-surface-800 rounded-lg p-6 w-full max-w-sm space-y-4 text-center">
         <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100">Are you sure you want to delete this address?</h3>
         <div class="flex justify-center gap-3 pt-2">
-          <button @click="isConfirmingDelete = false" class="w-full subCategory-button px-4 py-1.5 text-red-600 text-sm">
+          <!-- Emits close event so parent resets both isModalOpen and deleteOpen -->
+          <button @click="emit('close')" class="w-full subCategory-button px-4 py-1.5 bg-white border border-black/10 text-red-600 text-sm">
             Cancel
           </button>
           <button @click="handleDelete" class="w-full subCategory-button px-4 py-1.5 text-sm">
-              Delete
+            Delete
           </button>
         </div>
       </div>
@@ -174,7 +185,7 @@
       <div v-else class="bg-white dark:bg-surface-800 rounded-lg p-7 w-full max-w-lg space-y-4">
         <div class="flex justify-between items-center">
           <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100">
-            {{ initialData?.firstName ? 'Edit Shipping Address' : 'Add Delivery Address' }}
+            {{ initialData?.firstName ? 'Edit Address' : 'Add Address' }}
           </h3>
           <button @click="emit('close')" class="text-black/80 cursor-pointer hover:text-gray-600 text-2xl"> 
             <i class="ri-close-line text-2xl"></i>
@@ -183,7 +194,7 @@
 
         <div class="flex gap-2">
           <div class="animate-slide-up">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Last Name</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Last Name <span class="text-red-600">*</span></label>
             <input
               v-model="form.lastName"
               type="text"
@@ -192,7 +203,7 @@
             />
           </div>
           <div class="animate-slide-up">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">First Name</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">First Name<span class="text-red-600">*</span></label>
             <input
               v-model="form.firstName"
               type="text"
@@ -203,7 +214,7 @@
         </div>
 
         <div class="animate-slide-up">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone Number</label>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Mobile phone<span class="text-red-600">*</span></label>
           <input
             v-model="form.phoneNumber"
             type="text"
@@ -213,7 +224,7 @@
         </div>
 
         <div class="animate-slide-up">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Province / Capital</label>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Province / Capital<span class="text-red-600">*</span></label>
           <BaseDropdown
             v-model="form.provinceId"
             :options="provinceOptions"
@@ -222,7 +233,7 @@
         </div>
 
         <div class="animate-slide-up">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">District / Khan</label>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">District / Khan<span class="text-red-600">*</span></label>
           <BaseDropdown
             v-model="form.districtId"
             :options="districtOptions"
@@ -231,16 +242,15 @@
         </div>
 
         <div class="animate-slide-up">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Commune / Sangkat</label>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Commune / Sangkat<span class="text-red-600">*</span></label>
           <BaseDropdown
             v-model="form.communeId"
             :options="communeOptions"
             :placeholder="form.districtId ? 'Select Commune' : 'Select district first'"
           />
         </div>
-
         <div class="animate-slide-up">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Street Address / House No.</label>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Street Address / House No.<span class="text-red-600">*</span></label>
           <input
             v-model="form.streetAddress"
             type="text"
@@ -249,45 +259,38 @@
           />
         </div>
 
-        <div class="animate-slide-up flex justify-between items-center pt-2">
-          <div>
-            <button
-              v-if="initialData?.firstName"
-              @click="isConfirmingDelete = true"
-              class="subCategory-button px-4 py-1.5 text-red-600 text-sm"
+        <div class="animate-slide-up flex justify-center gap-4 items-center pt-2 w-full">
+    
+        <div class="flex-1">
+          <button 
+            @click="handleSave" 
+            class="subCategory-button px-4 flex items-center justify-center gap-2 w-full py-1.5 text-md" 
+            :disabled="!isFormValid || addressStore.loading"
+          >
+            <svg
+              v-if="addressStore.loading"
+              class="w-3 h-3 animate-spin"
+              fill="none"
+              viewBox="0 0 24 24"
             >
-              Delete
-            </button>
-          </div>
-          <div class="flex gap-2">
-            <button @click="emit('close')" class="subCategory-button px-4 py-1.5 text-red-600 text-sm">
-              Cancel
-            </button>
-            <button @click="handleSave" class="subCategory-button px-4 py-1.5 text-sm">
-              <svg
-                v-if="addressStore.loading"
-                class="w-3 h-3 animate-spin"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  class="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  stroke-width="4"
-                />
-                <path
-                  class="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                />
-              </svg>
-              {{ addressStore.loading ? " Saving..." : "Save" }}
-            </button>
-          </div>
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              />
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+              />
+            </svg>
+            {{ addressStore.loading ? "Saving..." : "Save" }}
+          </button>
         </div>
+      </div>
       </div>
     </div>
   </div>

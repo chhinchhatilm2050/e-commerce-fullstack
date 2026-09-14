@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { addToCart, getCart, mergeGuestCart, removeCartItem, updateCartItem } from '../controllers/cartController.js';
+import { addToCart, getCart, mergeGuestCart, removeCartItem, updateCartItem, clearCart } from '../controllers/cartController.js';
 import { authenticate } from '../middlewares/authenticate.js';
 
 const cartRouter = Router();
@@ -9,4 +9,5 @@ cartRouter.post('/add/:productId', addToCart);
 cartRouter.patch('/item/:itemId', updateCartItem);
 cartRouter.delete('/item/:itemId', removeCartItem);
 cartRouter.post('/merge', mergeGuestCart);
+cartRouter.delete('/clear', clearCart);
 export default cartRouter;

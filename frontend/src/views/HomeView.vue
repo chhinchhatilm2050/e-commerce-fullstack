@@ -52,7 +52,7 @@
             flex items-center justify-center">
           <p class="text-white text-sm dark:text-black">{{ $t('home.shopping') }}</p>
         </div>
-        <div class="container-xl relative py-12 lg:py-18 flex md:py-15 lg:flex-row items-center flex-col">
+        <div class="container-xl relative py-12 lg:py-16 flex md:py-15 lg:flex-row items-center flex-col">
             <div class="max-w-3xl">
                 <h1 class="font-home text-4xl md:text-[43px] font-bold leading-tight  lg:text-7xl mb-6 animate-slide-up bg-gradient-to-r from-surface-800 via-gray-500 to-surface-800
                   bg-clip-text text-transparent" style="animation-delay:0.3s">
@@ -62,7 +62,7 @@
                 {{ $t('home.hero_subtitle') }}
                 </p>
                 <div class="hidden lg:flex flex-wrap gap-4 animate-slide-up" style="animation-delay:0.5s">
-                <RouterLink to="/category/books" class="default-button text-sm px-4 inline-block">
+                <RouterLink to="/products/category/books" class="default-button text-sm px-4 inline-block">
                     {{ $t('home.hero_cta') }}
                 </RouterLink>
                 </div>

@@ -183,11 +183,21 @@ export const useCartStore = defineStore('cart', () => {
     }
   };
 
-  const clearCartState = () => {
-    cart.value = null;
-    storedTotalItems.value = 0;
-    localStorage.removeItem(TOTAL_ITEMS_STORAGE_KEY);
+  const clearCart = async () => {
     error.value = '';
+    try {
+      const { data } = await api.delete<ICartRespone>('/carts/clear');
+      cart.value = data.data.cart ?? null;
+      return { success: true };
+    } catch (err) {
+      cart.value = null;
+      const message = axios.isAxiosError(err) ? (err.response?.data?.message ?? 'Failed to clear cart on the server.') : 'An unexpected error occurred.';
+      error.value = message;
+      return { success: false, message };
+    } finally {
+      storedTotalItems.value = 0;
+      localStorage.removeItem(TOTAL_ITEMS_STORAGE_KEY);
+    }
   };
 
   return {
@@ -205,8 +215,7 @@ export const useCartStore = defineStore('cart', () => {
     fetchCart,
     addToCart,
     removeFromCart,
-    clearCartState,
+    clearCart,
     updateCartItem,
   };
 });
-

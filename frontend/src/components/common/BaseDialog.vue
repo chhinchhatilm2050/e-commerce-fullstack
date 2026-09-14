@@ -68,7 +68,7 @@
         <div v-if="showFooter" class="flex justify-end gap-2 mt-6">
           <slot name="footer">
             <button
-              class="subCategory-button px-4 py-1.5 text-red-600 text-sm"
+              class="subCategory-button px-4 py-1.5 bg-white border border-black/10 text-red-600 text-sm"
               @click="$emit('cancel')"
             >
               {{ cancelText }}
