@@ -12,7 +12,7 @@ const CustomerServiceView = () => import('@/views/feature/CustomerServiceView.vu
 const NotFoundPageView = () => import('@/views/NotFoundView.vue');
 const WishlistView = () => import('@/views/WishlistView.vue');
 const CheckoutView = () => import('@/views/CeckoutView.vue');
-const OrderSuccess = () => import('@/views/Ordersuccess.vue');
+const OrderSuccessed = () => import('@/views/Ordersuccess.vue');
 
 const routes: RouteRecordRaw[] = [
   {
@@ -90,7 +90,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/order-success',
     name: 'order-success',
-    component: OrderSuccess,
+    component: OrderSuccessed,
     meta: { title: 'ChhatStore - Checkout' },
   },
   {
