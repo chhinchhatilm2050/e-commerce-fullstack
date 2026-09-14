@@ -15,18 +15,30 @@
 </script>
 <template>
   <div class="container-xl px-8 py-8 animate-slide-up">
-    <div class="text-center mb-10">
-      <h1 class="text-4xl font-extrabold text-black/80 dark:text-white/80 tracking-tight">HOW CAN I HELP YOU?</h1>
-      <p class="text-black/60 dark:text-white/60 mt-2 text-lg">Everything you need to know about shopping with CHHATStore.</p>
-    </div>
+    <div class="relative overflow-hidden rounded-lg bg-cover bg-center bg-no-repeat p-8 mb-16 shadow-lg bg-[url('https://i.pinimg.com/736x/3c/3f/ef/3c3fef8c37b7bfd44c08e5782ca4f391.jpg')]">
+      <!-- Dark overlay to ensure text contrast and readability -->
+      <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-[1px]"></div>
+      <div class="relative z-10">
+        <!-- Header Section -->
+        <div class="text-center mb-10">
+          <h1 class="text-4xl font-extrabold text-white tracking-tight">HOW CAN I HELP YOU?</h1>
+          <p class="text-slate-200 mt-2 text-lg">Everything you need to know about shopping with CHHATStore.</p>
+        </div>
 
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16">
-      <a v-for="fea in feature" :key="fea.icon" :href="fea.id" class="p-4 border border-slate-200 dark:border-white/30 rounded-sm text-center dark:hover:border-white/70 hover:shadow-lg transition">
-        <span class="block text-2xl mb-1" v-html="fea.icon"></span>
-        <span class="font-semibold text-black/80 dark:text-white/80 text-sm">{{ $t(fea.title) }}</span>
-      </a>
+        <!-- Feature Quick Links -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <a 
+            v-for="fea in feature" 
+            :key="fea.icon" 
+            :href="fea.id" 
+            class="p-4 border border-white/20 bg-white/10 backdrop-blur-md rounded-md text-center text-white hover:bg-white/20 hover:border-white/40 hover:shadow-lg transition duration-200"
+          >
+            <span class="block text-2xl mb-1 text-white" v-html="fea.icon"></span>
+            <span class="font-semibold text-sm">{{ $t(fea.title) }}</span>
+          </a>
+        </div>
+      </div>
     </div>
-
     <div class="space-y-20">
       <section id="shipping" class="scroll-mt-6">
         <div class="flex items-center gap-3 mb-6">
@@ -131,21 +143,21 @@
           <div class="p-5 shadow-xl border border-slate-200 dark:border-white/30  rounded-sm text-center">
             <h4 class="font-bold text-black/80 dark:text-white/80">Live Chat</h4>
             <p class="text-black/60 dark:text-white/60 text-xs mb-3">2 min response time</p>
-            <button class="block w-full subCategory-button text-sm py-1">
+            <button class="block w-full subCategory-button text-sm py-1.5">
               Start Chat
             </button>
           </div>
           <div class="p-5 shadow-xl border border-slate-200 dark:border-white/30  rounded-sm text-center">
             <h4 class="font-bold text-black/80 dark:text-white/80">Email</h4>
             <p class="text-black/60 dark:text-white/60 text-xs mb-3">support@chhatstore.com</p>
-            <a href="mailto:support@chhatstore.com" class="block w-full subCategory-button text-sm py-1">
+            <a href="mailto:support@chhatstore.com" class="block w-full subCategory-button text-sm py-1.5">
               Send Email
             </a>
           </div>
           <div class="p-5 shadow-xl border border-slate-200 dark:border-white/30  rounded-sm text-center">
             <h4 class="font-bold text-black/80 dark:text-white/80">Phone / WhatsApp</h4>
             <p class="text-black/60 dark:text-white/60 text-xs mb-3">+91-8800-347-003</p>
-            <a href="tel:+918800347003" class="block w-full subCategory-button text-sm py-1">
+            <a href="tel:+918800347003" class="block w-full subCategory-button text-sm py-1.5">
               Call Now
             </a>
           </div>

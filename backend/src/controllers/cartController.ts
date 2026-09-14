@@ -159,6 +159,29 @@ export const removeCartItem = asyncHandler(async(req: Request, res: Response, _n
   });
 });
 
+export const clearCart = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  const userId = req.user?._id;
+
+  if (!userId) {
+    return next(new AppError('Not authenticated', 401));
+  }
+
+  const cart = await CartModel.findOneAndUpdate(
+    { userId },
+    { $set: { items: [] } },
+    { new: true }
+  );
+
+  if (!cart) {
+    return next(new AppError('Cart not found', 404));
+  }
+
+  res.status(200).json({
+    success: true,
+    data: { cart },
+  });
+});
+
 export const mergeGuestCart = asyncHandler(async(req: Request<unknown, unknown, IMergeGuestCartRequest>, res: Response, _next: NextFunction): Promise<void> => {
   const userId = req.user?._id;
   const { guestItems } = req.body;
