@@ -9,6 +9,7 @@ import adminProductRouter from './adminProductRoutes.js';
 import wishlistRouter from './wishlistRoutes.js';
 import cartRouter from './cartRoutes.js';
 import addressRouter from './addressRoutes.js';
+import orderRouter from './orderRoutes.js';
 
 const router = Router();
 router.use('/auth', authRouter);
@@ -21,5 +22,6 @@ router.use('/admin/products', adminProductRouter);
 router.use('/wishlists', wishlistRouter);
 router.use('/carts', cartRouter);
 router.use('/addresses', addressRouter);
+router.use('/orders', orderRouter);
 
 export default router;

@@ -193,7 +193,7 @@
 
   const handleShopNow = () => {
     close();
-    router.push('/products');
+    router.push('/products/category/books');
   };
 
   // Navigates to checkout page after fetching cart data
@@ -234,7 +234,7 @@
         </div>
 
         <!-- Empty State -->
-        <div v-if="isEmpty" class="flex-1 flex flex-col items-center justify-center gap-6 px-8 text-center">
+        <div v-if="isEmpty" class="flex-1 flex flex-col items-center mt-30 gap-6 px-8 text-center">
           <i class="ri-shopping-bag-line text-5xl text-black/90 dark:text-white/90"></i>
           <div>
             <p class="text-2xl font-bold dark:text-white">Your bag is empty</p>
@@ -327,8 +327,8 @@
           <!-- Footer Action Bar -->
           <div class="border-t border-gray-100 dark:border-surface-700 p-5">
             <div class="flex items-center justify-between mb-4">
-              <span class="text-sm text-black/70 dark:text-white/70">Subtotal</span>
-              <span class="text-lg font-bold dark:text-gray-100">US ${{ cartStore.amount.toFixed(2) }}</span>
+              <span class="text-md font-bold dark:text-gray-100">Amount to pay</span>
+              <span class="text-md font-bold dark:text-gray-100">US ${{ cartStore.amount.toFixed(2) }}</span>
             </div>
             <button
               @click="handleCheckout"

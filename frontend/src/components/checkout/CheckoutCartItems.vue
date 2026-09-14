@@ -54,10 +54,10 @@
 
 <template>
   <div>
-    <h2 class="text-base font-bold text-gray-900 mb-2">
+    <h2 class="text-base font-bold mb-2">
       Shopping Cart ({{ cartStore.totalItems }})
     </h2>
-    <p class="text-xs text-gray-500 mb-4">ⓘ Items in your bag are not reserved - complete checkout to place order.</p>
+    <p class="text-xs text-black/70 dark:text-white/70 mb-4">ⓘ Items in your bag are not reserved - complete checkout to place order.</p>
 
     <div v-if="cartStore.cartItems.length === 0" class="py-8 text-center text-sm text-gray-500">
       Your cart is empty.
@@ -66,12 +66,12 @@
     <!-- Scrollable Container for Cart Items -->
     <div 
       v-else 
-      class="space-y-4 max-h-[472px] overflow-y-auto pr-2 custom-scrollbar"
+      class="space-y-4 max-h-[690px] overflow-y-auto pr-2 custom-scrollbar"
     >
       <div 
         v-for="item in cartStore.cartItems" 
         :key="item._id" 
-        class="flex gap-4 pb-4 border-b relative border-gray-100"
+        class="flex gap-4 pb-4 relative "
       >
         <!-- Product Image & Discount Tag -->
         <div class="relative w-28 h-38 flex-shrink-0">
@@ -91,16 +91,16 @@
         
         <div class="flex-1 text-sm flex flex-col justify-between">
           <div class="space-y-1 pr-6">
-            <p class="font-bold text-gray-900 leading-snug">{{ item.productId?.name }}</p>
-            <p class="text-xs text-black/50">Code. {{ item.productId?.code }}</p>
+            <p class="font-bold text-black/90 dark:text-white/90 leading-snug">{{ item.productId?.name }}</p>
+            <p class="text-xs text-black/50 dark:text-white/60"><span class="text-black/70 dark:text-white/70">Code.</span> {{ item.productId?.code }}</p>
 
             <!-- Read-Only Selected Color & Size Display -->
             <div 
               v-if="item.selectedAttributes && (item.selectedAttributes.color || item.selectedAttributes.colors || item.selectedAttributes.size || item.selectedAttributes.sizes)"
-              class="flex items-center gap-1.5 text-xs text-gray-600 pt-0.5"
+              class="flex items-center gap-1.5 text-xs pt-0.5"
             >
               <span v-if="item.selectedAttributes.color || item.selectedAttributes.colors">
-                Color: <strong class="text-gray-800 capitalize">{{ item.selectedAttributes.color || item.selectedAttributes.colors }}</strong>
+                <span class="text-black/70 dark:text-white/70">Color:</span> <span class="capitalize">{{ item.selectedAttributes.color || item.selectedAttributes.colors }}</span>
               </span>
 
               <span v-if="(item.selectedAttributes.color || item.selectedAttributes.colors) && (item.selectedAttributes.size || item.selectedAttributes.sizes)">
@@ -108,7 +108,7 @@
               </span>
 
               <span v-if="item.selectedAttributes.size || item.selectedAttributes.sizes">
-                Size: <strong class="text-gray-800 uppercase">{{ item.selectedAttributes.size || item.selectedAttributes.sizes }}</strong>
+                Size: <span class="uppercase">{{ item.selectedAttributes.size || item.selectedAttributes.sizes }}</span>
               </span>
             </div>
 
@@ -122,11 +122,11 @@
           <div class="flex items-end justify-between pt-2">
             <div class="flex items-center gap-3">
               <!-- Decrement / Increment Control -->
-              <div class="flex items-center border border-gray-300 rounded">
+              <div class="flex items-center border dark:border-white/20 border-black/20">
                 <button
                   @click="handleDecrement(item._id, item.quantity)"
                   :disabled="item.quantity <= 1 || cartStore.loading"
-                  class="w-7 h-7 flex items-center justify-center hover:bg-gray-100 disabled:opacity-30 cursor-pointer"
+                  class="w-7 h-7 flex items-center justify-center disabled:opacity-30 cursor-pointer"
                 >
                   −
                 </button>
@@ -134,7 +134,7 @@
                 <button
                   @click="handleIncrement(item._id, item.quantity, item.productId?.stock || 0)"
                   :disabled="item.quantity >= (item.productId?.stock || 0) || cartStore.loading"
-                  class="w-7 h-7 flex items-center justify-center hover:bg-gray-100 disabled:opacity-30 cursor-pointer"
+                  class="w-7 h-7 flex items-center justify-center disabled:opacity-30 cursor-pointer"
                 >
                   +
                 </button>
@@ -157,12 +157,12 @@
             <div class="text-right space-y-0.5">
               <template v-if="hasDiscount(item.productId?.price, item.productId?.comparePrice)">
                 <!-- Original Compare Price -->
-                <div class="text-xs text-gray-400 line-through">
+                <div class="text-xs text-black/60 dark:text-white/60 line-through">
                   ${{ ((item.productId?.comparePrice || 0) * item.quantity).toFixed(2) }}
                 </div>
 
                 <!-- Discount Percentage & Discount Amount -->
-                <div class="text-xs font-medium text-gray-900">
+                <div class="text-xs font-medium">
                   ({{ calculateDiscountPercent(item.productId?.price, item.productId?.comparePrice) }}% off) 
                   <span>-${{ (((item.productId?.comparePrice || 0) - (item.productId?.price || 0)) * item.quantity).toFixed(2) }}</span>
                 </div>
@@ -175,7 +175,7 @@
 
               <!-- Regular Price Display -->
               <template v-else>
-                <div class="text-sm font-medium text-black">
+                <div class="text-sm font-medium">
                   ${{ ((item.productId?.price || 0) * item.quantity).toFixed(2) }}
                 </div>
               </template>

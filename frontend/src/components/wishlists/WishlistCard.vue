@@ -150,7 +150,7 @@
     <div class="flex-1 min-w-0 sm:h-[292px] pr-10 sm:pr-10 flex flex-col">
       <div>
         <div class="flex flex-wrap items-center gap-1">
-          <span :class="discountPercent > 0 ? 'text-red-600': 'text-black/90'" class="font-bold text-md">
+          <span :class="discountPercent > 0 ? 'text-red-600': 'text-black/90 dark:text-white/90'" class="font-bold text-md">
             US ${{ product.price.toFixed(2) }}
           </span>
           <span v-if="discountPercent > 0" class="text-red-500 font-semibold text-sm">

@@ -168,6 +168,7 @@
               class="ri-shopping-bag-line text-lg dark:text-gray-300 text-black"
             ></i>
             <span
+              v-if="cartStore.totalItems > 0"
               class="absolute -top-0 -right-0.5 w-4.5 h-4.5 bg-red-600 animate-bounce-sm text-white text-[10px] font-bold rounded-full flex items-center justify-center"
             >
               {{ cartStore.totalItems }}</span
