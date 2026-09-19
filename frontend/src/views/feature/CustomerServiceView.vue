@@ -14,7 +14,7 @@
   };
 </script>
 <template>
-  <div class="container-xl px-8 py-8 animate-slide-up">
+  <div class="container-xl px-5 md:px-8 py-8 animate-slide-up">
     <div class="relative overflow-hidden rounded-lg bg-cover bg-center bg-no-repeat p-8 mb-16 shadow-lg bg-[url('https://i.pinimg.com/736x/3c/3f/ef/3c3fef8c37b7bfd44c08e5782ca4f391.jpg')]">
       <!-- Dark overlay to ensure text contrast and readability -->
       <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-[1px]"></div>

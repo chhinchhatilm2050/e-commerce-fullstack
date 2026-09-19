@@ -139,24 +139,31 @@
       productStore.loadingMore || catStore.getCartLoadingg || 
       catStore.removeCartLoading || catStore.updateCartLoading || wishlistStore.loading"
     />
-    <div class="container-xl px-8 py-6">
-      <div class="flex items-center justify-between gap-4 pb-4 border-gray-200">
-        <div class="flex flex-row items-center gap-3">
-          <div class="max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap">
-            <span class="font-bold">{{ categoryStore.currentCategory?.name }} </span> 
-            <span class="text-sm text-black/70 dark:text-white/70"> [{{ categoryStore.currentCategory?.productCount || 0 }} Items]</span>
+    <div class="container-xl px-5 md:px-8 py-6">
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-4  shadow-lg border-gray-200 dark:border-gray-750 w-full">
+        <div class="flex items-center justify-between lg:justify-start gap-4 flex-shrink-0">
+          <div class="flex items-center gap-1.5 min-w-0">
+            <span class="font-bold text-base truncate">{{ categoryStore.currentCategory?.name }}</span> 
+            <span class="text-sm text-black/70 hidden md:block dark:text-white/70 whitespace-nowrap">[{{ categoryStore.currentCategory?.productCount || 0 }} Items]</span>
           </div>
+          <!-- Sort Dropdown (Visible on Phone/Tablet) -->
+          <div class="flex items-center gap-2 flex-shrink-0 lg:hidden">
+            <span class="text-sm text-gray-700 dark:text-gray-300">Sort:</span>
+            <SortDropdown v-model="currentSort" />
+          </div>
+        </div>
+        <div class="w-full lg:flex-1 lg:min-w-0 overflow-x-auto scrollbar-hide">
           <SubcategoryPills 
             :subcategories="categoryStore.subcategories"
             :current-category="categoryStore.currentCategory"
           />
         </div>
-        <div class="flex items-center gap-2">
-          <span>Sort: </span>
+        <div class="hidden lg:flex items-center gap-2 flex-shrink-0">
+          <span class="text-sm text-gray-700 dark:text-gray-300">Sort:</span>
           <SortDropdown v-model="currentSort" />
         </div>
-      </div>
 
+      </div>
       <ProductGrid :products="productStore.products" :search-term="searchTerm"/>
       <div ref="sentinel" class="h-4"></div>
 

@@ -188,7 +188,7 @@
             {{ initialData?.firstName ? 'Edit Address' : 'Add Address' }}
           </h3>
           <button @click="emit('close')" class="text-black/80 cursor-pointer hover:text-gray-600 text-2xl"> 
-            <i class="ri-close-line text-2xl"></i>
+            <i class="ri-close-line text-2xl dark:text-white/90"></i>
           </button>
         </div>
 
@@ -264,7 +264,7 @@
         <div class="flex-1">
           <button 
             @click="handleSave" 
-            class="subCategory-button px-4 flex items-center justify-center gap-2 w-full py-1.5 text-md" 
+            class="subCategory-button px-4 flex items-center justify-center gap-2 w-full py-1.5 text-md dark:border" 
             :disabled="!isFormValid || addressStore.loading"
           >
             <svg

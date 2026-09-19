@@ -122,8 +122,6 @@ export const createOrder = asyncHandler(async (req: Request<unknown, unknown, IO
       tran_id,
       amount: (finalAmount).toFixed(2),
       items: '',
-      // // PayWay rejects an empty shipping field with "Wrong shipping price" (code 10).
-      // // It must be a valid numeric string, even when there's no delivery fee.
       shipping: Number(deliveryFee).toFixed(2),
       firstname: customer?.firstName ?? '',
       lastname: customer?.lastName ?? '',
@@ -413,4 +411,38 @@ export const createPaywayPurchase = asyncHandler(async (req: Request<unknown, un
       message: err.response?.data?.message || err.message || 'Failed to request KHQR from PayWay',
     });
   }
+});;
+
+export const getMyOrder = asyncHandler(async(req: Request, res: Response, next: NextFunction): Promise<void> => {
+  const userId = req.user?._id;
+  const orders = await OrderModel.find({userId}).sort({ createdAt: -1});
+  if (!orders) {
+    return next(new AppError('Order not found', 404));
+  };
+
+  res.status(200).json({
+    success: true,
+    count: orders.length,
+    data: { orders },
+  });
+});
+
+export const getOrderDetail = asyncHandler(async(req: Request<{ id: string }, unknown, unknown>, res: Response, next: NextFunction): Promise<void> => {
+  const userId = req.user?._id;
+  const { id } = req.params;
+  const isObjectId = /^[0-9a-fA-F]{24}$/.test(id);
+  const filter = isObjectId 
+    ? { _id: id, userId } 
+    : { tran_id: id, userId };
+
+  const order = await OrderModel.findOne(filter).lean();
+
+  if (!order) {
+    return next(new AppError('Order not found', 404));
+  }
+
+  res.status(200).json({
+    success: true,
+    data: { order },
+  });
 });

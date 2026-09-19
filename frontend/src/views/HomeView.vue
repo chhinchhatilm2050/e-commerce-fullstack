@@ -53,12 +53,11 @@
           <p class="text-white text-sm dark:text-black">{{ $t('home.shopping') }}</p>
         </div>
         <div class="container-xl relative py-12 lg:py-16 flex md:py-15 lg:flex-row items-center flex-col">
-            <div class="max-w-3xl">
-                <h1 class="font-home text-4xl md:text-[43px] font-bold leading-tight  lg:text-7xl mb-6 animate-slide-up bg-gradient-to-r from-surface-800 via-gray-500 to-surface-800
-                  bg-clip-text text-transparent" style="animation-delay:0.3s">
-                  {{ $t('home.hero_title') }}
+             <div class="max-w-3xl">
+                <h1 class="font-home text-3xl sm:text-4xl md:text-[43px] lg:text-7xl font-bold leading-tight mb-6 animate-slide-up bg-gradient-to-r from-surface-800 via-gray-500 to-surface-800 bg-clip-text text-transparent inline-block" style="animation-delay:0.3s">
+                    {{ $t('home.hero_title') }}
                 </h1>
-                <p class="hidden sm:block text-xl text-gray-800 mb-10 max-w-xl leading-relaxed animate-slide-up dark:text-gray-200" style="animation-delay:0.5s">
+                                <p class="hidden sm:block text-xl text-gray-800 mb-10 max-w-xl leading-relaxed animate-slide-up dark:text-gray-200" style="animation-delay:0.5s">
                 {{ $t('home.hero_subtitle') }}
                 </p>
                 <div class="hidden lg:flex flex-wrap gap-4 animate-slide-up" style="animation-delay:0.5s">
@@ -79,10 +78,21 @@
                 >
             </div>
         </div>
+        <div class=" px-5 container-xl py-3 -mt-25 lg:hidden">
+          <div class="lg:hidden shadow-xl px-5 py-5  grid grid-cols-2 md:grid-cols-4 gap-10 mt-14 animate-slide-up" style="animation-delay:0.5s">
+              <RouterLink to="/products/category/books" class="default-button w-full text-sm text-center lg:hidden mt-5">
+                {{ $t('home.hero_cta') }}
+              </RouterLink>
+              <div @click="goToCustomerService" v-for="fea in feature" :key="fea.icon" class="flex flex-col justify-center items-center cursor-pointer">
+                  <p class="font-display text-[20px] text-gray-700 dark:text-gray-200" v-html="fea.icon"></p>
+                  <p class="text-[17px] shadow-lg">{{ $t(fea.title) }}</p>
+              </div>
+          </div>
+        </div>
     </section>
-    <section class="py-5 px-8 container-xl">
+    <section class="py-5 px-5 md:px-8 container-xl">
       <h2 class="section-title mb-5"><i class="ri-chat-smile-ai-line"></i>  {{ $t('home.categories_title') }}</h2>
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 animate-slide-up " style="animation-delay:0.5s">
+      <div class="grid grid-cols-2 gap-6 lg:grid-cols-4 lg:gap-4 animate-slide-up " style="animation-delay:0.5s">
         <RouterLink
           v-for="cat in categoryStore.topLevelCategories"
           :key="cat._id" :to="`/products/category/${cat.slug}`"
@@ -96,7 +106,7 @@
       </RouterLink>
     </div>
   </section>
-  <section class="mt-5">
+  <section class="mt-5 ">
     <ProductSlider
       :products="productStore.featureProducts"
       title="Top Rating"

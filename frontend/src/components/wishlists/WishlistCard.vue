@@ -126,7 +126,7 @@
 <template>
   <div
     v-if="product"
-    class="bg-black/2 dark:bg-white/5 rounded-sm p-4 flex flex-col sm:flex-row gap-4 relative shadow-xl"
+    class="bg-black/2 dark:bg-white/5 rounded-sm p-4 flex flex-col sm:flex-row gap-4 relative shadow-2xl"
   >
     <button
       class="absolute top-3 cursor-pointer right-3 flex text-red-600 hover:text-red-700 items-center justify-center z-10"
@@ -147,7 +147,7 @@
       />
     </router-link>
 
-    <div class="flex-1 min-w-0 sm:h-[292px] pr-10 sm:pr-10 flex flex-col">
+    <div class="flex-1 min-w-0 sm:h-[280px] pr-10 sm:pr-10 flex flex-col">
       <div>
         <div class="flex flex-wrap items-center gap-1">
           <span :class="discountPercent > 0 ? 'text-red-600': 'text-black/90 dark:text-white/90'" class="font-bold text-md">
@@ -170,7 +170,7 @@
           Code. {{ product.code }}
         </p>
 
-        <div v-if="specEntries.length" class="flex gap-3 mt-3 flex-wrap">
+        <div v-if="specEntries.length" class="flex gap-4 mt-3 flex-wrap">
           <div v-for="[key, options] in specEntries" :key="key" class="flex flex-col gap-1 w-[calc(50%-0.375rem)] sm:w-32">
             <label class="text-xs text-blace/70">{{ specLabels[key] ?? key }}</label>
             <BaseDropdown

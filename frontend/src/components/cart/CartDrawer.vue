@@ -204,6 +204,11 @@
     }
     router.push('/checkout');
   };
+
+  const goToProductDetail = (slug: string) => {
+    close();
+    router.push(`/products/${slug}`);
+  };
 </script>
 
 <template>
@@ -257,9 +262,10 @@
           <ul class="flex-1 overflow-y-auto divide-y divide-gray-100 dark:divide-surface-700 px-5">
             <li v-for="item in cartStore.cartItems" :key="item._id" class="flex gap-3 py-5">
               <img
+                @click="goToProductDetail(item.productId.slug)"
                 :src="item.productId.images?.[0]?.url"
                 :alt="item.productId?.name"
-                class="w-28 h-38 object-cover bg-gray-100 dark:bg-surface-700"
+                class="w-28 h-38 object-cover bg-gray-100 dark:bg-surface-700 cursor-pointer"
               />
 
               <div class="flex-1 flex flex-col justify-between">

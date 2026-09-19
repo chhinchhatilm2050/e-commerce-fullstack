@@ -1,6 +1,8 @@
 import UserModel from '../model/user.js';
 import asyncHandler from 'express-async-handler';
 import { Request, Response, NextFunction } from 'express';
+import { uploadTopCloudinary } from '../utils/uploadTocloudinary.js';
+import { deleteFromCaloudinay } from '../utils/deleteFromCloudinary.js';
 import AppError from '../utils/appError.js';
 import type { IUser, UpdateUserBody, UpdateMe } from '../interface/iuser.js';
 
@@ -190,4 +192,48 @@ export const getMe = asyncHandler(
       data: { user },
     });
   },
+);
+
+export const uploadAvatar = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const userId = req.user?._id;
+
+    if (!userId) {
+      return next(new AppError('Unauthorized access', 401));
+    }
+
+    if (!req.file) {
+      return next(new AppError('Please provide an image file', 400));
+    }
+
+    // 1. Fetch current user to check for an existing avatar to destroy
+    const currentUser = await UserModel.findById(userId);
+    if (!currentUser) {
+      return next(new AppError('User not found', 404));
+    }
+
+    // 2. Upload new image to Cloudinary
+    const uploaded = await uploadTopCloudinary(req.file.buffer, 'users');
+
+    // 3. Remove old image from Cloudinary if it exists
+    if (currentUser.imagePublicId) {
+      await deleteFromCaloudinay(currentUser.imagePublicId);
+    }
+
+    // 4. Update database (fixed target ID parameter)
+    const user = await UserModel.findByIdAndUpdate(
+      userId,
+      {
+        avatar: uploaded.url,
+        imagePublicId: uploaded.publicId,
+      },
+      { new: true, runValidators: true }
+    ).select('-password -refreshToken -isDeleted -deletedAt -deletedBy -updatedBy');
+
+    res.status(200).json({
+      success: true,
+      message: 'Avatar uploaded successfully',
+      data: { user },
+    });
+  }
 );
