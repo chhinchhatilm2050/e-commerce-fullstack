@@ -52,8 +52,8 @@
 </script>
 
 <template>
-  <section class="py-10">
-    <div class="container-xl px-8">
+  <section class=" px-5 md:px-8 container-xl">
+    <div class="py-5">
       <div class="flex items-end justify-between mb-5">
         <h2 class="section-title">
           <i v-if="icon" :class="icon"></i> {{ title }}

@@ -7,6 +7,7 @@ export interface IUser extends Document {
   email: string;
   password: string;
   avatar: string;
+  imagePublicId: string,
   gender: 'male' | 'female' | 'other';
   role: 'customer' | 'admin';
   status: 'active' | 'inactive' | 'blocked';

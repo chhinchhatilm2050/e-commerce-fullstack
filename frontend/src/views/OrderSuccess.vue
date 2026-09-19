@@ -93,7 +93,7 @@
             Continue Shopping
           </button>
           <button
-            @click="router.push('/orders')"
+            @click="router.push('/my-orders')"
             class="subCategory-button text-sm px-4 bg-white dark:bg-black dark:text-white text-black border border-black/10"
           >
             View My Orders

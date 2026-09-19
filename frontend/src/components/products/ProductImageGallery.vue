@@ -118,15 +118,16 @@
 </script>
 
 <template>
-  <div class="flex gap-3">
+  <div class="flex flex-col-reverse md:flex-row gap-3 w-full">
+    <!-- Thumbnails Container (Bottom on Mobile, Left on Desktop) -->
     <div
       ref="scrollContainer"
-      class="flex flex-col gap-2 w-24 max-h-[680px] overflow-y-auto scrollbar-hide"
+      class="flex flex-row md:flex-col gap-2 w-full md:w-24 overflow-x-auto md:overflow-y-auto scrollbar-hide"
     >
       <button
         v-for="(img, index) in sortedImages"
         :key="img.publicId"
-        class="border-1 overflow-hidden aspect-[2.8/4] flex-shrink-0 animate-slide-card cursor-pointer"
+        class="border-1 overflow-hidden w-16 md:w-full aspect-[2.8/4] flex-shrink-0 animate-slide-card cursor-pointer"
         :class="(activeIndex % sortedImages.length) === index ? 'border-black dark:border-white' : 'border-gray-200 dark:border-surface-900'"
         @click="selectImage(index)"
         :style="{ animationDelay: `${(index % 20) * 0.02}s` }"
@@ -135,7 +136,8 @@
       </button>
     </div>
 
-    <div class="relative animate-slide-card w-[550px] h-[680px] bg-gray-100 overflow-hidden">
+    <!-- Main Image Container -->
+    <div class="relative animate-slide-card w-full md:w-full h-[460px] md:h-[800px] bg-gray-100 overflow-hidden">
       <div 
         class="flex h-full w-full"
         :class="{ 'transition-transform duration-500 ease-in-out': isTransitioning }"

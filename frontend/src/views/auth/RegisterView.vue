@@ -133,17 +133,17 @@
                         <label class="label flex items-center">{{ $t('register.gender') }} <span class="text-red-700">*</span></label>
                         <div class="flex gap-4 items-center">
                             <label class="flex items-center gap-2 cursor-pointer group">
-                                <input type="radio" name="gender" value="male" v-model="registerForm.gender" class="cursor-pointer w-4 h-4 " />
+                                <input type="radio" name="gender" value="male" v-model="registerForm.gender" class="cursor-pointer w-4 h-4 accent-black dark:accent-white" />
                                 <span class="text-sm text-black dark:text-gray-200">{{$t('register.male')}}</span>
                             </label>
 
                             <label class="flex items-center gap-2 cursor-pointer group">
-                                <input type="radio" name="gender" value="female" v-model="registerForm.gender" class="cursor-pointer w-4 h-4" />
+                                <input type="radio" name="gender" value="female" v-model="registerForm.gender" class="cursor-pointer w-4 h-4 accent-black dark:accent-white" />
                                 <span class="text-sm text-black dark:text-gray-200">{{$t('register.female')}}</span>
                             </label>
 
                             <label class="flex items-center gap-2 cursor-pointer group">
-                                <input type="radio" name="gender" value="other" v-model="registerForm.gender" class="cursor-pointer w-4 h-4" />
+                                <input type="radio" name="gender" value="other" v-model="registerForm.gender" class="cursor-pointer w-4 h-4 accent-black dark:accent-white" />
                                 <span class="text-sm text-black dark:text-gray-200">{{$t('register.other')}}</span>
                             </label>
                         </div>

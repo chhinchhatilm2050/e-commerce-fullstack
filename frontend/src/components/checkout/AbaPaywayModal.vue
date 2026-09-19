@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { ref, computed, watch, onUnmounted } from 'vue';
   import { useRouter } from 'vue-router';
-  import { useOrderStore } from '@/stores/orderStore'; // Adjust path as needed
+  import { useOrderStore } from '@/stores/orderStore';
   import type { IPaywayData } from '@/types/iorder';
 
   const props = defineProps<{
@@ -15,8 +15,6 @@
 
   const qrResponse = ref<{ qrImage?: string; abapay_deeplink?: string } | null>(null);
 
-  // paywayData.amount comes from the backend as a fixed 2-decimal string
-  // (e.g. "37162.92"); format it with thousands separators for display.
   const formattedAmount = computed(() => {
     const raw = props.paywayData?.amount;
     if (!raw) return '0.00';
@@ -26,31 +24,35 @@
       : num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   });
 
-  // 'idle' -> waiting for user to tap "Open KHQR QR Code"
-  // 'polling' -> QR shown, waiting for the user to pay
-  // 'failed' -> PayWay confirmed failure, or polling timed out
   const paymentState = ref<'idle' | 'polling' | 'failed'>('idle');
   const errorMessage = ref<string | null>(null);
 
+  // Timer state (3 minutes = 180 seconds to match ABA UI)
+  const INITIAL_COUNTDOWN_SECONDS = 180;
+  const timeRemaining = ref(INITIAL_COUNTDOWN_SECONDS);
+  let timerIntervalId: ReturnType<typeof setInterval> | null = null;
+
   let pollIntervalId: ReturnType<typeof setInterval> | null = null;
-  let pollTimeoutId: ReturnType<typeof setTimeout> | null = null;
-  // Tracked so it can be cancelled if the modal closes/reopens before it fires -
-  // otherwise a stray timer from an earlier attempt could redirect later using
-  // an old tran_id.
   let redirectTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
-  const POLL_INTERVAL_MS = 3000; // check every 3s
-  const POLL_TIMEOUT_MS = 5 * 60 * 1000; // give up after 5 minutes
-  const REDIRECT_DELAY_MS = 3000; // wait this long after approval before closing + redirecting
+  const POLL_INTERVAL_MS = 3000;
+  const REDIRECT_DELAY_MS = 2000;
+
+  // Format seconds to mm:ss
+  const formattedTime = computed(() => {
+    const minutes = Math.floor(timeRemaining.value / 60);
+    const seconds = timeRemaining.value % 60;
+    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  });
 
   const stopPolling = () => {
     if (pollIntervalId) {
       clearInterval(pollIntervalId);
       pollIntervalId = null;
     }
-    if (pollTimeoutId) {
-      clearTimeout(pollTimeoutId);
-      pollTimeoutId = null;
+    if (timerIntervalId) {
+      clearInterval(timerIntervalId);
+      timerIntervalId = null;
     }
     if (redirectTimeoutId) {
       clearTimeout(redirectTimeoutId);
@@ -58,9 +60,26 @@
     }
   };
 
+  const startCountdown = () => {
+    timeRemaining.value = INITIAL_COUNTDOWN_SECONDS;
+    if (timerIntervalId) clearInterval(timerIntervalId);
+
+    timerIntervalId = setInterval(() => {
+      if (timeRemaining.value > 0) {
+        timeRemaining.value -= 1;
+      } else {
+        // Time expired -> trigger timeout state
+        stopPolling();
+        paymentState.value = 'failed';
+        errorMessage.value = 'Payment timer expired. Please try again.';
+      }
+    }, 1000);
+  };
+
   const startPolling = (tranId: string) => {
-    stopPolling(); // guard against double-starts (also clears any stray redirect timer)
+    stopPolling();
     paymentState.value = 'polling';
+    startCountdown();
 
     pollIntervalId = setInterval(async () => {
       try {
@@ -80,25 +99,14 @@
           paymentState.value = 'failed';
           errorMessage.value = 'Payment failed or was declined. Please try again.';
         }
-        // 'PENDING' -> keep polling, do nothing.
-      } catch  {
-        // Network hiccup on a single poll shouldn't kill the whole flow;
-        // just let the next interval tick try again.
+      } catch {
+        // Ignore hiccup on individual tick
       }
     }, POLL_INTERVAL_MS);
-
-    pollTimeoutId = setTimeout(() => {
-      if (paymentState.value === 'polling') {
-        stopPolling();
-        paymentState.value = 'failed';
-        errorMessage.value = 'We couldn\'t confirm your payment in time. If you already paid, check your order history in a moment.';
-      }
-    }, POLL_TIMEOUT_MS);
   };
 
   const generateQrCode = async () => {
     if (!props.paywayData) return;
-
     errorMessage.value = null;
 
     try {
@@ -120,15 +128,13 @@
   };
 
   const resetState = () => {
-    stopPolling(); // also clears redirectTimeoutId now
+    stopPolling();
     qrResponse.value = null;
     paymentState.value = 'idle';
     errorMessage.value = null;
+    timeRemaining.value = INITIAL_COUNTDOWN_SECONDS;
   };
 
-  // Reset everything whenever the modal is closed, so reopening it (e.g. for
-  // a new order) doesn't show stale QR codes or success states, and can't
-  // leave a stray redirect timer running from the previous attempt.
   watch(() => props.isOpen, (open) => {
     if (!open) {
       resetState();
@@ -141,68 +147,98 @@
 </script>
 
 <template>
-  <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-    <div class="bg-white rounded-lg p-8 max-w-sm w-full relative shadow-xl text-center space-y-4 animate-slide-up">
-      <button @click="emit('close')" class="absolute top-4 right-4 h-6 w-6 bg-black/30 rounded-full text-white cursor-pointer">
-       <i class="ri-close-fill"></i>
-      </button>
-
-      <!-- Failed / timed out state -->
-      <div v-if="paymentState === 'failed'" class="flex flex-col items-center space-y-3 py-4">
-        <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center">
-          <svg class="w-9 h-9 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
+  <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+    <div class="bg-white dark:bg-surface-800 rounded-lg w-full max-w-sm overflow-hidden shadow-2xl relative transition-all">
+      
+      <!-- Top Bar / Header -->
+      <div class="p-6 flex items-center justify-between  border-gray-100 dark:border-surface-700">
+        <!-- Logo Header -->
+        <div class="flex items-center gap-2">
+          <img class="w-14 h-8 rounded-sm" src="../../assets/image/aba.jpg" alt="ABA" />
+          <span class="font-bold text-gray-800 dark:text-white text-lg tracking-wide">ABA PAY</span>
         </div>
-        <h3 class="text-lg font-bold text-gray-800">Payment Not Completed</h3>
-        <p class="text-xs text-gray-500">{{ errorMessage }}</p>
-        <button
-          @click="resetState"
-          class="w-full py-2 bg-gray-800 text-white font-bold rounded-md hover:bg-gray-900 transition-colors text-sm"
-        >
-          Try Again
-        </button>
+
+        <!-- Timer + Close Button -->
+        <div class="flex items-center gap-3">
+          <!-- Countdown Indicator -->
+          <div v-if="paymentState === 'polling'" class="flex items-center gap-1.5 text-xs font-bold text-gray-700 dark:text-gray-200">
+            <svg class="w-4 h-4 text-cyan-500 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+            </svg>
+            <span>{{ formattedTime }}</span>
+          </div>
+
+          <!-- Close Icon -->
+          <button @click="emit('close')" class="text-[#055e7c] hover:text-gray-600 dark:hover:text-white transition cursor-pointer">
+            <i class="ri-close-line text-2xl"></i>
+          </button>
+        </div>
       </div>
 
-      <!-- QR shown, waiting for payment -->
-      <template v-else >
-        <h3 class="text-xl font-bold text-gray-800 animate-slide-up">Scan to Pay via ABA Mobile</h3>
-
-        <div v-if="qrResponse?.qrImage" class="flex flex-col items-center animate-slide-up">
-          
-          <img :src="qrResponse.qrImage" alt="KHQR Code" class="w-64 h-64 object-contain rounded-md border animate-slide-up" />
-          
-          <!-- <p class="text-sm text-gray-500 animate-slide-up">Amount to pay</p> -->
-          <p class="text-2xl font-bold text-gray-900 animate-slide-up mt-2">${{ formattedAmount }}</p>
-          <a
-            v-if="qrResponse?.abapay_deeplink"
-            :href="qrResponse.abapay_deeplink"
-            class="w-full py-2 mt-2 bg-red-600 text-white font-bold rounded-md hover:bg-red-700 transition-colors inline-block text-sm text-center animate-slide-up"
-          >
-            Open in ABA Mobile App
-          </a>
-
-          <p v-if="paymentState === 'polling'" class="text-xs text-gray-400 flex items-center animate-slide-up gap-1.5 mt-2">
-            <span class="inline-block w-2 h-2 rounded-full bg-amber-400 animate-slide-up"></span>
-            Waiting for payment confirmation...
-          </p>
+      <!-- Content Area -->
+      <div class=" mb-10 text-center space-y-4">
+        <!-- Amount Header -->
+        <div class="space-y-0.5">
+          <div v-if="paymentState !== 'failed'" class="text-3xl font-extrabold tracking-tight flex justify-center items-center gap-2">
+            {{ formattedAmount }} <span class="text-lg font-medium">USD</span>
+          </div>
         </div>
 
-        <div v-else class="space-y-4">
-          <p class="text-2xl font-bold text-black animate-slide-up">${{ formattedAmount }}</p>
-          <p class="text-xs text-black/70 animate-slide-up">
-            Click below to generate your official KHQR code and complete your payment.
+        <!-- Failed / Expired State -->
+        <div v-if="paymentState === 'failed'" class="px-6 space-y-3">
+          <div class="w-14 h-14 mx-auto rounded-full bg-[#055e7c] shadow-lg flex items-center justify-center">
+            <i class="ri-time-line text-2xl text-white"></i>
+          </div>
+          <h3 class="text-base font-bold">Transaction Timed Out</h3>
+          <p class="text-xs text-black/60 dark:text-white/60 max-w-xs mx-auto">{{ errorMessage }}</p>
+          <button
+            @click="resetState"
+            class="w-full mt-2 py-2.5 bg-[#055e7c] text-white font-bold rounded-sm hover:bg-[#055e7c] cursor-pointer transition text-sm"
+          >
+            Try Again
+          </button>
+        </div>
+
+        <!-- QR Display State -->
+        <div v-else-if="qrResponse?.qrImage" class="flex flex-col items-center space-y-4">
+          <!-- Frame around QR -->
+          <div class="relative p-6 rounded-xl border border-gray-200 dark:border-[#055e7c] shadow-inner">
+            <!-- Corner Accents -->
+            <div class="absolute top-2 left-2 w-5 h-5 border-t-3 border-l-3 border-amber-500 dark:border-[#055e7c] rounded-tl"></div>
+            <div class="absolute top-2 right-2 w-5 h-5 border-t-3 border-r-3 border-amber-500 dark:border-[#055e7c] rounded-tr"></div>
+            <div class="absolute bottom-2 left-2 w-5 h-5 border-b-3 border-l-3 border-amber-500 dark:border-[#055e7c] rounded-bl"></div>
+            <div class="absolute bottom-2 right-2 w-5 h-5 border-b-3 border-r-3 border-amber-500 dark:border-[#055e7c] rounded-br"></div>
+
+            <p class="text-xs font-semibold mb-2">Scan to pay</p>
+            <img :src="qrResponse.qrImage" alt="KHQR Code" class="w-56 h-56 object-contain" />
+          </div>
+
+          <!-- Deep Link for Mobile -->
+          <!-- <a
+            v-if="qrResponse?.abapay_deeplink"
+            :href="qrResponse.abapay_deeplink"
+            class="w-full py-2.5 bg-[#005c8a] text-white font-bold rounded-sm hover:bg-[#004b71] transition text-sm text-center mt-2 block"
+          >
+            Open in ABA Mobile
+          </a> -->
+        </div>
+
+        <!-- Initial Idle State -->
+        <div v-else class="space-y-4 px-6">
+          <p class="text-xs text-black/60 dark:text-white/60">
+            Generate your official ABA KHQR code to scan or open directly in your mobile app.
           </p>
           <p v-if="errorMessage" class="text-xs text-red-600">{{ errorMessage }}</p>
           <button
             @click="generateQrCode"
             :disabled="orderStore.loading"
-            class="w-full subCategory-button dark:bg-black/70 disabled:opacity-50 animate-slide-up"
+            class="w-full mt-2 py-2.5 bg-[#055e7c] text-white font-bold cursor-pointer rounded-sm hover:bg-[#055e7d] transition text-sm disabled:opacity-50"
           >
-            {{ orderStore.loading ? 'Generating KHQR...' : 'Open KHQR QR Code' }}
+            {{ orderStore.loading ? 'Generating KHQR...' : 'Open KHQR Code' }}
           </button>
         </div>
-      </template>
+      </div>
     </div>
   </div>
 </template>

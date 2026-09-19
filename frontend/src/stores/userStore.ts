@@ -8,6 +8,7 @@ import { useAuthStore } from './authStore.js';
 export const useUserStore = defineStore('user', () => {
   const userError = ref<string>('');
   const loading = ref<boolean>(false);
+  const uploadAvtLoading = ref<boolean>(false);
   const currentUser = ref<User | null>(null);
   const authStore = useAuthStore();
   const currentUserCached = ref<User | null>(null);
@@ -53,11 +54,42 @@ export const useUserStore = defineStore('user', () => {
     }
   }; 
 
+  const setUserData = (user: User) => {
+    currentUser.value = user;
+  };
+
+  const uploadAvatar = async (file: File) => {
+    uploadAvtLoading.value = true;
+    userError.value = '';
+
+    try {
+      const formData = new FormData();
+      formData.append('avatar', file);
+
+      const response = await api.patch('/users/upload-avatar', formData);
+
+      if (response.data.success) {
+        setUserData(response.data.data.user);
+        return { success: true, message: response.data.message };
+      }
+      return { success: false, message: 'Failed to upload avatar' };
+    } catch (err) {
+      const message = axios.isAxiosError(err) ? (err.response?.data.message ?? 'Failed to update profile.') : 'An unexpected error occurred.';
+      await delay(1500);
+      userError.value = message;
+      return { success: false, message };
+    } finally {
+      uploadAvtLoading.value = false;
+    }
+  };
+
   return { 
     fetchProfile,
     updateMyProfile,
+    uploadAvatar,
     currentUser,
     userError,
     loading,
+    uploadAvtLoading,
   };
 });

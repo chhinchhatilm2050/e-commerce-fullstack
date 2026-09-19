@@ -4,7 +4,7 @@
   import LangDropdown from './LangDropdown.vue';
   import AuthButton from './AuthButton.vue';
   import PhoneNavbar from './PhoneNavbar.vue';
-  import AppAccount from './AppAccount.vue';
+  import UserDrawer from './UserDrawer.vue';
   import { useDialog } from '@/composables/useDialog.js';
   import AuthDialog from './AuthDialog.vue';
   import SearchDialog from './SearchDialog.vue';
@@ -28,9 +28,9 @@
   });
 
   const { isOpen: isAuthOpen, open: openAuth } = useDialog();
-  const { isOpen: isAccountOpen, open: openAccountDialog } = useDialog();
   const { isOpen, open, close } = useDialog();
   const openAsRegister = ref<boolean>(false);
+  const isUserDrawerOpen = ref(false);
 
   const openRegister = () => {
     openAsRegister.value = true;
@@ -40,9 +40,7 @@
     openAsRegister.value = false;
     openAuth();
   };
-  const openAccount = () => {
-    openAccountDialog();
-  };
+
   const openSearch = () => open();
 
   const mobileMenuOpen = ref<boolean>(false);
@@ -178,13 +176,13 @@
           <AuthButton
             @open-register="openRegister"
             @open-login="openLogin"
-            @open-account="openAccount"
+            @open-user-drawerr="isUserDrawerOpen = true"
           />
         </div>
       </nav>
     </div>
     <AuthDialog v-model="isAuthOpen" :start-register="openAsRegister" />
-    <AppAccount v-model="isAccountOpen" />
+    <UserDrawer v-model="isUserDrawerOpen" />
     <SearchDialog v-model="isOpen" @search="handleSearchSubmit" />
     <PhoneNavbar
       v-model="mobileMenuOpen"

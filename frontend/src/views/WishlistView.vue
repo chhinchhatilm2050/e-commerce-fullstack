@@ -33,7 +33,7 @@
   <TopLoader
     :isLoading="cartStore.removeCartLoading || cartStore.updateCartLoading"
   />
-  <div class="container-xl px-8 py-5">
+  <div class="container-xl px-5 md:px-8 py-5">
     <h1 v-if="wishlistStore.items.length > 0" class="text-lg font-bold mb-3">
       <i class="ri-stack-line"></i> My Wishlist ({{
         wishlistStore.wishlistCount
