@@ -4,13 +4,13 @@
   const emit = defineEmits<{
     'openRegister': [],
     'openLogin': [],
-    'openAccount': []
+    'openUserDrawerr': []
   }>(); 
 </script>
 
 <template>
   <div>
-    <button v-if="authStore.isLoggedIn" @click="emit('openAccount')"
+    <button v-if="authStore.isLoggedIn" @click="emit('openUserDrawerr')"
       class="btn-ghost w-8 h-8 flex items-center justify-center rounded-full text-black dark:text-white dark:hover:bg-surface-100"
     >
       <i class="ri-user-line font-medium dark:text-gray-200"></i>

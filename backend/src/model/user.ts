@@ -42,6 +42,15 @@ const userSchema = new mongoose.Schema<IUser>(
       enum: ['male', 'female', 'other'],
       default: 'other',
     },
+    avatar: {
+      type: String,
+      default: null,
+    },
+    imagePublicId: {
+      type: String,
+      trim: true,
+      default: ''
+    },
     role: {
       type: String,
       enum: ['customer', 'admin'],
@@ -180,10 +189,10 @@ userSchema.methods.isMatch = async function (
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-userSchema.virtual('avatar').get(function (this: IUser) {
-  const name = this.firstName?.charAt(0) ?? '';
-  return name.toUpperCase();
-});
+// userSchema.virtual('avatar').get(function (this: IUser) {
+//   const name = this.firstName?.charAt(0) ?? '';
+//   return name.toUpperCase();
+// });
 
 userSchema.pre(/^find/, function (this: Query<unknown, IUser>): void {
   const filter = this.getFilter();

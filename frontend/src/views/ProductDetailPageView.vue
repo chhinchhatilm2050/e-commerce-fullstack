@@ -225,8 +225,8 @@
     Product not found.
   </div>
 
-  <div v-else class="container-xl px-8 py-5 animate-slide-card">
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-20 items-start">
+  <div v-else class="container-xl px-5 md:px-8 py-5 animate-slide-card">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-20 items-start">
       <ProductImageGallery :images="product.images" />
 
       <div>

@@ -87,7 +87,7 @@
 </script>
 
 <template>
-  <div class="container-xl px-8 py-10 border-black/10 dark:border-white/20">
+  <div class="container-xl md:px-8 px-5 py-10 border-black/10 dark:border-white/20">
     <div class="flex items-center justify-between mb-8">
       <div>
         <h2 class="section-title"><i class="ri-star-half-line"></i> Customer Reviews</h2>
@@ -126,16 +126,17 @@
       <div 
         v-for="review in reviewStore.reviews" 
         :key="review._id" 
-        class="p-6 bg-black/2 shadow-md dark:bg-white/3 rounded-sm space-y-3"
+        class="md:p-6 p-3 bg-black/2 shadow-md dark:bg-white/3 rounded-sm space-y-3"
       >
         <div class="flex items-center justify-between">
-          <div class="flex items-center gap-3">
+          <div class="flex items-center md:gap-3 gap-2">
             <div class="w-10 h-10 rounded-full bg-black/10 dark:bg-white/10 flex items-center justify-center font-bold text-sm uppercase">
-              {{ review.userId?.avatar || review.userId?.firstName?.charAt(0) || 'U' }}
+              <img  class="w-full h-full object-cover rounded-full" v-if="review.userId?.avatar" :src="review.userId?.avatar" alt="">
+              <div v-else>{{ 'U' }}</div>
             </div>
             
             <div>
-              <p class="font-semibold text-sm">
+              <p class="font-semibold text-sm ">
                 {{ review.userId?.firstName }} {{ review.userId?.lastName }}
               </p>
               <span class="text-xs text-black/50 dark:text-white/50">
@@ -145,7 +146,7 @@
           </div>
 
           <!-- Star Rating -->
-           <div class="flex">
+           <div class="flex md:flex-row flex-col items-end md:gap-3 gap-2">
                <div class="flex text-yellow-600 text-sm">
                  <i 
                    v-for="star in 5" 
@@ -156,7 +157,7 @@
                
                <div 
                  v-if="currentUser && isOwnReview(review)" 
-                 class="flex items-center gap-2 border-l border-black/10 dark:border-white/20 pl-3 ml-2"
+                 class="flex items-center gap-2  border-black/10 dark:border-white/20 pl-3 ml-2"
                >
                  <!-- Edit -->
                  <button 

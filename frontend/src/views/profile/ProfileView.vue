@@ -13,7 +13,9 @@
   <div class="relative w-full max-w-md animate-slide-up">
     <div class="flex items-center gap-4 py-3">
       <div class="w-12 h-12 rounded-full bg-gray-100 dark:bg-surface-100 flex items-center justify-center flex-shrink-0">
-        <i class="ri-user-fill text-2xl text-gray-500 dark:text-gray-200"></i>
+        <img class="w-full h-full object-cover rounded-full" v-if="userStore.currentUser?.avatar"
+         :src="userStore.currentUser.avatar" alt="">
+        <i v-else class="ri-user-fill text-2xl text-gray-500 dark:text-gray-200"></i>
       </div>
       <div>
         <p class="font-semibold text-gray-800 dark:text-gray-100 capitalize">

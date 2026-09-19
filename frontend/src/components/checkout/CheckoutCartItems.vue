@@ -59,8 +59,8 @@
     </h2>
     <p class="text-xs text-black/70 dark:text-white/70 mb-4">ⓘ Items in your bag are not reserved - complete checkout to place order.</p>
 
-    <div v-if="cartStore.cartItems.length === 0" class="py-8 text-center text-sm text-gray-500">
-      Your cart is empty.
+    <div v-if="cartStore.cartItems.length === 0" class="py-8 flex items-center  text-lg">
+      <img class="h-90 w-100" src="https://i.pinimg.com/1200x/b3/96/a3/b396a3635480a40d7dfa74a0f27f9315.jpg" alt="">
     </div>
 
     <!-- Scrollable Container for Cart Items -->

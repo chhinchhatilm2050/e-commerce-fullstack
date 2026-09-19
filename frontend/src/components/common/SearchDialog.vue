@@ -68,7 +68,7 @@
           v-if="props.modelValue"
           class="w-full min-h-[140px] pt-5 pb-6 bg-white backdrop-blur-md dark:bg-surface-800 shadow-xl pointer-events-auto"
         >
-          <div class="flex items-center gap-3 px-6 sm:p-0 sm:pt-5 max-w-[1316px] mx-auto left-0 right-0 max-xl py-4 border-b border-gray-400 dark:border-gray-300">
+          <div class="flex items-center gap-3 px-6  lg:px-6 sm:pt-5 max-w-[1316px] mx-auto py-4 border-b border-gray-400 dark:border-gray-300">
             <input
               ref="inputRef"
               v-model="query"
@@ -96,7 +96,7 @@
             </div>
           </div>
 
-          <div v-if="searchHistory.length > 0" class="max-w-[1316px] mx-auto px-6 sm:px-0 pt-5">
+          <div v-if="searchHistory.length > 0" class="max-w-[1316px] mx-auto px-6 lg:px-6 pt-5">
             <div class="flex items-center justify-between mb-3">
               <span class="font-semibold text-[15px] text-gray-900 dark:text-gray-100">
                 Recent Searches

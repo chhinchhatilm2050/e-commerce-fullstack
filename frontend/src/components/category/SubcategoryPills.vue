@@ -11,8 +11,6 @@
   const router = useRouter();
   const route = useRoute();
   const scrollContainer = ref<HTMLElement | null>(null);
-  const canScrollLeft = ref(false);
-  const canScrollRight = ref(false);
   const isScrollable = ref(false);
   const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 2);
 
@@ -37,15 +35,10 @@
     requestAnimationFrame(animate);
   };
 
-  const scrollRight = () => smoothScroll(300);
-  const scrollLeft = () => smoothScroll(-300);
-
   const updateScrollStatus = (): void => {
     if (!scrollContainer.value) return;
     const el = scrollContainer.value;
     isScrollable.value = el.scrollWidth > el.clientWidth;
-    canScrollLeft.value = el.scrollLeft > 0;
-    canScrollRight.value = el.scrollLeft + el.clientWidth < el.scrollWidth - 1;
   };
 
   const scrollActivePillIntoView = (): void => {
@@ -109,12 +102,8 @@
 </script>
 
 <template>
-  <button v-if="isScrollable" class="cursor-pointer" @click="scrollLeft">
-    <i class="ri-arrow-left-s-line text-2xl font-medium"></i>
-  </button>
-
   <div
-    class="flex gap-4 max-w-[700px] overflow-x-auto scrollbar-hide scroll-smooth"
+    class="flex items-center gap-3 overflow-x-auto scrollbar-hide scroll-smooth flex-nowrap w-full"
     ref="scrollContainer"
     @scroll="updateScrollStatus"
   >
@@ -122,27 +111,21 @@
       v-for="sub in subcategories"
       :key="sub._id"
       :data-slug="sub.slug"
-      class="whitespace-nowrap cursor-pointer"
-      :class="{ 'text-red-600': isActive(sub) }"
+      class="whitespace-nowrap cursor-pointer flex items-center gap-2 flex-shrink-0 py-1 transition-all group"
       @click="goToSubcategory(sub.slug)"
     >
-      <div class="flex justify-center items-center gap-2">
-        <img
-          class="w-8 h-8 rounded-sm object-cover object-center flex-shrink-0 bg-gray-100"
-          :src="sub.image"
-          :alt="sub.name"
-          loading="lazy"
-        />
-        <div>
-          <span>{{ sub.name }}</span>
-          <!-- <span v-if="sub.productCount" class="text-suface-800 font-normal">
-            ({{ sub.productCount }})
-          </span> -->
-        </div>
-      </div>
+      <img
+        class="w-7 h-7 rounded-sm object-cover object-center flex-shrink-0 bg-gray-100"
+        :src="sub.image"
+        :alt="sub.name"
+        loading="lazy"
+      />
+      <span 
+        class="text-sm font-medium transition-colors"
+        :class="isActive(sub) ? 'text-red-600 font-semibold' : 'text-gray-800 dark:text-gray-200 hover:text-red-500'"
+      >
+        {{ sub.name }}
+      </span>
     </button>
   </div>
-  <button v-if="isScrollable" class="cursor-pointer" @click="scrollRight">
-    <i class="ri-arrow-right-s-line text-2xl font-medium"></i>
-  </button>
 </template>

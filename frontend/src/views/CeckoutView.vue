@@ -255,18 +255,18 @@
             <div class="h-3 bg-gray-200 rounded w-2/3"></div>
           </div>
 
-          <div v-else-if="activeAddress" class="bg-white shadow-md p-4 flex justify-between items-start">
-            <div class="space-y-1 text-sm text-black">
+          <div v-else-if="activeAddress" class="dark:bg-surface-800 border border-black/5 shadow-md p-4 flex justify-between items-start">
+            <div class="space-y-1 text-sm ">
               <p class="font-bold text-base capitalize">{{ activeAddress.firstName }} {{ activeAddress.lastName }}</p>
-              <p class="text-black">{{ formattedAddressString }}</p>
-              <p class="text-black">Tel : {{ activeAddress.phoneNumber }}</p>
-              <p v-if="activeAddress.streetAddress" class="text-black">
+              <p class="">{{ formattedAddressString }}</p>
+              <p class="">Tel : {{ activeAddress.phoneNumber }}</p>
+              <p v-if="activeAddress.streetAddress" class="">
                 {{ activeAddress.streetAddress }}
               </p>
             </div>
             <div class="flex gap-3">
               <i class="ri-delete-bin-line cursor-pointer text-red-600" @click="isModalOpen = true; deleteOpen = true"></i>
-              <i class="ri-edit-line cursor-pointer" @click="isModalOpen = true; deleteOpen = false"></i>
+              <i class="ri-edit-line cursor-pointer dark:text-white/70" @click="isModalOpen = true; deleteOpen = false"></i>
             </div>
           </div>
 
@@ -284,34 +284,34 @@
       <div class="lg:col-span-6 space-y-2">
         <h2 class="font-bold text-base">Payment Method</h2>
         <div class="space-y-6">
-          <label class="flex items-center gap-3 p-3 bg-white  border border-black/10  cursor-pointer shadow-md hover:shadow-lg transition-shadow duration-200">
+          <label class="flex items-center gap-3 p-3 dark:bg-surface-800 border border-black/10  cursor-pointer shadow-md hover:shadow-lg transition-shadow duration-200">
             <input type="radio" value="aba_payway" v-model="selectedPaymentMethod" class="w-4 h-4 text-black accent-black" />
             <div class="w-16 h-9 bg-red-600 text-white rounded font-bold text-[10px] flex items-center justify-center">
               <img class="w-16 h-9 rounded-sm" src="../assets/image/aba.jpg" alt="ABA" />
             </div>
             <div>
-              <p class="font-bold dark:text-black/80 text-sm">ABA PAY</p>
-              <p class="text-xs text-gray-500 dark:text-black/80">Tap to pay with ABA Mobile KHQR</p>
+              <p class="font-bold text-sm">ABA PAY</p>
+              <p class="text-xs text-black/60 dark:text-white/60 ">Tap to pay with ABA Mobile KHQR</p>
             </div>
           </label>
 
-          <label class="flex items-center  gap-3 p-3 bg-white border border-black/10 cursor-pointer shadow-md hover:shadow-lg transition-shadow duration-200">
+          <label class="flex items-center dark:bg-surface-800  gap-3 p-3 border border-black/10 cursor-pointer shadow-md hover:shadow-lg transition-shadow duration-200">
             <input type="radio" value="COD" v-model="selectedPaymentMethod" class="w-4 h-4 text-black accent-black" />
-            <div class="w-16 h-9 shadow-sm text-white rounded font-bold text-[10px] flex items-center justify-center">
+            <div class="w-16 h-9 shadow-sm text-white bg-white rounded font-bold text-[10px] flex items-center justify-center">
               <img class="w-10 h-9" src="https://i.pinimg.com/736x/e0/69/43/e06943003785c039da78f19bdf006d2e.jpg" alt="COD" />
             </div>
             <div>
-              <p class="font-bold text-sm dark:text-black/80">Cash on Delivery</p>
-              <p class="text-xs text-gray-500 dark:text-black/80">Pay cash upon package arrival</p>
+              <p class="font-bold text-sm">Cash on Delivery</p>
+              <p class="text-xs text-black/60 dark:text-white/60">Pay cash upon package arrival</p>
             </div>
           </label>
 
           <!-- PREFERRED CONTACT LINE SECTION -->
           <div>
             <h2 class="font-bold mb-2">Preferred Contact Line</h2>
-            <div class="bg-white shadow-md p-5 space-y-4 border border-black/5">
+            <div class="dark:bg-surface-800  shadow-md p-5 space-y-4 border border-black/5">
               <div class="flex gap-2">
-                <div class="flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded text-sm text-black font-semibold">
+                <div class="flex items-center gap-2 px-3 py-2 dark:bg-surface-800 border border-gray-300 rounded text-sm font-semibold">
                   <img src="https://flagcdn.com/w20/kh.png" alt="Cambodia Flag" class="w-5 h-3.5 object-cover rounded-xs" />
                   <span>+855</span>
                 </div>
@@ -320,7 +320,7 @@
                   type="tel"
                   v-model="phoneNumber"
                   placeholder="Enter mobile phone"
-                  class="flex-1 px-3 py-2 bg-white border border-gray-300 rounded text-sm text-black focus:outline-none focus:border-black/30"
+                  class="placeholder-black/50 dark:placeholder-zinc-400 flex-1 px-3 py-2 dark:bg-surface-800 border border-gray-300 rounded text-sm focus:outline-none"
                 />
               </div>
     
@@ -330,9 +330,9 @@
                     type="radio"
                     value="PHONE CALL"
                     v-model="preferredContactMethod"
-                    class="w-4 h-4 text-black accent-black cursor-pointer"
+                    class="w-4 h-4  accent-black cursor-pointer"
                   />
-                  <span class="font-bold text-xs uppercase tracking-wide text-black">PHONE CALL</span>
+                  <span class="font-bold text-xs uppercase tracking-wide">PHONE CALL</span>
                 </label>
     
                 <hr class="border-gray-200" />
@@ -342,16 +342,16 @@
                     type="radio"
                     value="TELEGRAM"
                     v-model="preferredContactMethod"
-                    class="w-4 h-4 text-black accent-black cursor-pointer"
+                    class="w-4 h-4 accent-black cursor-pointer"
                   />
-                  <span class="font-bold text-xs uppercase tracking-wide text-black">TELEGRAM</span>
+                  <span class="font-bold text-xs uppercase tracking-wide">TELEGRAM</span>
                 </label>
               </div>
             </div>
           </div>
 
           <!-- SUMMARY SECTION -->
-          <div class="bg-white shadow-md text-black p-6 space-y-3 font-sans">
+          <div class="dark:bg-surface-800 shadow-md p-6 space-y-3 font-sans">
             <div class="flex justify-between items-center text-base">
               <span class="font-semibold">Total</span>
               <span class="font-semibold">${{ originalTotal.toFixed(2) }}</span>
@@ -359,15 +359,15 @@
 
             <div class="flex justify-between items-center text-sm">
               <span class="font-semibold">Save</span>
-              <span class="font-semibold text-black/80">-${{ totalSaving.toFixed(2) }}</span>
+              <span class="font-semibold text-black/80 dark:text-white/80">-${{ totalSaving.toFixed(2) }}</span>
             </div>
 
             <div class="flex justify-between items-center text-sm">
               <span class="font-semibold">Delivery fee</span>
-              <span class="font-semibold text-black/80">${{ deliveryFee.toFixed(2) }}</span>
+              <span class="font-semibold text-black/80 dark:text-white/80">${{ deliveryFee.toFixed(2) }}</span>
             </div>
 
-            <hr class="border-gray-700 my-2" />
+            <hr class="border-gray-200 my-2" />
 
             <div class="flex justify-between items-center text-md font-bold pt-1">
               <span>Amount to pay</span>
