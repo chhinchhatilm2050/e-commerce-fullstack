@@ -5,16 +5,23 @@ const RegisterView = () => import('@/views/auth/RegisterView.vue');
 const LoginView = () => import('@/views/auth/LoginView.vue');
 const VerifyEmailView = () => import('@/views/auth/VerifyEmailView.vue');
 const ForgetPasswordView = () => import('@/views/auth/ForgetPasswordView.vue');
-const CategoryPage = () => import('@/views/CategoryPage.vue');
-const SerchPageResult = () => import('@/views/SearchResultsPage.vue');
-const ProductDetail = () => import('@/views/ProductDetailPageView.vue');
+const CategoryPageView = () => import('@/views/product/ProductPerCategoryView.vue');
+const SerchPageResult = () => import('@/views/product/SearchResultsPage.vue');
+const ProductDetail = () => import('@/views/product/ProductDetailPageView.vue');
 const CustomerServiceView = () => import('@/views/feature/CustomerServiceView.vue');
 const NotFoundPageView = () => import('@/views/NotFoundView.vue');
-const WishlistView = () => import('@/views/WishlistView.vue');
-const CheckoutView = () => import('@/views/CeckoutView.vue');
-const OrderSuccess = () => import('@/views/OrderSuccess.vue');
-const MyOrders = () => import('@/views/MyOrderView.vue');
-const OrderDetail = () => import('@/views/OrderDetailView.vue');
+const WishlistView = () => import('@/views/whishlist/WishlistView.vue');
+const CheckoutView = () => import('@/views/checkoutandorder/CeckoutView.vue');
+const OrderSuccessView = () => import('@/views/checkoutandorder/OrderSuccess.vue');
+const MyOrdersView = () => import('@/views/checkoutandorder/MyOrderView.vue');
+const OrderDetailView = () => import('@/views/checkoutandorder/OrderDetailView.vue');
+const AdminLayoutView = () => import('@/layouts/AdminLayout.vue');
+const DashboardOverview = () => import('@/views/admin/DashboardOverview.vue');
+const OrdersListView = () => import('@/views/admin/OrdersListView.vue');
+const ProductsListView = () => import('@/views/admin/ProductsListView.vue');
+const CategoriesListView = () => import('@/views/admin/CategoriesListView.vue');
+const CustomerListView = () => import('@/views/admin/CustomersListView.vue');
+
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
@@ -49,7 +56,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/products/category/:slug',
     name: 'category',
-    component: CategoryPage,
+    component: CategoryPageView,
     meta: { title: 'ChhatStore - Category', guestOnly: true },
   },
   {
@@ -91,25 +98,62 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/order-success',
     name: 'order-success',
-    component: OrderSuccess,
+    component: OrderSuccessView,
     meta: { title: 'ChhatStore - Checkout' },
   },
   {
     path: '/my-orders',
     name: 'my-orders',
-    component: MyOrders,
+    component: MyOrdersView,
     meta: { title: 'ChhatStore - Checkout' },
   },
   {
     path: '/order-detail/:id',
     name: 'order-detail',
-    component: OrderDetail,
+    component: OrderDetailView,
     meta: { title: 'ChhatStore - Checkout' },
   },
   {
     path: '/:pathMatch(.*)*',
     name: 'notFound',
     component: NotFoundPageView,
+  },
+  {
+    path: '/admin',
+    component: AdminLayoutView,
+    redirect: '/admin/dashboard',
+    children: [
+      {
+        path: 'dashboard',
+        name: 'admin-dashboard',
+        component: DashboardOverview,
+        meta: { title: 'Dashboard Overview' },
+      },
+      {
+        path: 'orders',
+        name: 'admin-orders',
+        component: OrdersListView,
+        meta: { title: 'Order Management' },
+      },
+      {
+        path: 'products',
+        name: 'admin-products',
+        component: ProductsListView,
+        meta: { title: 'Product Catalog' },
+      },
+      {
+        path: 'categories',
+        name: 'admin-categories',
+        component: CategoriesListView,
+        meta: { title: 'Category Management' },
+      },
+      {
+        path: 'customers',
+        name: 'admin-customers',
+        component: CustomerListView,
+        meta: { title: 'Customer List' },
+      },
+    ],
   },
 ];
 
