@@ -238,13 +238,13 @@
     <!-- Header Logo -->
     <div class="dark:bg-surface-800 dark:border-surface-700 shadow-sm gap-6 bg-white z-40 flex items-center justify-center pt-4 fixed left-0 right-0 top-0 pb-3" >
       <RouterLink to="/" >
-        <img class="w-[90px] h-[20px] sm:w-[140px] sm:h-[25px] cursor-pointer block dark:hidden"  src="../assets/image/torilogo.png" alt="Logo" />
-        <img class="w-[90px] h-[20px] sm:w-[140px] sm:h-[25px] cursor-pointer hidden dark:block" src="../assets/image/torilogowhite.png" alt="Logo" />
+        <img class="w-[90px] h-[20px] sm:w-[140px] sm:h-[25px] cursor-pointer block dark:hidden"  src="../../assets/image/torilogo.png" alt="Logo" />
+        <img class="w-[90px] h-[20px] sm:w-[140px] sm:h-[25px] cursor-pointer hidden dark:block" src="../../assets/image/torilogowhite.png" alt="Logo" />
       </RouterLink>
       <div class="sm:text-2xl font-bold text-lg"><i class="ri-shopping-bag-line"></i> Checkout Summary</div>
     </div>
 
-    <div class="max-w-6xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-12 gap-10 mt-20 lg:mt-20 animate-slide-up">
+    <div class="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-12 gap-10 mt-20 lg:mt-20 animate-slide-up">
       <!-- LEFT COLUMN -->
       <div class="lg:col-span-6 space-y-6">
         <div>
@@ -287,7 +287,7 @@
           <label class="flex items-center gap-3 p-3 dark:bg-surface-800 border border-black/10  cursor-pointer shadow-md hover:shadow-lg transition-shadow duration-200">
             <input type="radio" value="aba_payway" v-model="selectedPaymentMethod" class="w-4 h-4 text-black accent-black" />
             <div class="w-16 h-9 bg-red-600 text-white rounded font-bold text-[10px] flex items-center justify-center">
-              <img class="w-16 h-9 rounded-sm" src="../assets/image/aba.jpg" alt="ABA" />
+              <img class="w-16 h-9 rounded-sm" src="../../assets/image/aba.jpg" alt="ABA" />
             </div>
             <div>
               <p class="font-bold text-sm">ABA PAY</p>
