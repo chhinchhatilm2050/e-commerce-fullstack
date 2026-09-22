@@ -15,6 +15,7 @@
   const isCheckoutRoute = computed(() => router.currentRoute.value.path.startsWith('/checkout'));
   const isOrderSuccess = computed(() => router.currentRoute.value.path.startsWith('/order-success'));
   const isNotFoundPage = computed(() => route.name === 'notFound');
+  const isAdmin = computed(() => router.currentRoute.value.path.startsWith('/admin'));
 
   onMounted(async () => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -50,8 +51,8 @@
 </script>
 
 <template>
-  <app-navbar v-if="!isCheckoutRoute"/>
+  <app-navbar v-if="!isCheckoutRoute && !isAdmin"/>
   <base-alert />
   <router-view />
-  <app-footer v-if="!isForgotPasswordRoute && !isNotFoundPage && !isCheckoutRoute && !isOrderSuccess" />
+  <app-footer v-if="!isForgotPasswordRoute && !isNotFoundPage && !isCheckoutRoute && !isOrderSuccess && !isAdmin" />
 </template>

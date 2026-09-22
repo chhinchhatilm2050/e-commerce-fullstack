@@ -83,30 +83,18 @@
       <nav class="flex items-center justify-between gap-3 h-16">
         <button
           @click="mobileMenuOpen = !mobileMenuOpen"
-          class="lg:hidden btn-ghost w-8 h-8 p-0 flex items-center justify-center rounded-full dark:hover:bg-surface-100"
+          class="lg:hidden btn-ghost w-8 h-8 p-0 flex items-center justify-center rounded-sm dark:hover:bg-surface-100"
         >
-          <svg
-            class="w-5 h-5 dark:text-gray-300"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M4 6h16M4 12h16M4 18h16"
-            />
-          </svg>
+          <i class="ri-sidebar-fold-line text-2xl text-black dark:text-white"></i>
         </button>
         <RouterLink to="/" class="cursor-pointer">
           <img
-            class="w-[90px] h-[20px] sm:w-[140px] sm:h-[25px] block dark:hidden"
+            class="w-[90px] h-[20px] sm:w-[125px] sm:h-[25px] block dark:hidden"
             src="../../assets/image/torilogo.png"
             alt=""
           />
           <img
-            class="w-[90px] h-[20px] sm:w-[140px] sm:h-[25px] hidden dark:block"
+            class="w-[90px] h-[20px] sm:w-[125px] sm:h-[25px] hidden dark:block"
             src="../../assets/image/torilogowhite.png"
             alt=""
           />
@@ -129,6 +117,10 @@
             >
               {{ cat.name.toUpperCase() }}
             </RouterLink>
+          </li>
+          <li v-if="authStore.currentUser?.role === 'admin'" @click="router.push('/admin/dashboard')" class="cursor-pointer flex items-center gap-1">
+            <i class="ri-settings-3-line text-lg text-black/80 dark:text-white/80"></i>
+            <span class="text-sm font-semibold text-black/80 dark:text-white/80">Admin Dashboard</span>
           </li>
         </ul>
 

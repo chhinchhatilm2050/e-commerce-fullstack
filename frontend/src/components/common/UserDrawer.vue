@@ -60,7 +60,7 @@
   };
 
   const handleToDashboard = (): void => {
-    router.push('/dashboard');
+    router.push('/admin/dashboard');
     close();
   };
 
@@ -94,7 +94,7 @@
             @click="close"
             class="cursor-pointer hover:bg-gray-200 dark:hover:bg-surface-700 w-7 h-7 flex items-center justify-center rounded-sm"
           >
-            <i class="ri-close-large-line dark:text-gray-200"></i>
+            <i class="ri-sidebar-fold-line dark:text-gray-200 text-xl"></i>
           </button>
       </div>
 
@@ -126,7 +126,7 @@
         >
           <i class="ri-settings-3-line text-lg text-black/80 dark:text-white/80"></i>
           <span class="text-sm font-medium text-black/80 dark:text-white/80">Admin Dashboard</span>
-          <i class="ri-arrow-right-s-line ml-auto text-gray-400"></i>
+          <i class="ri-arrow-right-s-line ml-auto text-black/60 dark:text-white/60"></i>
         </button>
 
         <button
@@ -137,7 +137,7 @@
           <span class="text-sm font-medium text-black/80 dark:text-white/80">
             {{ $t("profile.myProfile") }}
           </span>
-          <i class="ri-arrow-right-s-line ml-auto text-gray-400"></i>
+          <i class="ri-arrow-right-s-line ml-auto text-black/60 dark:text-white/60"></i>
         </button>
 
         <button
@@ -148,7 +148,7 @@
           <span class="text-sm font-medium text-black/80 dark:text-white/80">
             {{ $t("profile.editProfile") }}
           </span>
-          <i class="ri-arrow-right-s-line ml-auto text-gray-400"></i>
+          <i class="ri-arrow-right-s-line ml-auto text-black/60 dark:text-white/60"></i>
         </button>
 
         <button
@@ -159,7 +159,7 @@
           <span class="text-sm font-medium text-black/80 dark:text-white/80">
             {{ $t("profile.myOrders") }}
           </span>
-          <i class="ri-arrow-right-s-line ml-auto text-gray-400"></i>
+          <i class="ri-arrow-right-s-line ml-auto text-black/60 dark:text-white/60"></i>
         </button>
       </div>
 

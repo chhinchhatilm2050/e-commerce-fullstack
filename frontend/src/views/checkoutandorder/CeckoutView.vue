@@ -238,8 +238,8 @@
     <!-- Header Logo -->
     <div class="dark:bg-surface-800 dark:border-surface-700 shadow-sm gap-6 bg-white z-40 flex items-center justify-center pt-4 fixed left-0 right-0 top-0 pb-3" >
       <RouterLink to="/" >
-        <img class="w-[90px] h-[20px] sm:w-[140px] sm:h-[25px] cursor-pointer block dark:hidden"  src="../../assets/image/torilogo.png" alt="Logo" />
-        <img class="w-[90px] h-[20px] sm:w-[140px] sm:h-[25px] cursor-pointer hidden dark:block" src="../../assets/image/torilogowhite.png" alt="Logo" />
+        <img class="w-[90px] h-[20px] sm:w-[125px] sm:h-[25px] cursor-pointer block dark:hidden"  src="../../assets/image/torilogo.png" alt="Logo" />
+        <img class="w-[90px] h-[20px] sm:w-[125px] sm:h-[25px] cursor-pointer hidden dark:block" src="../../assets/image/torilogowhite.png" alt="Logo" />
       </RouterLink>
       <div class="sm:text-2xl font-bold text-lg"><i class="ri-shopping-bag-line"></i> Checkout Summary</div>
     </div>

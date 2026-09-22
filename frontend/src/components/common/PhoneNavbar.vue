@@ -44,8 +44,8 @@
                         <img class="w-[90px] h-[20px] sm:w-[140px] sm:h-[25px] block dark:hidden cursor-pointer" src="../../assets/image/torilogo.png" alt="">
                         <img class="w-[90px] h-[20px] sm:w-[140px] sm:h-[25px] hidden dark:block cursor-pointer" src="../../assets/image/torilogowhite.png" alt="">
                     </RouterLink>
-                    <button @click="close" class="cursor-pointer hover:bg-gray-200 dark:hover:bg-surface-100 w-8 h-8 flex items-center justify-center rounded-full">
-                        <i class="ri-close-large-line dark:text-gray-200"></i>
+                    <button @click="close" class="cursor-pointer hover:bg-gray-200 dark:hover:bg-surface-100 w-8 h-8 flex items-center justify-center rounded-sm">
+                        <i class="ri-sidebar-fold-line text-2xl dark:text-gray-200"></i>
                     </button>
                 </div>
 
