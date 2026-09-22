@@ -65,7 +65,9 @@
     const result = await authStore.login(email.value, password.value);
     if (result.success) {
       const redirectUrl = route.query.redirect as string;
-      if (redirectUrl) {
+      if (authStore.currentUser?.role === 'admin') {
+        router.push('admin/dashboard');
+      } else if (redirectUrl) {
         router.push(redirectUrl);
       }
       emit('successLogin');

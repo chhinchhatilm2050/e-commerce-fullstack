@@ -234,7 +234,7 @@
             @click="close"
             class="cursor-pointer hover:bg-gray-200 dark:hover:bg-surface-700 w-7 h-7 flex items-center justify-center rounded-sm"
           >
-            <i class="ri-close-large-line dark:text-gray-200"></i>
+            <i class="ri-sidebar-fold-line text-xl dark:text-gray-200"></i>
           </button>
         </div>
 
