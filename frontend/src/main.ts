@@ -4,9 +4,11 @@ import './assets/main.css';
 import i18n from './i18n/index.ts';
 import 'remixicon/fonts/remixicon.css';
 import { createPinia } from 'pinia';
+import VueApexCharts from 'vue3-apexcharts';
 import router from './router';
 
 const app = createApp(App);
+app.use(VueApexCharts);
 app.use(i18n);
 app.use(createPinia());
 app.use(router);

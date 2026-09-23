@@ -48,7 +48,7 @@
   <!-- Sidebar -->
   <aside
     :class="[
-      'fixed inset-y-0 left-0 z-50 bg-black md:bg-black/90 text-white flex flex-col transition-all duration-300 ease-in-out lg:static shadow-lg ',
+      'fixed inset-y-0 left-0 z-50 bg-black md:bg-black/90 text-white flex flex-col transition-all duration-300 ease-in-out shadow-lg',
       isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
       isCollapsed ? 'lg:w-17' : 'lg:w-64',
       'w-64'
@@ -74,7 +74,7 @@
         title="Expand Sidebar"
       >
         <!-- Static "C" Logo -->
-        <div class="w-8 h-8 rounded-full bg-[#005c8a] flex items-center justify-center font-bold text-white group-hover:hidden">
+        <div class="w-8 h-8 rounded-full bg-[#cdd0d5] flex items-center justify-center font-bold text-white group-hover:hidden">
           <img class="rounded-full" src="https://i.pinimg.com/736x/4c/28/8e/4c288ea0426a2eae841762ad251789bb.jpg" alt="">
         </div>
         <!-- Hover Unfold Icon -->
@@ -117,7 +117,7 @@
           class="flex items-center gap-3 px-3 py-1.5 rounded-md text-sm font-medium transition-colors"
           :class="[
             route.path === item.path
-              ? 'bg-[#005c8a]/60 text-white font-medium'
+              ? 'bg-[#cdd0d5]/60 text-white font-medium'
               : 'text-white hover:text-white hover:bg-white/5'
           ]"
         >
@@ -133,7 +133,7 @@
         </p>
         <router-link
           to="/"
-          class="flex items-center gap-3 px-3 py-1.5 rounded-md text-sm font-medium bg-[#005c8a]/60 text-white hover:bg-[#005c8a] transition"
+          class="flex items-center gap-3 px-3 py-1.5 rounded-md text-sm font-medium bg-[#cdd0d5]/60 text-white hover:bg-[#cdd0d5] transition"
         >
           <i class="ri-shopping-cart-2-line text-lg shrink-0"></i>
           <span v-if="!isCollapsed" class="truncate">Back to Store</span>
@@ -151,8 +151,8 @@
             :src="userStore.currentUser.avatar" alt="">
             <i v-else class="ri-user-fill text-2xl text-gray-500 dark:text-gray-200"></i>
         </div>
-        <div class="overflow-hidden">
-          <p class="font-meduim capitalize truncate">
+        <div v-if="!isCollapsed" class="overflow-hidden">
+          <p class="font-medium capitalize truncate">
             {{ authStore.currentUser?.role }}
           </p>
           <p class="text-xs text-white/60 truncate">
