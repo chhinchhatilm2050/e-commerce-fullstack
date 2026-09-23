@@ -10,6 +10,7 @@ import wishlistRouter from './wishlistRoutes.js';
 import cartRouter from './cartRoutes.js';
 import addressRouter from './addressRoutes.js';
 import orderRouter from './orderRoutes.js';
+import adminRouter from './adminRoutes.js';
 
 const router = Router();
 router.use('/auth', authRouter);
@@ -23,5 +24,6 @@ router.use('/wishlists', wishlistRouter);
 router.use('/carts', cartRouter);
 router.use('/addresses', addressRouter);
 router.use('/orders', orderRouter);
+router.use('/admin', adminRouter);
 
 export default router;
