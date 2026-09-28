@@ -57,7 +57,7 @@
     yaxis: [
       {
         // Left Axis: Approved Revenue
-        seriesName: 'Approved Revenue',
+        seriesName: 'Total Revenue',
         title: { text: 'Revenue ($)', style: { color: '#005c8a', fontWeight: 600 } },
         labels: {
           formatter: (val: number) => `$${Math.round(val).toLocaleString()}`,
@@ -66,7 +66,7 @@
       },
       {
         // Shared Left Axis: Pending Revenue (Shares scale with Approved Revenue)
-        seriesName: 'Approved Revenue',
+        seriesName: 'Total Revenue',
         show: false,
       },
       {
@@ -115,12 +115,12 @@
 
   const series = computed(() => [
     {
-      name: 'Approved Revenue',
+      name: 'Total Revenue',
       type: 'area',
       data: props.monthlyRevenue,
     },
     {
-      name: 'Pending Revenue',
+      name: 'Total Pending',
       type: 'line',
       data: props.monthlyPendingRevenue,
     },
@@ -138,7 +138,7 @@
 </script>
 
 <template>
-  <div class="bg-white p-5 rounded-lg border border-slate-200/90 shadow-xs">
+  <div class="bg-[#cdd0d5]/20 dark:bg-[#cdd0d5]/70 p-5 rounded-lg border border-slate-200/90 shadow-xs">
     <div class="flex items-center justify-between mb-2">
       <div>
         <h3 class="text-base font-bold text-slate-800">Sales & Performance Trends</h3>

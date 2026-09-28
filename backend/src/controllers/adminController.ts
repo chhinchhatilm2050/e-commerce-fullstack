@@ -4,22 +4,21 @@ import OrderModel from '../model/order.js';
 import UserModel from '../model/user.js';
 import ProductModel from '../model/product.js';
 
-interface RevenueAggregationResult {
-  _id: null;
-  total: number;
-}
+// Revenue Filter: Money collected via ABA PayWay OR Cash on Delivery upon delivery
+const paidRevenueFilter = {
+  status: { $ne: 'CANCELLED' },
+  $or: [
+    { paymentStatus: 'PAID' },
+    { paymentMethod: 'COD', status: 'DELIVERED' }
+  ]
+};
 
-interface MonthlyRevenueAggregation {
-  _id: number;
-  totalRevenue: number;
-  totalOrders: number;
-}
-
-interface TopProductAggregation {
-  _id: string;
-  totalSold: number;
-}
-
+// Pending Filter: Unpaid orders or COD orders still in transit/pending
+const pendingRevenueFilter = {
+  status: { $in: ['PENDING', 'SHIPPED'] as const },
+  paymentStatus: { $ne: 'PAID' as const },
+  $nor: [{ paymentMethod: 'COD' as const, status: 'DELIVERED' as const }]
+};
 export const getDashboardAnalytics = asyncHandler(async (req: Request, res: Response, _next: NextFunction) => {
   const now = new Date();
   const currentYear = now.getFullYear();
@@ -27,26 +26,26 @@ export const getDashboardAnalytics = asyncHandler(async (req: Request, res: Resp
   const startOfLastMonth = new Date(currentYear, now.getMonth() - 1, 1);
 
   // 1. Fetch Revenue for Current Month
-  const currentMonthRevenue = await OrderModel.aggregate<RevenueAggregationResult>([
-    { $match: { status: 'APPROVED', createdAt: {$gte: startOfThisMonth } } },
+  const currentMonthRevenue = await OrderModel.aggregate<{total: number}>([
+    { $match: { ...paidRevenueFilter, createdAt: { $gte: startOfThisMonth } } },
     { $group: { _id: null, total: { $sum: '$amount' } } }
   ]);
 
   // 2. Fetch Revenue for Last Month
-  const lastMonthRevenue = await OrderModel.aggregate<RevenueAggregationResult>([
-    { $match: { status: 'APPROVED', createdAt: { $gte: startOfLastMonth,$lt: startOfThisMonth } } },
+  const lastMonthRevenue = await OrderModel.aggregate<{total: number}>([
+    { $match: { ...paidRevenueFilter, createdAt: { $gte: startOfLastMonth, $lt: startOfThisMonth } } },
     { $group: { _id: null, total: { $sum: '$amount' } } }
   ]);
 
-  // 3. Fetch Total Revenue for the Entire Current Year
-  const yearlyRevenue = await OrderModel.aggregate<RevenueAggregationResult>([
+  // 3. Fetch Total Revenue for Current Year
+  const startOfYear = new Date(Date.UTC(currentYear, 0, 1, 0, 0, 0, 0));
+  const endOfYear = new Date(Date.UTC(currentYear, 11, 31, 23, 59, 59, 999));
+
+  const yearlyRevenue = await OrderModel.aggregate<{total: number}>([
     {
       $match: {
-        status: 'APPROVED',
-        createdAt: {
-          $gte: new Date(`${currentYear}-01-01T00:00:00.000Z`),
-          $lte: new Date(`${currentYear}-12-31T23:59:59.999Z`)
-        }
+        ...paidRevenueFilter,
+        createdAt: { $gte: startOfYear, $lte: endOfYear }
       }
     },
     { $group: { _id: null, total: { $sum: '$amount' } } }
@@ -64,12 +63,12 @@ export const getDashboardAnalytics = asyncHandler(async (req: Request, res: Resp
     revenueGrowth = 100;
   }
 
-  const LOW_STOCK_THRESHOLD: number = 10;
+  const LOW_STOCK_THRESHOLD = 10;
   const lowStockCount = await ProductModel.countDocuments({ stock: { $lte: LOW_STOCK_THRESHOLD } });
 
-  // Basic totals
-  const totalOrders = await OrderModel.countDocuments();
-  const pendingOrders = await OrderModel.countDocuments({ status: 'PENDING' });
+  // Counts
+  const totalOrders = await OrderModel.countDocuments({ status: { $ne: 'CANCELLED' } });
+  const pendingOrders = await OrderModel.countDocuments(pendingRevenueFilter);
   const totalCustomers = await UserModel.countDocuments({ role: 'customer' });
 
   res.status(200).json({
@@ -88,49 +87,43 @@ export const getDashboardAnalytics = asyncHandler(async (req: Request, res: Resp
 
 export const getSalesChartsData = asyncHandler(async (req: Request, res: Response) => {
   const currentYear = new Date().getFullYear();
+  const startOfYear = new Date(Date.UTC(currentYear, 0, 1, 0, 0, 0, 0));
+  const endOfYear = new Date(Date.UTC(currentYear, 11, 31, 23, 59, 59, 999));
 
-  // 1. Monthly Approved Revenue & Approved Order Counts
-  const approvedAggregation = await OrderModel.aggregate<MonthlyRevenueAggregation>([
+  // 1. Monthly Paid Revenue & Order Volume
+  const paidAggregation = await OrderModel.aggregate([
     {
       $match: {
-        status: 'APPROVED',
-        createdAt: {
-          $gte: new Date(`${currentYear}-01-01T00:00:00.000Z`),
-          $lte: new Date(`${currentYear}-12-31T23:59:59.999Z`)
-        }
+        ...paidRevenueFilter,
+        createdAt: { $gte: startOfYear, $lte: endOfYear }
       }
     },
     {
       $group: {
         _id: { $month: '$createdAt' },
         totalRevenue: { $sum: '$amount' },
-        totalOrders: { $sum: 1 }       
-      }     
-    },     
-    {
-      $sort: { '_id': 1 } 
-    }
+        totalOrders: { $sum: 1 }
+      }
+    },
+    { $sort: { '_id': 1 } }
   ]);
 
-  // 2. Monthly Pending Order Counts
-  const pendingAggregation = await OrderModel.aggregate<MonthlyRevenueAggregation>([
+  // 2. Monthly Pending Revenue & Order Volume
+  const pendingAggregation = await OrderModel.aggregate([
     {
       $match: {
-        status: 'PENDING',
-        createdAt: {
-          $gte: new Date(`${currentYear}-01-01T00:00:00.000Z`),
-          $lte: new Date(`${currentYear}-12-31T23:59:59.999Z`)
-        }
+        ...pendingRevenueFilter,
+        createdAt: { $gte: startOfYear, $lte: endOfYear }
       }
     },
     {
       $group: {
         _id: { $month: '$createdAt' },
         totalRevenue: { $sum: '$amount' },
-        totalOrders: { $sum: 1 }       
-      }     
-    },     
-    {$sort: { '_id': 1 } }
+        totalOrders: { $sum: 1 }
+      }
+    },
+    { $sort: { '_id': 1 } }
   ]);
 
   const monthlySales: number[] = Array<number>(12).fill(0);
@@ -138,19 +131,25 @@ export const getSalesChartsData = asyncHandler(async (req: Request, res: Respons
   const monthlyPending: number[] = Array<number>(12).fill(0);
   const monthlyPendingRevenue: number[] = Array<number>(12).fill(0);
 
-  approvedAggregation.forEach((item) => {
+  interface MonthlyAggregateItem {
+  _id: number;
+  totalRevenue: number;
+  totalOrders: number;
+}
+
+  paidAggregation.forEach((item: MonthlyAggregateItem) => {
     monthlySales[item._id - 1] = item.totalRevenue;
     monthlyOrders[item._id - 1] = item.totalOrders;
   });
 
-  pendingAggregation.forEach((item) => {
+  pendingAggregation.forEach((item: MonthlyAggregateItem) => {
     monthlyPending[item._id - 1] = item.totalOrders;
-    monthlyPendingRevenue[item._id -1] = item.totalRevenue;
+    monthlyPendingRevenue[item._id - 1] = item.totalRevenue;
   });
 
-  // 3. Top Selling Products
-  const topProducts = await OrderModel.aggregate<TopProductAggregation>([
-    { $match: { status: 'APPROVED' } },
+  // 3. Top Selling Products (From completed/paid sales)
+  const topProducts = await OrderModel.aggregate<{_id: number, totalSold: number}>([
+    { $match: paidRevenueFilter },
     { $unwind: '$items' },
     {
       $group: {
@@ -158,12 +157,8 @@ export const getSalesChartsData = asyncHandler(async (req: Request, res: Respons
         totalSold: { $sum: '$items.quantity' }
       }
     },
-    { 
-      $sort: { totalSold: -1 } 
-    },     
-    {
-      $limit: 5 
-    }
+    { $sort: { totalSold: -1 } },
+    { $limit: 5 }
   ]);
 
   res.status(200).json({

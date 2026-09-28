@@ -23,7 +23,7 @@
     case 'APPROVED':
       return 'text-emerald-700 dark:text-emerald-400';
     case 'PENDING':
-      return 'text-amber-700 dark:text-amber-400';
+      return 'border border-amber-700 text-amber-700 dark:text-amber-400';
     case 'FAILED':
       return 'text-rose-700 dark:text-rose-400';
     default:
@@ -67,13 +67,34 @@
 
     return parts.join(' / ');
   });
+
+  const getPaymentBadgeClass = (paymentStatus: string) => {
+    switch (paymentStatus) {
+    case 'PAID':
+      return ' text-emerald-600 dark:text-emerald-400 border border-emerald-500/20';
+    case 'UNPAID':
+      return ' border border-amber-700 text-amber-700 dark:text-amber-400';
+    case 'FAILED':
+      return 'border border-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20';
+    default:
+      return 'border bordergray-500/10 text-gray-600 dark:text-gray-400 border border-gray-500/20';
+    }
+  };
 </script>
 
 <template>
-  <TopLoader :is-loading="orderStore.loading" />
+  <TopLoader :is-loading="orderStore.orderDetailLoading" />
   <div class="container-xl mx-auto px-5 md:px-9 md:py-5 py-3 md:space-y-4 space-y-3">
     <!-- Back Navigation -->
-    <h2 class="font-bold text-2xl animate-slide-up"><i class="ri-game-2-line animate-slide-up"></i> Your Order Details</h2>
+     <div class="flex justify-between">
+       <h2 class="font-bold text-2xl animate-slide-up"><i class="ri-game-2-line animate-slide-up"></i> Your Order Details</h2>
+       <button
+           @click="router.back()"
+           class="subCategory-button text-sm animate-slide-up "
+         >
+           <i class="ri-arrow-left-line text-md"></i> Back to Orders
+         </button>
+     </div>
     <div class="md:flex justify-between block gap-4 items-cente animate-slide-up">
       <div class="">
         <p class="font-semibold capitalize">
@@ -81,12 +102,7 @@
         </p>
         <p class="text-xs">Thank you. Your order has been Confirmed.</p>
       </div>
-      <button
-        @click="router.back()"
-        class="subCategory-button text-sm py-2 animate-slide-up mt-4 md:mt-0"
-      >
-        <i class="ri-arrow-left-line text-md"></i> Back to Orders
-      </button>
+      
     </div>
 
     <!-- Loading State -->
@@ -103,23 +119,37 @@
 
     <!-- Order Details Card -->
     <div v-else-if="orderStore.currentOrder" class="space-y-6 animate-slide-up">
-      <!-- Order Header -->
-      <div class="bg-white dark:bg-surface-800 border border-black/10 dark:border-surface-700 p-6 shadow-md flex flex-wrap justify-between items-center gap-4">
-        <div>
-          <h1 class="text-xl font-bold flex items-center gap-2">
-            Order #{{ orderStore.currentOrder.tran_id }}
-          </h1>
-          <p class="text-xs text-black/60 dark:text-white/60 mt-1">
-            Placed on {{ new Date(orderStore.currentOrder.createdAt).toLocaleDateString('en-US', { dateStyle: 'full' }) }}
-          </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Order Header -->
+        <div class="bg-[#cdd0d5]/60 dark:bg-surface-800 border border-black/10 dark:border-surface-700 p-6 shadow-md flex flex-wrap justify-between items-center gap-4">
+          <div>
+            <h1 class="text-xl font-bold flex items-center gap-2">
+              Order #{{ orderStore.currentOrder.tran_id }}
+            </h1>
+            <p class="text-xs text-black/60 dark:text-white/60 mt-1">
+              Placed on {{ new Date(orderStore.currentOrder.createdAt).toLocaleDateString('en-US', { dateStyle: 'full' }) }}
+            </p>
+          </div>
+          <span :class="['px-3 py-1 text-xs font-semibold', getStatusBadge(orderStore.currentOrder.status)]">
+            {{ orderStore.currentOrder.status }}
+          </span>
         </div>
-        <span :class="['px-3 py-1 text-xs font-semibold', getStatusBadge(orderStore.currentOrder.status)]">
-          {{ orderStore.currentOrder.status }}
-        </span>
+        <div class="bg-[#cdd0d5]/60 dark:bg-surface-800 border border-black/10 dark:border-surface-700 p-6 shadow-md flex flex-wrap justify-between items-center gap-4">
+          <div>
+            <h1 class="text-xl font-bold flex items-center gap-2">Payment Method</h1>
+            <p class="text-sm font-bold text-gray-900 dark:text-white uppercase">
+              {{ orderStore.currentOrder.paymentMethod }}
+            </p>
+          </div>
+           <span :class="['px-3 py-1 text-xs font-semibold', getPaymentBadgeClass(orderStore.currentOrder.paymentStatus)]">
+            {{ orderStore.currentOrder.paymentStatus }}
+          </span>
+        </div>
       </div>
 
       <!-- Items Section -->
-      <div class="bg-white dark:bg-surface-800 border border-black/10 dark:border-surface-700 p-6 shadow-md space-y-4">
+      <div class="bg-[#cdd0d5]/60 dark:bg-surface-800 border border-black/10 dark:border-surface-700 p-6 shadow-md space-y-4">
         <h2 class="text-base font-bold border-b pb-3 border-gray-100 dark:border-surface-700">
           Order Items ({{ orderStore.currentOrder.items.length }})
         </h2>
@@ -139,6 +169,8 @@
               <div class="truncate">
                 <p class="text-sm font-semibold truncate">{{ item.name }}</p>
                 <p class="text-xs text-black/60 dark:text-white/60 mt-0.5">Qty: {{ item.quantity }}</p>
+                <p v-if="item.size" class="text-xs text-black/60 dark:text-white/60 mt-0.5">Size: {{ item.size }}</p>
+                <p v-if="item.color" class="text-xs text-black/60 dark:text-white/60 mt-0.5 capitalize">Color: {{ item.color }}</p>
               </div>
             </div>
 
@@ -151,7 +183,7 @@
       </div>
 
       <!-- Shipping Address -->
-      <div class="bg-white dark:bg-surface-800 border border-black/10 dark:border-surface-700 p-6 shadow-md space-y-3">
+      <div class="bg-[#cdd0d5]/60 dark:bg-surface-800 border border-black/10 dark:border-surface-700 p-6 shadow-md space-y-3">
         <h2 class="text-base font-bold text-gray-900 dark:text-white border-b pb-3 border-gray-100 dark:border-surface-700">
           Shipping Address
         </h2>
@@ -174,7 +206,7 @@
       <!-- Summary & Payment Info -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <!-- Payment Info -->
-        <div class="bg-white dark:bg-surface-800 border border-black/10 dark:border-surface-700 p-6 shadow-md space-y-2">
+        <div class="bg-[#cdd0d5]/60 dark:bg-surface-800 border border-black/10 dark:border-surface-700 p-6 shadow-md space-y-2">
           <h2 class="text-base font-bold text-gray-900 dark:text-white border-b pb-3 border-gray-100 dark:border-surface-700">
             Payment & Info
           </h2>
@@ -186,14 +218,14 @@
         </div>
 
         <!-- Price Breakdown -->
-        <div class="bg-white dark:bg-surface-800 border border-black/10 dark:border-surface-700 p-6 shadow-md space-y-3">
+        <div class="bg-[#cdd0d5]/60 dark:bg-surface-800 border border-black/10 dark:border-surface-700 p-6 shadow-md space-y-3">
           <h2 class="text-base font-bold text-gray-900 dark:text-white border-b pb-3 border-gray-100 dark:border-surface-700">
             Order Summary
           </h2>
           <div class="text-sm space-y-2 font-medium dark:text-white/70">
             <div class="flex justify-between">
               <span>Subtotal</span>
-              <span class="dark:text-white">${{ orderStore.currentOrder.amount.toFixed(2) }}</span>
+              <span class="dark:text-white">${{ orderStore.currentOrder.subtotal.toFixed(2) }}</span>
             </div>
             <div class="flex justify-between">
               <span>Delivery Fee</span>
@@ -205,7 +237,7 @@
             </div>
             <div class="flex justify-between font-bold text-base text-gray-900 dark:text-white pt-2 border-t border-gray-100 dark:border-surface-700">
               <span>Total Amount</span>
-              <span>${{ (orderStore.currentOrder.amount + (orderStore.currentOrder.deliveryFee || 0)).toFixed(2) }}</span>
+              <span class="text-red-600">${{ (orderStore.currentOrder.amount).toFixed(2) }}</span>
             </div>
           </div>
         </div>

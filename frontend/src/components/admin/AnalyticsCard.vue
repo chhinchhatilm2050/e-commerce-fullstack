@@ -6,10 +6,11 @@
     badgeText?: string;
     isLoading: boolean;
   }>();
+
 </script>
 
 <template>
-  <div class="bg-[#cdd0d5] p-5 rounded-lg border border-slate-200/80 shadow-xs transition hover:shadow-md">
+  <div class="bg-[#cdd0d5]/70 p-5 rounded-lg border border-slate-200/80 shadow-xs transition hover:shadow-md">
     <!-- Skeleton Loading State -->
     <div v-if="isLoading" class="animate-pulse space-y-3">
       <div class="flex justify-between items-center">
@@ -35,7 +36,7 @@
       </div>
 
       <div>
-        <h3 class="text-2xl font-bold text-black/70 tracking-tight">{{ value }}</h3>
+        <h3 class="text-2xl font-bold text-black/80 tracking-tight">{{ value }}</h3>
         <p class="text-xs font-medium text-black/50 mt-0.5">{{ label }}</p>
       </div>
     </div>

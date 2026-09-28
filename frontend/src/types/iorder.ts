@@ -3,6 +3,8 @@ import type { IProductImage } from './product';
 export interface IOrderItemPayload {
   productId: string;
   quantity: number;
+  size: string | undefined;
+  color: string | undefined;
 }
 
 export interface ICheckoutPayload {
@@ -49,6 +51,8 @@ export interface IOrderItem {
   productId: string;
   name: string;
   price: number;
+  color: string,
+  size: string,
   quantity: number;
   image: IProductImage;
   code?: string;
@@ -64,6 +68,7 @@ export interface IOrder {
   amount: number;
   paymentMethod: 'COD' | 'aba_payway';
   status: string;
+  paymentStatus: string,
   customer?: {
     phoneNumber: string;
     preferredContactMethod: 'PHONE CALL' | 'TELEGRAM';
@@ -82,6 +87,8 @@ export interface IOrder {
 }
 
 export interface IOrderRespone {
+  success: boolean,
+  message: string,
   data: {orders: IOrder[];}
 };
 
@@ -90,4 +97,28 @@ export interface IOrderDetailRes {
     order: IOrder;
   }
 };
+
+export interface getAllOrderAdminPayload {
+  status: string,
+  paymentStatus: string,
+  paymentMethod: string,
+  search: string,
+}
+
+export interface IAdminOrdersResponse {
+  success: boolean;
+  count: number;
+  data: {
+    orders: IOrder[];
+  };
+  message?: string;
+}
+
+export interface IOrderStatusStats {
+  total: number;
+  pending: number;
+  shipped: number;
+  delivered: number;
+  cancelled: number;
+}
 

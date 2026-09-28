@@ -306,7 +306,7 @@
             <button
               v-for="size in availableSizes"
               :key="size"
-              class="w-auto px-3 h-8 border border-black/20 dark:border-white/20 rounded-sm cursor-pointer whitespace-nowrap flex items-center justify-center text-sm transition"
+              class="w-[70px] px-3 h-8 border border-black/20 dark:border-white/20 rounded-sm cursor-pointer whitespace-nowrap flex items-center justify-center text-sm transition"
               :class="size === selectedSize ? 'subCategory-button' : ''"
               @click="selectSize(size)"
             >

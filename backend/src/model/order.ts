@@ -20,35 +20,56 @@ const orderSchema = new Schema<IOrderDocument>(
       {
         productId: { type: Schema.Types.ObjectId, ref: 'Product', required: true },
         name: { type: String, required: true },
-        price: { type: Number, required: true },
-        quantity: { type: Number, required: true },
+        price: { type: Number, required: true, min: 0 },
+        quantity: { type: Number, required: true, min: 1 },
+        size: { type: String, default: null },
+        color: { type: String, default: null},
         image: { type: String },
         code: { type: String },
       },
     ],
     subtotal: { 
       type: Number, 
-      required: true 
+      required: true,
+      min: 0
     },
     discountAmount: {
       type: Number,
       required: true,
+      default: 0,
+      min: 0
     },
     deliveryFee: {
       type: Number,
       required: true,
+      default: 0,
+      min: 0
     },
-    amount: { type: Number, required: true },
+    amount: { 
+      type: Number, 
+      required: true,
+      min: 0
+    },
     paymentMethod: {
       type: String,
       enum: ['COD', 'aba_payway'],
       required: true,
     },
+
+    // 1. Tracks the MONEY
+    paymentStatus: {
+      type: String,
+      enum: ['UNPAID', 'PAID', 'REFUNDED', 'FAILED'],
+      default: 'UNPAID',
+    },
+
+    // 2. Tracks the LOGISTICS / DELIVERIES
     status: {
       type: String,
-      enum: ['PENDING', 'APPROVED', 'FAILED', 'CANCELLED'],
+      enum: ['PENDING', 'SHIPPED', 'DELIVERED', 'CANCELLED'],
       default: 'PENDING',
     },
+
     customer: {
       firstName: String,
       lastName: String,
@@ -68,6 +89,14 @@ const orderSchema = new Schema<IOrderDocument>(
       district: String,
       street: { type: String, required: true },
     },
+
+    // 3. Soft Delete Pattern
+    isDeleted: {
+      type: Boolean,
+      default: false,
+      index: true
+    },
+
     apv: { type: String, default: null },
     rawPaywayResponse: { type: Schema.Types.Mixed },
   },
