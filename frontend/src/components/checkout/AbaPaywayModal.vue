@@ -84,9 +84,11 @@
     pollIntervalId = setInterval(async () => {
       try {
         const res = await orderStore.checkStatus(tranId);
-        const status = res?.status;
+        
+        // ✅ Check paymentStatus returned by backend
+        const paymentStatus = res?.paymentStatus;
 
-        if (status === 'APPROVED') {
+        if (paymentStatus === 'PAID') {
           stopPolling();
           redirectTimeoutId = setTimeout(() => {
             redirectTimeoutId = null;
@@ -94,13 +96,13 @@
             emit('close');
             router.push({ path: '/order-success', query: { tran_id: tranId } });
           }, REDIRECT_DELAY_MS);
-        } else if (status === 'FAILED') {
+        } else if (paymentStatus === 'FAILED') {
           stopPolling();
           paymentState.value = 'failed';
           errorMessage.value = 'Payment failed or was declined. Please try again.';
         }
       } catch {
-        // Ignore hiccup on individual tick
+        // Ignore network hiccups on individual tick
       }
     }, POLL_INTERVAL_MS);
   };

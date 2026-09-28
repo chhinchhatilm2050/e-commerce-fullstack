@@ -242,20 +242,121 @@ const PRODUCT_PER_SUBCATEGORY = 100;
 // checks uniqueness via ProductModel.exists() on every real product creation).
 // Declared once at module scope so it persists across the whole seed run.
 let codeCounter = 1_000_000_000;
+// Reliable direct Unsplash images organized by keyword
+// 20 high-quality, real Unsplash photos per category keyword
+const categoryImagePool: Record<string, string[]> = {
+  books: [
+    'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c',
+    'https://images.unsplash.com/photo-1512820790803-83ca734da794',
+    'https://images.unsplash.com/photo-1497633762265-9d179a990aa6',
+    'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f',
+    'https://images.unsplash.com/photo-1495446815901-a7297e633e8d',
+    'https://images.unsplash.com/photo-1532012197267-da84d127e765',
+    'https://images.unsplash.com/photo-1457369804613-52c61a468e7d',
+    'https://images.unsplash.com/photo-1516979187457-637abb4f9353',
+    'https://images.unsplash.com/photo-1543002588-bfa74002ed7e',
+    'https://images.unsplash.com/photo-1589829085413-56de8ae18c73',
+    'https://images.unsplash.com/photo-1506880018603-83d5b814b5a6',
+    'https://images.unsplash.com/photo-1519682337058-a94d519337bc',
+    'https://images.unsplash.com/photo-1476275466078-4007374efbbe',
+    'https://images.unsplash.com/photo-1510172951991-856a654063f9',
+    'https://images.unsplash.com/photo-1521587760476-6c12a4b040da',
+    'https://images.unsplash.com/photo-1463320726281-696a485928c7',
+    'https://images.unsplash.com/photo-1526243741027-444d633d7342',
+    'https://images.unsplash.com/photo-1535905557558-afc4877a26fc',
+    'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0',
+    'https://images.unsplash.com/photo-1491841573634-28140fc7ced7',
+  ],
+  technology: [
+    'https://images.unsplash.com/photo-1498050108023-c5249f4df085',
+    'https://images.unsplash.com/photo-1517336714731-489689fd1ca8',
+    'https://images.unsplash.com/photo-1505740420928-5e560c06d30e',
+    'https://images.unsplash.com/photo-1526738549149-8e07eca6c147',
+    'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9',
+    'https://images.unsplash.com/photo-1546868871-7041f2a55e12',
+    'https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2',
+    'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed',
+    'https://images.unsplash.com/photo-1519389950473-47ba0277781c',
+    'https://images.unsplash.com/photo-1550009158-9ebf69173e03',
+    'https://images.unsplash.com/photo-1508739773434-c26b3d09e071',
+    'https://images.unsplash.com/photo-1593642632823-8f785ba67e45',
+    'https://images.unsplash.com/photo-1512499617640-c74ae3a79d37',
+    'https://images.unsplash.com/photo-1507646298591-240167667825',
+    'https://images.unsplash.com/photo-1583394838336-acd977736f90',
+    'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0',
+    'https://images.unsplash.com/photo-1516035069371-29a1b244cc32',
+    'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46',
+    'https://images.unsplash.com/photo-1587829741301-dc798b83add3',
+    'https://images.unsplash.com/photo-1531297484001-80022131f5a1',
+  ],
+  fashion: [
+    'https://images.unsplash.com/photo-1523381210434-271e8be1f52b',
+    'https://images.unsplash.com/photo-1489987707025-afc232f7ea0f',
+    'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f',
+    'https://images.unsplash.com/photo-1434389677669-e08b4cac3105',
+    'https://images.unsplash.com/photo-1490481651871-ab68de25d43d',
+    'https://images.unsplash.com/photo-1509631179647-0177331693ae',
+    'https://images.unsplash.com/photo-1539109136881-3be0616acf4b',
+    'https://images.unsplash.com/photo-1485230895905-ec40ba36b9bc',
+    'https://images.unsplash.com/photo-1525507119028-ed4c629a60a3',
+    'https://images.unsplash.com/photo-1576995853123-5a10305d93c0',
+    'https://images.unsplash.com/photo-1529139574466-a303027c1d8b',
+    'https://images.unsplash.com/photo-1543163521-1bf539c55dd2',
+    'https://images.unsplash.com/photo-1551028719-00167b16eac5',
+    'https://images.unsplash.com/photo-1558769132-cb1aea458c5e',
+    'https://images.unsplash.com/photo-1564584217132-42711da07edf',
+    'https://images.unsplash.com/photo-1516762689617-e1cffcef479d',
+    'https://images.unsplash.com/photo-1492707892479-7bc8d5a4ee93',
+    'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c',
+    'https://images.unsplash.com/photo-1512436991641-6745cdb1723f',
+    'https://images.unsplash.com/photo-1548883354-7622d03aca27',
+  ],
+  furniture: [
+    'https://images.unsplash.com/photo-1555041469-a586c61ea9bc',
+    'https://images.unsplash.com/photo-1586023492125-27b2c045efd7',
+    'https://images.unsplash.com/photo-1524758631624-e2822e304c36',
+    'https://images.unsplash.com/photo-1538688525198-9b88f6f53126',
+    'https://images.unsplash.com/photo-1505691938895-1758d7feb511',
+    'https://images.unsplash.com/photo-1567016432779-094069958ea5',
+    'https://images.unsplash.com/photo-1540518614846-7ede433c5173',
+    'https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e',
+    'https://images.unsplash.com/photo-1583847268964-b28dc8f51f92',
+    'https://images.unsplash.com/photo-1513694203232-719a280e022f',
+    'https://images.unsplash.com/photo-1507089947368-19c1da9775ae',
+    'https://images.unsplash.com/photo-1519974719765-e6559eac2575',
+    'https://images.unsplash.com/photo-1550581190-9c1c48d21d6c',
+    'https://images.unsplash.com/photo-1533090161767-e6ffed986c88',
+    'https://images.unsplash.com/photo-1501045661006-fcebe0257c3f',
+    'https://images.unsplash.com/photo-1520699049698-acd2fccb8cc8',
+    'https://images.unsplash.com/photo-1556228720-195a672e8a03',
+    'https://images.unsplash.com/photo-1540574163026-643ea20ade25',
+    'https://images.unsplash.com/photo-1532323544230-7191fd51bc1b',
+    'https://images.unsplash.com/photo-1512917774080-9991f1c4c750',
+  ],
+};
 
 function generateFakeImages(keyword: string, count: number) {
-  return Array.from({ length: count }).map((_, i) => ({
-    url: faker.image.urlLoremFlickr({ width: 400, height: 600, category: keyword }),
-    publicId: `fake_${keyword.toLowerCase().replace(/\s+/g, '_')}_${faker.string.uuid()}`,
-    isPrimary: i === 0,
-    order: i,
-  }));
+  const pool = categoryImagePool[keyword.toLowerCase()] || categoryImagePool['technology'];
+
+  return Array.from({ length: count }).map((_, i) => {
+    // Selects a random photo from the 20 available photos
+    const baseUrl = faker.helpers.arrayElement(pool);
+    const imageUrl = `${baseUrl}?auto=format&fit=crop&w=600&h=800&q=80`;
+
+    return {
+      url: imageUrl,
+      publicId: `fake_${keyword.toLowerCase().replace(/\s+/g, '_')}_${faker.string.uuid()}`,
+      isPrimary: i === 0,
+      order: i,
+    };
+  });
 }
 
 function generateCategoryImage(keyword: string) {
-  return faker.image.urlLoremFlickr({ width: 400, height: 600, category: keyword });
+  const pool = categoryImagePool[keyword.toLowerCase()] || categoryImagePool['technology'];
+  const baseUrl = faker.helpers.arrayElement(pool);
+  return `${baseUrl}?auto=format&fit=crop&w=600&h=800&q=80`;
 }
-
 // generates a realistic rating: most products cluster around 3.5-4.8,
 // with roughly 15% of products having zero reviews (rating 0, count 0)
 function generateRating(): { ratingAvg: number; ratingCount: number } {

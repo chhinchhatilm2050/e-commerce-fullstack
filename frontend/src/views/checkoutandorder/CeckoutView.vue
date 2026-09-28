@@ -154,6 +154,8 @@
           ? item.productId._id 
           : item.productId,
         quantity: item.quantity,
+        size: item.selectedAttributes.size,
+        color: item.selectedAttributes.color,
       })),
       paymentMethod: selectedPaymentMethod.value,
       customer: {
@@ -202,7 +204,7 @@
     statusPollInterval = setInterval(async () => {
       try {
         const res = await orderStore.checkStatus(tranId);
-        if (res.status === 'APPROVED') {
+        if (res.status === 'PAID') {
           stopPolling();
           isPaywayModalOpen.value = false;
           cartStore.clearCart();
@@ -228,6 +230,9 @@
   const handleClosePaywayModal = () => {
     isPaywayModalOpen.value = false;
     stopPolling();
+  };
+  const handlePaywaySuccess = () => {
+    cartStore.clearCart();
   };
 </script>
 
@@ -396,11 +401,13 @@
       @delete="handleDeleteAddress"
     />
 
-    <AbaPaywayModal
-      :is-open="isPaywayModalOpen"
-      :payway-data="paywayData"
-      @close="handleClosePaywayModal"
-    />
+    <!-- Checkout View Template -->
+  <AbaPaywayModal
+    :is-open="isPaywayModalOpen"
+    :payway-data="paywayData"
+    @close="handleClosePaywayModal"
+    @success="handlePaywaySuccess"
+  />
   </div>
 </template>
 

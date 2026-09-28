@@ -2,7 +2,7 @@ import OrderModel from '../model/order.js';
 import AppError from '../utils/appError.js';
 import asyncHandler from 'express-async-handler';
 import { Request, Response, NextFunction } from 'express';
-import type { IOrder, IOrderItem, IPayWayData, IPaywayResponseData } from '../interface/iorder.js';
+import type { IOrder, IOrderItem, IOrderQuery, IPayWayData, IPaywayResponseData, OrderStatus, PaymentStatus } from '../interface/iorder.js';
 import {
   getPaywayReqTime,
   generatePurchaseHash,
@@ -14,6 +14,8 @@ import type { IPaywayPurchaseParams } from '../utils/payway.js';
 import ProductModel from '../model/product.js';
 import axios from 'axios';
 import FormData from 'form-data';
+
+// 1. CREATE ORDER (CUSTOMER)
 
 export const createOrder = asyncHandler(async (req: Request<unknown, unknown, IOrder>, res: Response, _next: NextFunction): Promise<void> => {
   const userId = req.user?._id ?? null;
@@ -27,7 +29,7 @@ export const createOrder = asyncHandler(async (req: Request<unknown, unknown, IO
     paymentMethod,
     customer,
     shippingAddress,
-    deliveryFee= 1.00,
+    deliveryFee,
   } = req.body;
 
   if (!paymentMethod) {
@@ -38,15 +40,39 @@ export const createOrder = asyncHandler(async (req: Request<unknown, unknown, IO
     throw new AppError('Cart items are required and must be an array', 400);
   }
 
-  const productIds = items.map((item) => item.productId);
-  const dbProducts = await ProductModel.find({ _id: { $in: productIds } });
-  let subtotal = 0;
-  let discountAmount = 0;
+  const uniqueProductIds = [...new Set(items.map((item) => String(item.productId)))];
 
-  if (dbProducts.length !== items.length) {
+  // 2. Fetch unique products from database
+  const dbProducts = await ProductModel.find({ _id: { $in: uniqueProductIds } });
+
+  // 3. Verify all unique products exist
+  if (dbProducts.length !== uniqueProductIds.length) {
     throw new AppError('One or more products were not found', 404);
   }
 
+  // 4. Calculate total requested quantity per product ID across all variants
+  const requestedQuantities = items.reduce<Record<string, number>>((acc, item) => {
+    const pId = String(item.productId);
+    acc[pId] = (acc[pId] || 0) + item.quantity;
+    return acc;
+  }, {});
+
+  // 5. Verify sufficient stock against combined requested quantities
+  for (const product of dbProducts) {
+    const totalRequested = requestedQuantities[String(product._id)] || 0;
+    const availableStock = product.stock ?? 0;
+
+    if (availableStock < totalRequested) {
+      throw new AppError(
+        `Insufficient stock for "${product.name}". Requested: ${totalRequested}, Available: ${availableStock}.`,
+        400
+      );
+    }
+  }
+  let subtotal = 0;
+  let discountAmount = 0;
+
+  // Check stock availability
   for (const item of items) {
     const product = dbProducts.find((p) => String(p._id) === String(item.productId))!;
     if ((product.stock ?? 0) < item.quantity) {
@@ -55,26 +81,27 @@ export const createOrder = asyncHandler(async (req: Request<unknown, unknown, IO
   }
 
   const itemSnapshots: IOrderItem[] = items.map((item): IOrderItem => {
-    const product = dbProducts.find(
-      (p) => String(p._id) === String(item.productId)
-    )!;
+    const product = dbProducts.find((p) => String(p._id) === String(item.productId))!;
 
-    const comparePrice = product.comparePrice ?? product.price;
     const price = product.price;
+    const comparePrice = Math.max(product.comparePrice ?? price, price);
 
     subtotal += comparePrice * item.quantity;
-    discountAmount += (comparePrice - price) * item.quantity;
+
+    const itemDiscount = Math.max(0, comparePrice - price);
+    discountAmount += itemDiscount * item.quantity;
 
     return {
       productId: String(product._id),
       name: product.name,
       price: product.price,
+      size: item.size,
+      color: item.color,
       quantity: item.quantity,
       image: product.images?.[0] ?? '',
       code: product.code,
     };
   });
-
   const finalAmount = Math.max(0, subtotal - discountAmount + deliveryFee);
   const tran_id = `ORD-${Date.now()}`;
 
@@ -83,16 +110,18 @@ export const createOrder = asyncHandler(async (req: Request<unknown, unknown, IO
     userId,
     items: itemSnapshots,
     subtotal,
-    discountAmount,
+    discountAmount, 
     deliveryFee,
     amount: finalAmount,
     paymentMethod,
-    status: 'PENDING',
+    paymentStatus: 'UNPAID', // Default payment state
+    status: 'PENDING',        // Default order fulfillment state
     customer,
     shippingAddress,
   });
 
   if (paymentMethod === 'COD') {
+    // Reserve stock immediately for COD
     await ProductModel.bulkWrite(
       itemSnapshots.map((item) => ({
         updateOne: {
@@ -145,12 +174,6 @@ export const createOrder = asyncHandler(async (req: Request<unknown, unknown, IO
 
     const hash = generatePurchaseHash(paywayParams, apiKey);
 
-    // NOTE: We still return the signed payload to the client here so the
-    // checkout UI can render/redirect immediately. However, createPaywayPurchase
-    // below no longer trusts this payload blindly - it re-derives everything
-    // from the DB record and re-signs it server-side, so any client-side
-    // tampering or accidental re-serialization of these values cannot produce
-    // a payload that reaches PayWay unchecked.
     res.status(201).json({
       success: true,
       paymentMethod: 'aba_payway',
@@ -166,17 +189,20 @@ export const createOrder = asyncHandler(async (req: Request<unknown, unknown, IO
   throw new AppError('Invalid payment method provided', 400);
 });
 
+// 2. CHECK ABA PAYWAY TRANSACTION STATUS
+
 export const checkOrderStatus = asyncHandler(async (req: Request<{ tran_id: string }>, res: Response, next: NextFunction): Promise<void> => {
   const { tran_id } = req.params;
-  const order = await OrderModel.findOne({ tran_id });
+  const order = await OrderModel.findOne({ tran_id, isDeleted: { $ne: true } });
 
   if (!order) {
     return next(new AppError('Order not found', 404));
   }
 
-  if (order.paymentMethod === 'COD' || order.status === 'APPROVED') {
+  if (order.paymentMethod === 'COD' || order.paymentStatus === 'PAID') {
     res.status(200).json({
       success: true,
+      paymentStatus: order.paymentStatus,
       status: order.status,
       order,
     });
@@ -186,59 +212,31 @@ export const checkOrderStatus = asyncHandler(async (req: Request<{ tran_id: stri
   const req_time = getPaywayReqTime();
   const merchant_id = process.env.PAYWAY_MERCHANT_ID ?? '';
   const apiKey = process.env.PAYWAY_API_KEY ?? '';
-
-  // FIX: built via the shared helper so this can never drift into a doubled/
-  // malformed URL relative to the purchase endpoint (see payway.ts). Also
-  // uses "check-transaction-2", the correct current endpoint - the old
-  // "check-transaction" path 404s, and since the catch block below treats a
-  // 404 as "still pending", the order silently never updated.
   const paywayUrl = getPaywayCheckTransactionUrl();
-
   const hash = generateCheckStatusHash(req_time, merchant_id, tran_id, apiKey);
 
-  // FIX: check-transaction-2 expects a JSON body, not multipart/form-data
-  // (multipart is only for the purchase endpoint).
   const payload = { req_time, merchant_id, tran_id, hash };
 
   try {
-    const response = await axios.post<IPaywayResponseData>(
-      paywayUrl,
-      payload,
-      {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+    const response = await axios.post<IPaywayResponseData>(paywayUrl, payload, {
+      headers: { 'Content-Type': 'application/json' },
+    });
 
     const resData = response.data;
-    // IMPORTANT: `status.code === '00'` means "the API request succeeded" -
-    // it is present on nearly every valid response, including ones for a
-    // transaction that's still pending. It must NOT be used to decide
-    // payment success. Only `data.payment_status_code` / `data.payment_status`
-    // reflect the actual payment outcome.
     const isSuccess =
       resData?.data?.payment_status_code === 0 ||
       resData?.data?.payment_status === 'APPROVED';
 
-    // Only mark FAILED on an explicit failure/decline signal from PayWay.
-    // Treat any other/unrecognized code as still pending rather than assuming
-    // failure - we'd rather keep polling than wrongly fail a real payment.
-    const status = String(resData?.data?.payment_status ?? '').toUpperCase();
-    const isFailed = ['FAILED', 'DECLINED', 'CANCELLED', 'CANCELED', 'EXPIRED'].includes(status);
+    const rawStatus = String(resData?.data?.payment_status ?? '').toUpperCase();
+    const isFailed = ['FAILED', 'DECLINED', 'CANCELLED', 'CANCELED', 'EXPIRED'].includes(rawStatus);
 
     if (isSuccess) {
-      order.status = 'APPROVED';
+      order.paymentStatus = 'PAID';
       order.apv = resData.data?.apv ?? null;
       order.rawPaywayResponse = resData;
       await order.save();
 
-      // FIX: this was completely missing. Stock for aba_payway orders is
-      // only decremented here, the moment payment is actually confirmed -
-      // not when the order/QR was first created. The early-return check
-      // above (order.status === 'APPROVED' -> short-circuit) means this
-      // block only ever runs once per order, so this can't double-decrement
-      // on repeated polls.
+      // Deduct stock once ABA payment completes
       await ProductModel.bulkWrite(
         order.items.map((item) => ({
           updateOne: {
@@ -248,27 +246,23 @@ export const checkOrderStatus = asyncHandler(async (req: Request<{ tran_id: stri
         }))
       );
     } else if (isFailed) {
-      order.status = 'FAILED';
+      order.paymentStatus = 'FAILED';
+      order.status = 'CANCELLED';
       order.rawPaywayResponse = resData;
       await order.save();
     }
-    // else: still pending (or unrecognized) - leave order.status untouched
-    // and let the client keep polling.
 
     res.status(200).json({
       success: true,
+      paymentStatus: order.paymentStatus,
       status: order.status,
       paywayRaw: resData,
     });
   } catch (error) {
-    // FIX: previously, any error other than a 404 fell through this catch
-    // block with no response sent at all, leaving the client request hanging
-    // until timeout and bypassing the global error handler (since asyncHandler
-    // never saw the error). Every branch now either sends a response or
-    // forwards to next().
     if (axios.isAxiosError(error) && error.response?.status === 404) {
       res.status(200).json({
         success: true,
+        paymentStatus: 'UNPAID',
         status: 'PENDING',
         message: 'Transaction not yet initialized on PayWay',
       });
@@ -283,25 +277,16 @@ export const checkOrderStatus = asyncHandler(async (req: Request<{ tran_id: stri
   }
 });
 
+// 3. GENERATE PAYWAY KHQR PURCHASE PAYLOAD
+
 export const createPaywayPurchase = asyncHandler(async (req: Request<unknown, unknown, { tran_id: string, paywayData: IPayWayData }>, res: Response, next: NextFunction): Promise<void> => {
-  // FIX: previously this endpoint forwarded whatever payload the client sent
-  // (including a client-supplied hash) straight to PayWay. That has two
-  // problems: (1) any re-serialization of the payload on the frontend (e.g.
-  // number <-> string coercion of `amount`) silently invalidates the hash,
-  // and (2) nothing stops a client from tampering with amount/tran_id before
-  // resubmitting.
-  //
-  // Instead, we only trust the tran_id from the client, look up the
-  // authoritative order record, and rebuild + re-sign the PayWay payload
-  // from server-side data. This guarantees the hash always matches what
-  // PayWay expects and that the amount charged is the one we calculated.
   const tran_id: string | undefined = req.body?.tran_id ?? req.body?.paywayData?.tran_id;
 
   if (!tran_id) {
     return next(new AppError('tran_id is required', 400));
   }
 
-  const order = await OrderModel.findOne({ tran_id });
+  const order = await OrderModel.findOne({ tran_id, isDeleted: { $ne: true } });
 
   if (!order) {
     return next(new AppError('Order not found', 404));
@@ -311,7 +296,7 @@ export const createPaywayPurchase = asyncHandler(async (req: Request<unknown, un
     return next(new AppError('Order was not created for aba_payway', 400));
   }
 
-  if (order.status === 'APPROVED') {
+  if (order.paymentStatus === 'PAID') {
     return next(new AppError('Order has already been paid', 400));
   }
 
@@ -319,14 +304,8 @@ export const createPaywayPurchase = asyncHandler(async (req: Request<unknown, un
   const merchant_id = process.env.PAYWAY_MERCHANT_ID ?? '';
   const apiKey = process.env.PAYWAY_API_KEY ?? '';
 
-  // FIX: `order.amount` already includes deliveryFee (subtotal - discount +
-  // deliveryFee). PayWay computes the actual charged total as amount + shipping,
-  // so sending the full order.amount here AND the deliveryFee again in
-  // `shipping` double-charges the delivery fee (this was the $1 mismatch
-  // between the modal's displayed total and the amount scanned on the QR).
-  // `amount` must be the items-only total; `shipping` carries the fee once.
   const deliveryFee = Number(order.deliveryFee ?? 0);
-  const itemsAmount = Math.max(0, Number(order.amount) - deliveryFee);
+  const itemsAmount = Math.max(0, Number(order.amount));
 
   const paywayParams: IPaywayPurchaseParams = {
     req_time,
@@ -357,47 +336,16 @@ export const createPaywayPurchase = asyncHandler(async (req: Request<unknown, un
 
   const hash = generatePurchaseHash(paywayParams, apiKey);
 
-  const keys: (keyof IPaywayPurchaseParams)[] = [
-    'req_time',
-    'merchant_id',
-    'tran_id',
-    'amount',
-    'items',
-    'shipping',
-    'firstname',
-    'lastname',
-    'email',
-    'phone',
-    'type',
-    'payment_option',
-    'return_url',
-    'cancel_url',
-    'continue_success_url',
-    'return_deeplink',
-    'currency',
-    'custom_fields',
-    'return_params',
-    'payout',
-    'lifetime',
-    'additional_params',
-    'google_pay_token',
-    'skip_success_page',
-  ];
-
   const formData = new FormData();
-  keys.forEach((key) => {
-    const val = paywayParams[key];
+  Object.entries(paywayParams).forEach(([key, val]) => {
     formData.append(key, val !== undefined && val !== null ? String(val) : '');
   });
   formData.append('hash', hash);
 
   try {
     const paywayUrl = getPaywayPurchaseUrl();
-
     const response = await axios.post<string>(paywayUrl, formData, {
-      headers: {
-        ...formData.getHeaders(),
-      },
+      headers: { ...formData.getHeaders() },
     });
 
     res.status(200).json({
@@ -411,14 +359,13 @@ export const createPaywayPurchase = asyncHandler(async (req: Request<unknown, un
       message: err.response?.data?.message || err.message || 'Failed to request KHQR from PayWay',
     });
   }
-});;
+});
 
-export const getMyOrder = asyncHandler(async(req: Request, res: Response, next: NextFunction): Promise<void> => {
+// 4. CUSTOMER ORDER QUERIES
+
+export const getMyOrder = asyncHandler(async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
   const userId = req.user?._id;
-  const orders = await OrderModel.find({userId}).sort({ createdAt: -1});
-  if (!orders) {
-    return next(new AppError('Order not found', 404));
-  };
+  const orders = await OrderModel.find({ userId, isDeleted: { $ne: true } }).sort({ createdAt: -1 });
 
   res.status(200).json({
     success: true,
@@ -427,13 +374,12 @@ export const getMyOrder = asyncHandler(async(req: Request, res: Response, next: 
   });
 });
 
-export const getOrderDetail = asyncHandler(async(req: Request<{ id: string }, unknown, unknown>, res: Response, next: NextFunction): Promise<void> => {
+export const getOrderDetail = asyncHandler(async (req: Request<{ id: string }>, res: Response, next: NextFunction): Promise<void> => {
   const userId = req.user?._id;
   const { id } = req.params;
-  const isObjectId = /^[0-9a-fA-F]{24}$/.test(id);
-  const filter = isObjectId 
-    ? { _id: id, userId } 
-    : { tran_id: id, userId };
+  const filter = id
+    ? { _id: id, userId, isDeleted: { $ne: true } }
+    : { tran_id: id, userId, isDeleted: { $ne: true } };
 
   const order = await OrderModel.findOne(filter).lean();
 
@@ -444,5 +390,180 @@ export const getOrderDetail = asyncHandler(async(req: Request<{ id: string }, un
   res.status(200).json({
     success: true,
     data: { order },
+  });
+});
+
+// 5. ADMIN: GET ALL ORDERS WITH FILTERS
+
+export const getAllOrdersAdmin = asyncHandler(async (
+  req: Request<unknown, unknown, unknown, IOrderQuery>,
+  res: Response,
+  _next: NextFunction
+): Promise<void> => {
+  const { status, paymentStatus, paymentMethod, search } = req.query;
+
+  const filter: Record<string, unknown> = { isDeleted: { $ne: true } };
+
+  if (status) filter.status = status;
+  if (paymentStatus) filter.paymentStatus = paymentStatus;
+  if (paymentMethod) filter.paymentMethod = paymentMethod;
+
+  if (search) {
+    const searchRegex = { $regex: search, $options: 'i' };
+    const searchDate = new Date(search);
+
+    const isDateValid = !isNaN(searchDate.getTime());
+
+    if (isDateValid) {
+      // Create start and end of the searched day
+      const startOfDay = new Date(searchDate);
+      startOfDay.setHours(0, 0, 0, 0);
+
+      const endOfDay = new Date(searchDate);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      filter.$or = [
+        { tran_id: searchRegex },
+        { createdAt: { $gte: startOfDay, $lte: endOfDay } }
+      ];
+    } else {
+      // Search only string fields if search input isn't a valid date
+      filter.$or = [
+        { tran_id: searchRegex }
+      ];
+    }
+  }
+
+  const orders = await OrderModel.find(filter)
+    .select(
+      'tran_id customer.firstName paymentStatus items.name items.image createdAt totalAmount amount status'
+    )
+    .sort({ createdAt: -1 })
+    .lean();
+
+  res.status(200).json({
+    success: true,
+    count: orders.length,
+    data: { orders },
+  });
+});
+
+// 6. ADMIN: UPDATE LOGISTICS & PAYMENT STATUS
+
+export const updateOrderStatus = asyncHandler(async (req: Request<{ id: string }, unknown, { status?: OrderStatus; paymentStatus?: PaymentStatus }>, res: Response, next: NextFunction): Promise<void> => {
+  const { id } = req.params;
+  const { status, paymentStatus } = req.body;
+
+  const filter = id ? { _id: id } : { tran_id: id };
+
+  const order = await OrderModel.findOne(filter);
+
+  if (!order) {
+    return next(new AppError('Order not found', 404));
+  }
+
+  if (status) {
+    order.status = status ;
+  }
+
+  // When admin marks COD order as DELIVERED, automatically set paymentStatus to PAID
+  if (status === 'DELIVERED' && order.paymentMethod === 'COD') {
+    order.paymentStatus = 'PAID';
+  } else if (paymentStatus) {
+    order.paymentStatus = paymentStatus ;
+  }
+
+  await order.save();
+
+  res.status(200).json({
+    success: true,
+    message: 'Order updated successfully',
+    data: { order },
+  });
+});
+
+// 7. CANCEL ORDER (ADMIN & CUSTOMER)
+
+export const cancelOrder = asyncHandler(async (req: Request<{ id: string }>, res: Response, next: NextFunction): Promise<void> => {
+  const { id } = req.params;
+  const filter = id ? { _id: id } : { tran_id: id };
+
+  const order = await OrderModel.findOne(filter);
+
+  if (!order) {
+    return next(new AppError('Order not found', 404));
+  }
+
+  if (order.status === 'CANCELLED') {
+    return next(new AppError('Order is already cancelled', 400));
+  }
+
+  if (order.status === 'DELIVERED') {
+    return next(new AppError('Cannot cancel an order that has already been delivered', 400));
+  }
+
+  // Restock inventory if stock was previously deducted (COD or Paid ABA)
+  const shouldRestock = order.paymentMethod === 'COD' || order.paymentStatus === 'PAID';
+  if (shouldRestock) {
+    await ProductModel.bulkWrite(
+      order.items.map((item) => ({
+        updateOne: {
+          filter: { _id: item.productId },
+          update: { $inc: { stock: item.quantity } },
+        },
+      }))
+    );
+  }
+
+  order.status = 'CANCELLED';
+  await order.save();
+
+  res.status(200).json({
+    success: true,
+    message: 'Order cancelled successfully and stock restored.',
+    data: { order },
+  });
+});
+
+// 8. SOFT DELETE ORDER (ADMIN)
+
+export const deleteOrder = asyncHandler(async (req: Request<{ id: string }>, res: Response, next: NextFunction): Promise<void> => {
+  const { id } = req.params;
+  const filter = id ? { _id: id } : { tran_id: id };
+
+  const order = await OrderModel.findOneAndUpdate(
+    filter,
+    { isDeleted: true },
+    { new: true }
+  );
+
+  if (!order) {
+    return next(new AppError('Order not found', 404));
+  }
+
+  res.status(200).json({
+    success: true,
+    message: 'Order removed from active list.',
+  });
+});
+
+export const getOrderStats = asyncHandler(async (req: Request, res: Response, _next: NextFunction) => {
+  const stats = await OrderModel.aggregate([
+    {
+      $group: {
+        _id: '$status',
+        count: { $sum: 1 }
+      }
+    }
+  ]);
+
+  const total = await OrderModel.countDocuments();
+
+  res.status(200).json({
+    success: true,
+    data: {
+      total,
+      stats,
+    }
   });
 });

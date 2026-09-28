@@ -54,18 +54,18 @@
         </div>
         <div class="container-xl relative py-12 lg:py-16 flex md:py-15 lg:flex-row items-center flex-col">
              <div class="max-w-3xl">
-                <h1 class="font-home text-3xl sm:text-4xl md:text-[43px] lg:text-7xl font-bold leading-tight mb-6 animate-slide-up bg-gradient-to-r from-surface-800 via-gray-500 to-surface-800 bg-clip-text text-transparent inline-block" style="animation-delay:0.3s">
+                <h1 class="font-home text-3xl sm:text-4xl md:text-[43px] lg:text-7xl font-bold leading-tight mb-6 animate-slide-up bg-gradient-to-r from-surface-800 via-gray-500 to-surface-800 bg-clip-text text-transparent inline-block" >
                     {{ $t('home.hero_title') }}
                 </h1>
-                                <p class="hidden sm:block text-xl text-gray-800 mb-10 max-w-xl leading-relaxed animate-slide-up dark:text-gray-200" style="animation-delay:0.5s">
+                                <p class="hidden sm:block text-xl text-gray-800 mb-10 max-w-xl leading-relaxed animate-slide-up dark:text-gray-200" >
                 {{ $t('home.hero_subtitle') }}
                 </p>
-                <div class="hidden lg:flex flex-wrap gap-4 animate-slide-up" style="animation-delay:0.5s">
+                <div class="hidden lg:flex flex-wrap gap-4 animate-slide-up" >
                 <RouterLink to="/products/category/books" class="default-button text-sm px-4 inline-block">
                     {{ $t('home.hero_cta') }}
                 </RouterLink>
                 </div>
-                <div class="hidden lg:flex gap-10 mt-14 animate-slide-up" style="animation-delay:0.5s">
+                <div class="hidden lg:flex gap-10 mt-14 animate-slide-up" >
                     <div @click="goToCustomerService" v-for="fea in feature" :key="fea.icon" class="flex flex-col justify-center items-center cursor-pointer">
                         <p class="font-display text-[20px] text-gray-70 dark:text-gray-200" v-html="fea.icon"></p>
                         <p class="text-[17px] shadow-lg">{{ $t(fea.title) }}</p>
@@ -73,13 +73,13 @@
                 </div>
             </div>
             <div class="">
-                <img class="w-xl shadow-lg rounded-2xl md:w-[700px] animate-slide-up" style="animation-delay:0.5s"
+                <img class="w-xl shadow-lg rounded-2xl md:w-[700px] animate-slide-up" 
                 src="https://i.pinimg.com/736x/f6/84/e4/f684e4c7793ace0258a165a38a1e86f5.jpg"
                 >
             </div>
         </div>
         <div class=" px-5 container-xl py-3 -mt-25 lg:hidden">
-          <div class="lg:hidden shadow-xl px-5 py-5  grid grid-cols-2 md:grid-cols-4 gap-10 mt-14 animate-slide-up" style="animation-delay:0.5s">
+          <div class="lg:hidden shadow-xl px-5 py-5  grid grid-cols-2 md:grid-cols-4 gap-10 mt-14 animate-slide-up" >
               <RouterLink to="/products/category/books" class="default-button w-full text-sm text-center lg:hidden mt-5">
                 {{ $t('home.hero_cta') }}
               </RouterLink>
@@ -92,7 +92,7 @@
     </section>
     <section class="py-5 px-5 md:px-8 container-xl">
       <h2 class="section-title mb-5"><i class="ri-chat-smile-ai-line"></i>  {{ $t('home.categories_title') }}</h2>
-      <div class="grid grid-cols-2 gap-6 lg:grid-cols-4 lg:gap-4 animate-slide-up " style="animation-delay:0.5s">
+      <div class="grid grid-cols-2 gap-6 lg:grid-cols-4 lg:gap-4 animate-slide-up " >
         <RouterLink
           v-for="cat in categoryStore.topLevelCategories"
           :key="cat._id" :to="`/products/category/${cat.slug}`"
