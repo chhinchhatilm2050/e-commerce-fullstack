@@ -27,9 +27,9 @@
 </script>
 
 <template>
-  <div class="space-y-6">
+  <div class="space-y-6 animate-slide-up">
     <!-- Welcome Header Banner -->
-    <div class="bg-[#cdd0d5] text-white p-6 rounded-lg shadow-sm flex items-center justify-between">
+    <div class="bg-[#cdd0d5]/70 text-white p-6 rounded-lg shadow-sm flex items-center justify-between">
       <div>
         <h2 class="text-xl font-bold text-black/80">Have a good day, Admin <i class="ri-hearts-fill"></i></h2>
         <p class="text-xs text-black/80 mt-1">Here's what's happening in your store today.</p>

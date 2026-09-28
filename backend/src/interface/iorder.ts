@@ -3,7 +3,8 @@ import { Types } from 'mongoose';
 import { IProductImage } from './iproducts.js';
 
 export type PaymentMethod = 'COD' | 'aba_payway';
-export type OrderStatus = 'PENDING' | 'APPROVED' | 'FAILED' | 'CANCELLED';
+export type OrderStatus = 'PENDING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
+export type PaymentStatus = 'UNPAID' | 'PAID' | 'REFUNDED' | 'FAILED';
 export type ContactMethod = 'PHONE CALL' | 'TELEGRAM';
 
 // Type for raw ABA PayWay response data
@@ -27,6 +28,8 @@ export interface IOrderItem {
   productId: string;
   name: string;
   price: number;
+  size: string,
+  color: string,
   quantity: number;
   image?: IProductImage;
   code?: string;
@@ -63,10 +66,12 @@ export interface IOrder {
   amount: number;
   paymentMethod: PaymentMethod;
   status: OrderStatus;
+  paymentStatus: PaymentStatus;
   customer: ICustomer;
   shippingAddress: IShippingAddress;
   apv?: string | null;
   rawPaywayResponse?: IPaywayResponseData;
+  isDeleted: boolean;
 }
 
 // Strictly type the express request body
@@ -91,4 +96,18 @@ export interface IPaywayData {
   type: string;
 };
 
+export interface IFilter {
+  isDeleted?: boolean | { $ne: boolean };
+  status?: OrderStatus;
+  paymentStatus?: PaymentStatus;
+  paymentMethod?: string;
+  $or?: Array<{ [key: string]: { $regex: string; $options: string } }>;
+}
+
+export interface IOrderQuery {
+  status?: string;
+  paymentStatus?: string;
+  paymentMethod?: string;
+  search?: string;
+}
 export type CreateOrderRequest = Request<Record<string, unknown>, unknown, ICreateOrderRequestBody>;

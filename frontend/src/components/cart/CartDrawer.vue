@@ -263,7 +263,7 @@
             <li v-for="item in cartStore.cartItems" :key="item._id" class="flex gap-3 py-5">
               <img
                 @click="goToProductDetail(item.productId.slug)"
-                :src="item.productId.images?.[0]?.url"
+                :src="item.productId.images[0]?.url"
                 :alt="item.productId?.name"
                 class="w-28 h-38 object-cover bg-gray-100 dark:bg-surface-700 cursor-pointer"
               />
@@ -285,11 +285,11 @@
                       class="flex flex-col gap-1 w-24"
                     >
                       <label class="text-xs text-black/70 dark:text-white/70">{{ specLabels[key] ?? key }}</label>
-                      <BaseDropdown
-                        :model-value="selected[item._id]?.[key]"
-                        :options="toDropdownOptions(options)"
-                        @update:model-value="(val: string) => handleAttributeChange(item._id, item, key, val)"
-                      />
+                        <BaseDropdown
+                          :model-value="selected[item._id]?.[key]"
+                          :options="toDropdownOptions(options)"
+                          @update:model-value="(val: string) => handleAttributeChange(item._id, item, key, val)"
+                        />
                     </div>
                   </div>
                 </div>

@@ -63,14 +63,17 @@
       <img
         @click="goToProductDetail"
         :src="getPrimaryImage(product)?.url"
+        referrerpolicy="no-referrer"
         :alt="product.name"
         class="w-full h-full cursor-pointer object-cover transition-opacity  group-hover:opacity-0"
+       
       />
       <img
         v-if="product.images?.[1]?.url"
         @click="goToProductDetail"
         :src="product.images[1].url"
         :alt="product.name"
+        referrerpolicy="no-referrer"
         class="absolute inset-0 w-full h-full cursor-pointer object-cover opacity-0 transition-opacity group-hover:opacity-100"
       />
     </div>

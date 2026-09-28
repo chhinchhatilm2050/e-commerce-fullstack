@@ -131,6 +131,7 @@
   };
 
   const searchTerm = computed(() => (route.query.search as string) || '');
+
 </script>
 
 <template>
