@@ -204,7 +204,7 @@
        
       <!-- Pagination -->
       <div 
-        v-if="reviewStore.reviewPagination && reviewStore.reviewPagination.totalPage > 1" 
+        v-if="reviewStore.reviewPagination && reviewStore.reviewPagination.totalPages > 1" 
         class="flex items-center justify-center gap-4 pt-6"
       >
         <button 
@@ -215,7 +215,7 @@
           <i class="ri-arrow-left-s-line"></i>
         </button>
         <span class="text-sm font-medium">
-          Page {{ reviewStore.reviewPagination.page }} of {{ reviewStore.reviewPagination.totalPage }}
+          Page {{ reviewStore.reviewPagination.page }} of {{ reviewStore.reviewPagination.totalPages }}
         </span>
         <button 
           class="w-9 h-9 subCategory-button flex items-center justify-center rounded disabled:opacity-40"

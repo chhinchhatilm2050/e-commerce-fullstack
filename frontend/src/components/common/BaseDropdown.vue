@@ -53,7 +53,7 @@
     <button 
       type="button" 
       @click="isOpen = !isOpen"
-      class="w-full min-w-[163px] flex justify-between items-center px-2 py-1.5 rounded-sm border text-sm transition-all cursor-pointer duration-200 input"
+      class="w-full min-w-[163px] flex justify-between items-center text-black/80 px-2 py-2 rounded-sm border text-xs transition-all cursor-pointer duration-200 input"
       :class="isOpen ? 'ring-1 ring-black/20 bg-white dark:bg-surface-800' : 'ring-black/20'"
     >
       <span :class="selectedOption ? 'text-gray-900 dark:text-gray-100 font-medium' : 'text-gray-400 dark:text-white/50'">
@@ -74,9 +74,9 @@
           v-for="option in options"
           :key="option.value"
           @click="select(option)"
-          class="flex items-center justify-between px-3 py-2 text-sm cursor-pointer transition-colors duration-150"
+          class="flex items-center justify-between px-3 py-2 text-xs cursor-pointer transition-colors duration-150"
           :class="option.value === modelValue
-            ? 'bg-gray-100 text-gray-900 dark:bg-surface-700 dark:text-white font-medium'
+            ? 'bg-gray-100 text-gray-900 font-semibold dark:bg-surface-700 dark:text-white'
             : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-surface-700'"
         >
           <span>{{ option.label }}</span>

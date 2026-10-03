@@ -2,9 +2,9 @@
   import { onMounted, computed } from 'vue';
   import { storeToRefs } from 'pinia';
   import { useAdminStore } from '@/stores/admin';
-  import AnalyticsCard from '@/components/admin/AnalyticsCard.vue';
-  import RevenueChart from '@/components/admin/RevenueChart.vue';
-  import TopProductsChart from '@/components/admin/TopProductsChart.vue';
+  import AnalyticsCard from '@/components/admin/productOverview/AnalyticsCard.vue';
+  import RevenueChart from '@/components/admin/productOverview/RevenueChart.vue';
+  import TopProductsChart from '@/components/admin/productOverview/TopProductsChart.vue';
 
   const adminStore = useAdminStore();
   const { analylicesData, loading, error } = storeToRefs(adminStore);

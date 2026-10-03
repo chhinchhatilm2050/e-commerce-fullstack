@@ -141,17 +141,34 @@ export const createProduct = asyncHandler(async(req: Request<unknown, unknown, C
 
 export const getAllProductsAdmin = asyncHandler(
   async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
+    const queryParams = { ...req.query } as Record<string, unknown>;
+    if (req.query.categoryId) {
+      if (typeof req.query.categoryId !== 'string') {
+        throw new AppError('Invalid categoryId format', 400);
+      }
+      const selectedCategoryId = req.query.categoryId;
+      const allCategories = await CategoryModel.find().lean();
+
+      const descendantIds = getAllDescendantIds(allCategories, selectedCategoryId);
+      const categoryIds = [selectedCategoryId, ...descendantIds];
+
+      queryParams.categoryId = { $in: categoryIds };
+    }
+
     let result;
 
     if (QueryBuilder.isDiscountSort(req.query.sort)) {
-      result = await QueryBuilder.executeDiscountSort(ProductModel, req.query, { isAdmin: true });
+      result = await QueryBuilder.executeDiscountSort(ProductModel, queryParams, { isAdmin: true });
     } else {
-      result = await new QueryBuilder(ProductModel, req.query, { isAdmin: true })
+      result = await new QueryBuilder(ProductModel, queryParams, { isAdmin: true })
         .filter()
         .sort()
         .paginate()
+        .populate('categoryId', 'name slug')
         .execute();
     }
+    // Disable browser caching response header
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
 
     res.status(200).json({
       success: true,
