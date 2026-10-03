@@ -5,6 +5,7 @@ interface QueryBuilderOptions {
   isAdmin?: boolean;
   defaultStatus?: string;
   allowedStatuses?: string[];
+  
 }
 
 const SORT_MAP: Record<string, string> = {
@@ -34,6 +35,11 @@ class QueryBuilder<T extends Document> {
   private limit = 20;
   private isTextSearch = false;
   private options: QueryBuilderOptions;
+
+  populate(path: string, select?: string) {
+    this.query = this.query.populate(path, select);
+    return this;
+  }
 
   constructor(model: Model<T>, queryString: Record<string, unknown>, options?: QueryBuilderOptions) {
     this.model = model;
@@ -123,17 +129,36 @@ class QueryBuilder<T extends Document> {
   }
 
   filter(): this {
+    // 1. Extract non-direct query params
+    const stockStatus = this.queryString.stockStatus;
+    const search = this.queryString.search;
+    
+    delete this.queryString.stockStatus;
+    delete this.queryString.search;
+
+    // 2. Build base filter without search and stockStatus
     const baseFilter = QueryBuilder.buildBaseFilter(this.queryString, this.options);
-    const { $text, ...rest } = baseFilter;
 
-    this.query = this.query.find(rest as unknown as Record<string, unknown>);
+    // 3. Apply base filter
+    this.query = this.query.find(baseFilter as Record<string, unknown>);
 
-    if ($text) {
-      this.query = this.query.find(
-        { $text } as unknown as Record<string, unknown>,
-        { score: { $meta: 'textScore' } }
-      );
-      this.isTextSearch = true;
+    // 4. Handle Search (Code, SKU, Name, Brand)
+    if (search && typeof search === 'string') {
+      const searchRegex = new RegExp(search.trim(), 'i');
+
+      this.query = this.query.find({
+        $or: [
+          { code: searchRegex },        // Match product code
+          { name: searchRegex },        // Match name    
+        ],
+      });
+    }
+
+    // 5. Apply inventory/stock condition
+    if (stockStatus === 'low-stock') {
+      this.query = this.query.find({ stock: { $gt: 0, $lte: 5 } });
+    } else if (stockStatus === 'out-of-stock') {
+      this.query = this.query.find({ stock: 0 });
     }
 
     return this;
@@ -171,7 +196,7 @@ class QueryBuilder<T extends Document> {
       this.model.countDocuments(filter),
     ]);
 
-    const totalPage = Math.ceil(total / this.limit) || 1;
+    const totalPages = Math.ceil(total / this.limit) || 1;
 
     return {
       data,
@@ -179,8 +204,8 @@ class QueryBuilder<T extends Document> {
         total,
         page: this.page,
         limit: this.limit,
-        totalPage,
-        hasNextPage: this.page < totalPage,
+        totalPages,
+        hasNextPage: this.page < totalPages,
         hasPrevPage: this.page > 1,
       },
     };
@@ -243,7 +268,7 @@ class QueryBuilder<T extends Document> {
     ]);
 
     const total = countResult[0]?.total ?? 0;
-    const totalPage = Math.ceil(total / limit) || 1;
+    const totalPages = Math.ceil(total / limit) || 1;
 
     return {
       data,
@@ -251,8 +276,8 @@ class QueryBuilder<T extends Document> {
         total,
         page,
         limit,
-        totalPage,
-        hasNextPage: page < totalPage,
+        totalPages,
+        hasNextPage: page < totalPages,
         hasPrevPage: page > 1,
       },
     };

@@ -1,3 +1,4 @@
+
 export interface IProductImage {
   url: string;
   publicId: string;
@@ -22,15 +23,6 @@ export interface IProduct {
   status: 'draft' | 'active' | 'out_of_stock';
 }
 
-export interface IPagination {
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
-  hasNextPage: boolean;
-  hasPrevPage: boolean;
-}
-
 export interface IProductListResponse {
   success: boolean;
   data: IProduct[];
@@ -43,4 +35,37 @@ export interface IProductDetailResponse {
     product: IProduct;
     reviewPagination: IPagination;
   };
+}
+
+export interface ICategory {
+  _id: string;
+  name: string;
+  slug: string;
+}
+
+export interface IPagination {
+  total: number;
+  page: number;
+  limit: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+  totalPages: number ;
+}
+
+export interface IDeleteProductResponse {
+  success: boolean;
+  message: string;
+}
+
+export interface ICategoryNode {
+  _id: string;
+  name: string;
+  slug?: string;
+  children?: ICategoryNode[];
+}
+
+export interface IFormattedCategory {
+  _id: string;
+  name: string;
+  level: number;
 }

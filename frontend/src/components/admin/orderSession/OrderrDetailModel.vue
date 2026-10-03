@@ -1,9 +1,8 @@
 <script setup lang="ts">
   import type { IOrder } from '@/types/iorder';
-  import { computed } from 'vue';
-  import { CAMBODIA_LOCATIONS } from '@/data/cambodiaLocations';
+  import { computed, watchEffect } from 'vue';
   import type { IProductImage } from '@/types/product';
-  import { watchEffect } from 'vue';
+  import { CAMBODIA_LOCATIONS } from '@/data/cambodiaLocations';
   export interface OrderItem {
     id: string;
     name: string;
@@ -80,7 +79,7 @@
         <div class="px-6 pt-7 py-4 border-b border-slate-200  flex items-center justify-between bg-[#cdd0d5]/70 ">
           <div>
             <div class="flex items-center gap-2">
-              <h3 class="text-base font-bold text-slate-800">
+              <h3 class="text-base font-bold text-black/90">
                 {{ props.order.tran_id }}
               </h3>
               <span
@@ -119,10 +118,10 @@
                     class="w-16 h-18 object-cover bg-gray-100 shrink-0"
                   />
                   <div class="truncate">
-                    <p class="text-sm font-semibold truncate">{{ item.name }}</p>
-                    <p class="text-xs text-black/60 dark:text-white/60 mt-0.5">Qty: {{ item.quantity }}</p>
-                    <p v-if="item.size" class="text-xs text-black/60 dark:text-white/60 mt-0.5">Size {{ item.size }}</p>
-                    <p v-if="item.color" class="text-xs text-black/60 dark:text-white/60 mt-0.5 capitalize">Color: {{ item.color }}</p>
+                    <p class="text-sm font-semibold truncate capitalize text-black/90">{{ item.name }}</p>
+                    <p class="text-xs text-black/60  mt-0.5">Qty: {{ item.quantity }}</p>
+                    <p v-if="item.size" class="text-xs text-black/60 mt-0.5">Size: {{ item.size }}</p>
+                    <p v-if="item.color" class="text-xs text-black/60  mt-0.5 capitalize">Color: {{ item.color }}</p>
                   </div>
                 </div>
 

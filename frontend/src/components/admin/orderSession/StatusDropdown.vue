@@ -66,7 +66,7 @@
       <span class="font-normal capitalize">{{ formatStatusLabel(modelValue) }}</span>
       <i 
         class="ri-arrow-up-s-line text-black/60 text-sm transition-transform duration-200"
-        :class="{ 'rotate-180': !isOpen }"
+        :class="{ '-rotate-180': !isOpen }"
       ></i>
     </button>
 

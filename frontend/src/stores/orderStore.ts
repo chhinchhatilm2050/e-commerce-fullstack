@@ -121,6 +121,7 @@ export const useOrderStore = defineStore('order', () => {
     error.value = null;
     try {
       const { data } = await api.get<IAdminOrdersResponse>('/orders/admin/all', { params });
+      await delay(300); 
       adminOrders.value = data.data.orders;
       return data;
     } catch (err) {

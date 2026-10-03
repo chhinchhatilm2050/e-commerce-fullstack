@@ -52,7 +52,7 @@
 </script>
 
 <template>
-  <div class="bg-[#cdd0d5]/20 dark:bg-[#cdd0d5]/70 p-5 rounded-lg border border-slate-200/90 shadow-xs">
+  <div class="bg-[#cdd0d5]/20 dark:bg-[#cdd0d5] p-5 rounded-lg border border-slate-200/90 shadow-xs">
     <div class="flex items-center justify-between mb-4">
       <div>
         <h3 class="text-base font-bold text-slate-800">Top-Selling Products</h3>
