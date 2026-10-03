@@ -29,7 +29,7 @@
         </div>
         <span
           v-if="badgeText"
-          class="text-xs font-bold text-emerald-600 bg-white/50 px-2.5 py-1 rounded-full"
+          class="text-xs font-bold text-black/90 bg-white/50 px-2.5 py-1 rounded-full"
         >
           {{ badgeText }}
         </span>

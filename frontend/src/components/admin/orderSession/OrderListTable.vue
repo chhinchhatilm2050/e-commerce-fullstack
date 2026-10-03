@@ -1,7 +1,7 @@
 <script setup lang="ts">
-  import StatusDropdown from '@/components/admin/StatusDropdown.vue';
+  import StatusDropdown from '@/components/admin/orderSession/StatusDropdown.vue';
   import type { IOrder } from '@/types/iorder';
-  import type { IProductImage } from '@/types/product';
+  import type { IProductImage } from '@/types/product.ts';
 
   defineProps<{
     orders: IOrder[];
@@ -64,9 +64,13 @@
         <tbody class="divide-y divide-slate-100 text-center dark:divide-slate-100/20 text-xs bg-[#cdd0d5]/30 dark:bg-[#cdd0d5]/70">
           <!-- Loading State -->
           <tr v-if="loading">
-            <td colspan="7" class="py-12 text-center text-black/80 text-xs">
-              <i class="ri-loader-4-line animate-spin text-lg inline-block mr-2"></i>
-              Loading database orders...
+            <td colspan="7" class="py-12 text-center  text-black/80 text-xs">
+            <div class="flex flex-col items-center justify-center gap-2">
+              <i class="ri-refresh-line text-lg leading-none inline-block" :class="{ 'animate-spin': loading }"></i>
+              <span>
+                Loading database orders...
+              </span>
+            </div>
             </td>
           </tr>
 
@@ -119,7 +123,7 @@
             </td>
 
             <!-- Total Amount -->
-            <td class="py-4 px-5 font-bold text-red-700">
+            <td class="py-4 px-5 font-bold text-red-600">
               ${{ (order.amount || order.amount || 0).toFixed(2) }}
             </td>
 
@@ -137,7 +141,7 @@
               <div class="flex items-center justify-center gap-3 text-slate-400">
                 <button
                   @click="emit('view-details', {id: order._id})"
-                  class="hover:text-slate-700 text-black/90 transition cursor-pointer"
+                  class="hover:text-black/70 text-black/90 transition cursor-pointer"
                   title="View Details"
                 >
                   <i class="ri-eye-line text-base"></i>

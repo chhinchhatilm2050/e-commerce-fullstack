@@ -1,8 +1,8 @@
 <script setup lang="ts">
   import { ref, computed, onMounted, watch } from 'vue';
-  import OrderrDetailModel from '@/components/admin/OrderrDetailModel.vue';
-  import OrderMetricsCard from '@/components/admin/OrderMetricsCard.vue';
-  import OrderListTable from '@/components/admin/OrderListTable.vue';
+  import OrderrDetailModel from '@/components/admin/orderSession/OrderrDetailModel.vue';
+  import OrderMetricsCard from '@/components/admin/orderSession/OrderMetricsCard.vue';
+  import OrderListTable from '@/components/admin/orderSession/OrderListTable.vue';
   import BaseDropdown from '@/components/common/BaseDropdown.vue';
   import { useOrderStore } from '@/stores/orderStore';
   import type { IOrder } from '@/types/iorder';
@@ -167,33 +167,35 @@
     </div>
 
     <!-- Filters Row -->
-    <div class="flex flex-col md:flex-row gap-3 items-center">
-      <div class="flex items-center gap-2 flex-1 w-full">
-        <div class="relative flex-1">
-          <i class="ri-search-line absolute left-3.5 top-1/2 -translate-y-1/2 text-black/50 dark:text-white/50 text-sm"></i>
-          <input
-            v-model="searchInput"
-            @keyup.enter="handleSearch"
-            type="text"
-            placeholder="Search by transaction ID or order Date..."
-            class="w-full pl-9 pr-4 py-2 text-xs bg-[#cdd0d5]/30 dark:bg-[#cdd0d5]/50 border border-slate-200 dark:border-surface-700 rounded-sm focus:outline-none focus:ring-1 focus:ring-[#cdd0d5] dark:focus:ring-black/50"
-          />
+    <div class="p-4 bg-[#cdd0d5]/70  rounded-md shadow-sm space-y-3">
+      <div class="flex flex-col md:flex-row gap-3 items-center">
+        <div class="flex items-center gap-2 flex-1 w-full">
+          <div class="relative flex-1">
+            <i class="ri-search-line absolute left-3.5 top-1/2 -translate-y-1/2 text-black/50 dark:text-black/50 text-sm"></i>
+            <input
+              v-model="searchInput"
+              @keyup.enter="handleSearch"
+              type="text"
+              placeholder="Search by transaction ID or order Date..."
+              class="w-full pl-9 pr-4 py-2 text-xs bg-white dark:bg-white/50 border-slate-200 dark:border-surface-700 rounded-sm focus:outline-none focus:ring-1 focus:ring-[#cdd0d5] dark:focus:ring-black/50 dark:placeholder-zinc-950/50"
+            />
+          </div>
+          <button
+            @click="handleSearch"
+            :disabled="searchDisable"
+            class="px-3  py-2 subCategory-button text-xs shrink-0 rounded-sm bg-black/80 text-white"
+          >
+            Search
+          </button>
         </div>
-        <button
-          @click="handleSearch"
-          :disabled="searchDisable"
-          class="px-4 py-1.5 subCategory-button text-sm shrink-0 rounded-sm bg-black/80 text-white"
-        >
-          Search
-        </button>
-      </div>
-
-      <div class="w-full md:w-48">
-        <BaseDropdown v-model="selectedPaymentStatusFilter" :options="paymentStatusOption" />
-      </div>
-
-      <div class="w-full md:w-48">
-        <BaseDropdown v-model="selectedStatusFilter" :options="orderStatusOption"/>
+  
+        <div class="w-full md:w-48">
+          <BaseDropdown v-model="selectedPaymentStatusFilter" :options="paymentStatusOption" />
+        </div>
+  
+        <div class="w-full md:w-48">
+          <BaseDropdown v-model="selectedStatusFilter" :options="orderStatusOption"/>
+        </div>
       </div>
     </div>
 
