@@ -14,6 +14,7 @@ import type { IPaywayPurchaseParams } from '../utils/payway.js';
 import ProductModel from '../model/product.js';
 import axios from 'axios';
 import FormData from 'form-data';
+import QueryBuilder from '../utils/queryBuilder.js';
 
 // 1. CREATE ORDER (CUSTOMER)
 
@@ -378,8 +379,8 @@ export const getOrderDetail = asyncHandler(async (req: Request<{ id: string }>, 
   const userId = req.user?._id;
   const { id } = req.params;
   const filter = id
-    ? { _id: id, userId, isDeleted: { $ne: true } }
-    : { tran_id: id, userId, isDeleted: { $ne: true } };
+    ? { _id: id, userId }
+    : { tran_id: id, userId };
 
   const order = await OrderModel.findOne(filter).lean();
 
@@ -395,56 +396,50 @@ export const getOrderDetail = asyncHandler(async (req: Request<{ id: string }>, 
 
 // 5. ADMIN: GET ALL ORDERS WITH FILTERS
 
-export const getAllOrdersAdmin = asyncHandler(async (
-  req: Request<unknown, unknown, unknown, IOrderQuery>,
-  res: Response,
-  _next: NextFunction
-): Promise<void> => {
-  const { status, paymentStatus, paymentMethod, search } = req.query;
-
-  const filter: Record<string, unknown> = { isDeleted: { $ne: true } };
-
-  if (status) filter.status = status;
-  if (paymentStatus) filter.paymentStatus = paymentStatus;
-  if (paymentMethod) filter.paymentMethod = paymentMethod;
-
-  if (search) {
-    const searchRegex = { $regex: search, $options: 'i' };
-    const searchDate = new Date(search);
-
+export const getAllOrdersAdmin = asyncHandler(async (req: Request<unknown, unknown, unknown, IOrderQuery>,res: Response,_next: NextFunction): Promise<void> => {
+  const queryParams = { ...req.query } as Record<string, unknown>;
+  // Always exclude soft-deleted records
+  // Handle custom date/transaction search logic before passing to QueryBuilder
+  if (req.query.search) {
+    const searchTerm = String(req.query.search);
+    const searchRegex = { $regex: searchTerm, $options: 'i' };
+    const searchDate = new Date(searchTerm);
     const isDateValid = !isNaN(searchDate.getTime());
 
+    const orConditions: Record<string, unknown>[] = [{ tran_id: searchRegex }];
+
     if (isDateValid) {
-      // Create start and end of the searched day
       const startOfDay = new Date(searchDate);
       startOfDay.setHours(0, 0, 0, 0);
 
       const endOfDay = new Date(searchDate);
       endOfDay.setHours(23, 59, 59, 999);
 
-      filter.$or = [
-        { tran_id: searchRegex },
-        { createdAt: { $gte: startOfDay, $lte: endOfDay } }
-      ];
-    } else {
-      // Search only string fields if search input isn't a valid date
-      filter.$or = [
-        { tran_id: searchRegex }
-      ];
+      orConditions.push({ createdAt: { $gte: startOfDay, $lte: endOfDay } });
     }
+
+    queryParams.$or = orConditions;
+    delete queryParams.search; // Remove raw search key so QueryBuilder doesn't attempt redundant exact matching
   }
 
-  const orders = await OrderModel.find(filter)
+  // Execute using QueryBuilder
+  const result = await new QueryBuilder(OrderModel, queryParams, { isAdmin: true })
+    .filter()
+    .sort()
+    .paginate()
     .select(
       'tran_id customer.firstName paymentStatus items.name items.image createdAt totalAmount amount status'
     )
-    .sort({ createdAt: -1 })
-    .lean();
+    .execute();
+
+  // Disable browser caching
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
 
   res.status(200).json({
     success: true,
-    count: orders.length,
-    data: { orders },
+    count: result.data.length,
+    data: { orders: result.data },
+    pagination: result.pagination,
   });
 });
 

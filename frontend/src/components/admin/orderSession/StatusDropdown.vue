@@ -4,6 +4,7 @@
   const props = defineProps<{
     modelValue: string;
     orderId: string;
+    disabled?: boolean;
   }>();
 
   const emit = defineEmits<{
@@ -61,9 +62,13 @@
     <button
       type="button"
       @click.stop="toggleDropdown"
-      class="w-[100px] flex items-center justify-between px-2 py-1 text-xs border border-black/60 dark:border-surface-600 rounded-sm text-slate-800 shadow-xs focus:outline-none cursor-pointer transition"
+      :disabled="disabled"
+      :class="[
+        disabled ? 'cursor-not-allowed! opacity-50' : 'cursor-pointer',
+        'w-[90px] flex items-center justify-between px-2 py-0.5 text-xs border border-black/60 dark:border-surface-600 rounded-sm text-black/90 shadow-xs focus:outline-none transition'
+      ]"
     >
-      <span class="font-normal capitalize">{{ formatStatusLabel(modelValue) }}</span>
+      <span class="font-normal text-xs capitalize">{{ formatStatusLabel(modelValue) }}</span>
       <i 
         class="ri-arrow-up-s-line text-black/60 text-sm transition-transform duration-200"
         :class="{ '-rotate-180': !isOpen }"
@@ -81,7 +86,7 @@
     >
       <div
         v-if="isOpen"
-        class="absolute left-0 z-50 mt-0.5 w-[100px] rounded-sm bg-[#f3f4f6] dark:bg-surface-700 shadow-lg border border-slate-200/80 dark:border-surface-600 overflow-hidden"
+        class="absolute left-0 z-50 mt-0.5 w-[90px] rounded-sm bg-[#f3f4f6] dark:bg-surface-700 shadow-lg border border-slate-200/80 dark:border-surface-600 overflow-hidden"
       >
         <button
           v-for="status in statusOptions"

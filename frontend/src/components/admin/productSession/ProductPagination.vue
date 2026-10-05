@@ -14,11 +14,11 @@
 </script>
 
 <template>
-  <div class="flex flex-col sm:flex-row items-center justify-between border-white/90 border-t dark:bg-[#cdd0d5]/30 bg-[#cdd0d5]/70 p-4 px-5 rounded-b-lg dark:border-slate-700/80 pt-4 gap-3">
-    <div class="text-xs text-black/90 dark:text-white/90">
-      Showing Page <span class="font-semibold text-black/90 dark:text-white">{{ currentPage }}</span>
-      of <span class="font-semibold text-black/90 dark:text-white">{{ pagination?.totalPages || 1 }}</span>
-      (<span class="font-medium text-black/90 dark:text-white">{{ pagination?.total || 0 }}</span> items total)
+  <div class="flex flex-col sm:flex-row items-center justify-between  dark:bg-[#cdd0d5]/30 bg-[#cdd0d5]/70 py-3 px-5 rounded-b-lg  gap-3">
+    <div class="text-xs text-black/90 ">
+      Showing Page <span class="font-semibold text-black/90 ">{{ currentPage }}</span>
+      of <span class="font-semibold text-black/90 ">{{ pagination?.totalPages || 1 }}</span>
+      (<span class="font-medium text-black/90 ">{{ pagination?.total || 0 }}</span> items total)
     </div>
 
     <div class="flex items-center gap-2">
