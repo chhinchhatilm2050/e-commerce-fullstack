@@ -116,8 +116,39 @@ export const useProductAdminStore = defineStore('adminProduct', () => {
         result = result.concat(flattenCategories(node.children, level + 1));
       }
     }
-    
     return result;
+  };
+
+  const restoreProduct = async (id: string) => {
+    loading.value = true;
+    error.value = null;
+    try {
+      const { data } = await api.patch<IDeleteProductResponse>(`/admin/products/${id}/restore`);
+      await delay(300);
+      return { message: data.message, success: data.success };
+    } catch (err) {
+      const message = axios.isAxiosError(err) ? (err.response?.data.message ?? 'Verification failed.') : 'An unexpected error occurred.';
+      error.value = message;
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  const deleteProductPermanently = async (id: string) => {
+    deleteLoading.value = true;
+    error.value = null;
+    try {
+      const { data } = await api.delete(`/admin/products/${id}/permanent`);
+      await delay(300);
+      return { message: data.message, success: data.success };
+    } catch (err) {
+      const message = axios.isAxiosError(err) ? (err.response?.data.message ?? 'Verification failed.') : 'An unexpected error occurred.';
+      error.value = message;
+      throw err;
+    } finally {
+      deleteLoading.value = false;
+    }
   };
 
   return {
@@ -127,12 +158,14 @@ export const useProductAdminStore = defineStore('adminProduct', () => {
     categories,
     pagination,
     deleteLoading,
+    clearCache,
     fetchProductsAdmin,
     deleteProduct,
     // updateProductStatus,
     categoryTree,
     fetchCategories,
     flattenCategories,
-    clearCache,
+    restoreProduct,
+    deleteProductPermanently,
   };
 });

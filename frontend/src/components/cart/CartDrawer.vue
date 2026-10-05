@@ -6,6 +6,7 @@
   import BaseDropdown from '@/components/common/BaseDropdown.vue';
   import type { ICartItem, ICartProduct } from '@/types/cart';
   import { useAlert } from '@/composables/useAlert';
+  import { getPrimaryImage } from '@/utils/productImage';
 
   const props = withDefaults(
     defineProps<{
@@ -209,6 +210,7 @@
     close();
     router.push(`/products/${slug}`);
   };
+
 </script>
 
 <template>
@@ -263,7 +265,7 @@
             <li v-for="item in cartStore.cartItems" :key="item._id" class="flex gap-3 py-5">
               <img
                 @click="goToProductDetail(item.productId.slug)"
-                :src="item.productId.images[0]?.url"
+                :src="getPrimaryImage(item.productId)?.url"
                 :alt="item.productId?.name"
                 class="w-28 h-38 object-cover bg-gray-100 dark:bg-surface-700 cursor-pointer"
               />

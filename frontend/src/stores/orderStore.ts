@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import api from '@/composables/useFetch';
 import axios from 'axios';
 import type { ICheckoutPayload, IOrder,IOrderStatusStats, IOrderDetailRes, IOrderRespone, IPaywayData, IAdminOrdersResponse } from '@/types/iorder';
+import type { IPagination } from '@/types/iorder';
 
 export const useOrderStore = defineStore('order', () => {
   const loading = ref(false);
@@ -12,6 +13,7 @@ export const useOrderStore = defineStore('order', () => {
   const orders = ref<IOrder[]>([]);
   const adminOrders = ref<IOrder[]>([]);
   const currentOrder = ref<IOrder | null>(null);
+  const pagination = ref<IPagination | null>(null);
   const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
   const placeOrder = async (payload: ICheckoutPayload) => {
@@ -116,13 +118,14 @@ export const useOrderStore = defineStore('order', () => {
     }
   };
 
-  const fetchAllOrdersAdmin = async (params?: Record<string, string>) => {
+  const fetchAllOrdersAdmin = async (params?: Record<string, string | number>) => {
     loading.value = true;
     error.value = null;
     try {
       const { data } = await api.get<IAdminOrdersResponse>('/orders/admin/all', { params });
-      await delay(300); 
+      await delay(300);  
       adminOrders.value = data.data.orders;
+      pagination.value = data.pagination;
       return data;
     } catch (err) {
       adminOrders.value = [];
@@ -233,6 +236,7 @@ export const useOrderStore = defineStore('order', () => {
     error,
     orders,
     currentOrder,
+    pagination,
     adminOrders,
     orderStatusStats,
     orderDetailLoading,

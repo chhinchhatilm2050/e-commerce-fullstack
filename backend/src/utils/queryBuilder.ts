@@ -25,6 +25,7 @@ const RESERVED_QUERY_KEYS = [
   'maxPrice',
   'minRating',
   'status',
+  'isDeleted',
 ];
 
 class QueryBuilder<T extends Document> {
@@ -79,8 +80,9 @@ class QueryBuilder<T extends Document> {
     const filter: Record<string, unknown> = {};
 
     // 1. Soft-delete logic: Admins see soft-deleted records unless explicitly filtered
+    // QueryBuilder.ts
     if (queryString.isDeleted !== undefined) {
-      filter.isDeleted = queryString.isDeleted === 'true';
+      filter.isDeleted = queryString.isDeleted === 'true' || queryString.isDeleted === true;
     } else if (!isAdmin) {
       filter.isDeleted = false;
     }
@@ -161,6 +163,20 @@ class QueryBuilder<T extends Document> {
       this.query = this.query.find({ stock: 0 });
     }
 
+    return this;
+  }
+
+  // Inside your QueryBuilder class definition
+  select(fields?: string): this {
+    let fieldsToSelect = '';
+    if (fields) {
+      fieldsToSelect = fields.split(',').join(' ');
+    } else if (typeof this.queryString.fields === 'string' && this.queryString.fields.trim()) {
+      fieldsToSelect = this.queryString.fields.split(',').join(' ');
+    }
+    if (fieldsToSelect) {
+      this.query.select(fieldsToSelect);
+    }
     return this;
   }
 

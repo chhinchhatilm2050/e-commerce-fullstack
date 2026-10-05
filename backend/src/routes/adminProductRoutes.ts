@@ -10,7 +10,7 @@ import {
   removeProductImage,
   deleteProduct,
   restoreProduct,
-  getDeletedProducts
+  deleteProductPermanently,
 } from '../controllers/productController.js';
 
 import {
@@ -31,7 +31,6 @@ const adminProductRouter = Router();
 
 adminProductRouter.use(authenticate, authorize('admin'));
 
-adminProductRouter.get('/trash', getDeletedProducts);
 adminProductRouter.post('', upload.array('images', 6),  createProductValidator, createProduct );
 adminProductRouter.get('', getAllProductsValidator, getAllProductsAdmin);
 adminProductRouter.get('/:id', productIdValidator, getProductByIdAdmin);
@@ -42,6 +41,7 @@ adminProductRouter.post('/:id/images', productIdValidator, upload.array('images'
 adminProductRouter.delete('/:id/image', removeImageValidator, removeProductImage);
 adminProductRouter.patch('/:id/restore', productIdValidator, restoreProduct);
 adminProductRouter.delete('/:id', productIdValidator, deleteProduct);
+adminProductRouter.delete('/:id/permanent', productIdValidator, deleteProductPermanently);
 
 export default adminProductRouter;
 

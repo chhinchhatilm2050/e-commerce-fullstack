@@ -27,9 +27,9 @@
 </script>
 
 <template>
-  <div class="space-y-6 animate-slide-up">
+  <div class="space-y-4 ">
     <!-- Welcome Header Banner -->
-    <div class="bg-[#cdd0d5]/70 text-white p-6 rounded-lg shadow-sm flex items-center justify-between">
+    <div class="bg-[#cdd0d5]/70 text-white px-6 py-5 rounded-lg shadow-sm flex items-center justify-between animate-slide-up">
       <div>
         <h2 class="text-xl font-bold text-black/80">Have a good day, Admin <i class="ri-hearts-fill"></i></h2>
         <p class="text-xs text-black/80 mt-1">Here's what's happening in your store today.</p>
@@ -44,13 +44,13 @@
     </div>
 
     <!-- Error Alert Block -->
-    <div v-if="error" class="p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm flex items-center justify-between">
+    <div v-if="error" class="p-4 animate-slide-up bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm flex items-center justify-between">
       <span>{{ error }}</span>
       <button @click="adminStore.getAnalyticsData()" class="font-bold underline cursor-pointer">Retry</button>
     </div>
 
     <!-- Grid using store data -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 animate-slide-up">
       <AnalyticsCard
         label="Total Revenue"
         :value="`$${(analylicesData?.totalRevenue ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`"

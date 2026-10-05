@@ -359,14 +359,14 @@ export const restoreProduct = asyncHandler(async(req: Request<{ id: string }>, r
 
   await product.save();
 
-  res.status(200).json({ success: true, message: 'Product restored successfully', data: { product } });
+  res.status(200).json({ success: true, message: 'Product restored successfully' });
 });
 
-export const getDeletedProducts = asyncHandler(async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
-  const products = await ProductModel.find({ isDeleted: true })
-    .populate('deletedBy', 'firstName lastName email')
-    .populate('categoryId', 'name slug')
-    .lean();
-
-  res.status(200).json({ success: true, data: { products } });
+export const deleteProductPermanently = asyncHandler(async(req: Request<{ id: string }>, res: Response, next: NextFunction): Promise<void> => {
+  const { id } = req.params;
+  const product = await ProductModel.findOneAndDelete({ _id: id, isDeleted: true });
+  if (!product) {
+    return next(new AppError('Deleted product not found', 404));
+  }
+  res.status(200).json({ success: true, message: 'Product deleted permanently' });
 });

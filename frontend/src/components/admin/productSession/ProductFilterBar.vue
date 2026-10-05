@@ -47,7 +47,7 @@
 </script>
 
 <template>
-  <div class="p-4 bg-[#cdd0d5]/70 rounded-md shadow-sm space-y-3">
+  <div class="p-4 bg-[#cdd0d5]/70 rounded-md shadow-sm space-y-3 animate-slide-up">
     <div class="flex flex-col lg:flex-row gap-2.5 items-stretch lg:items-center">
       <!-- Search Input -->
       <div class="relative flex-1 w-full">
@@ -57,7 +57,7 @@
           type="text"
           placeholder="Search by name or code..."
           @keyup.enter="emit('search')"
-          class="w-full pl-9 pr-4 py-2 text-xs bg-white dark:bg-white/50 border-slate-200 rounded-sm focus:outline-none focus:ring-1 focus:ring-[#cdd0d5] dark:placeholder-zinc-950/60"
+          class="w-full pl-9 pr-4 py-2 text-xs dark:text-black/90 bg-white dark:bg-white/50 border-slate-200 rounded-sm focus:outline-none focus:ring-1 focus:ring-[#cdd0d5] dark:placeholder-zinc-950/60"
         />
       </div>
       <div>
