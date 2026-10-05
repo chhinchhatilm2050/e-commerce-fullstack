@@ -52,12 +52,12 @@
 </script>
 
 <template>
-  <div ref="dropdownRef" class="relative w-full sm:w-44 text-xs font-sans">
+  <div ref="dropdownRef" class="relative w-full sm:w-44 z-50 text-xs font-sans">
     <!-- Trigger Button -->
     <button
       type="button"
       @click="toggleDropdown"
-      class="w-full flex items-center justify-between text-xs px-2 py-1.5 rounded-sm bg-white dark:bg-surface-800 border border-slate-200 dark:border-slate-700 shadow-xs text-slate-800 dark:text-slate-200 cursor-pointer focus:outline-none transition-all"
+      class="w-full flex items-center justify-between text-xs px-2 py-1.5 rounded-sm bg-white dark:bg-surface-800 border border-slate-200 dark:border-slate-700 shadow-xs text-black/90 dark:text-slate-200 cursor-pointer focus:outline-none transition-all"
     >
       <span class="truncate pr-2 font-medium">{{ selectedCategoryName }}</span>
       <i 

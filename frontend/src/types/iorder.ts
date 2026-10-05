@@ -112,6 +112,7 @@ export interface IAdminOrdersResponse {
     orders: IOrder[];
   };
   message?: string;
+  pagination: IPagination;
 }
 
 export interface IOrderStatusStats {
@@ -120,5 +121,14 @@ export interface IOrderStatusStats {
   shipped: number;
   delivered: number;
   cancelled: number;
+}
+
+export interface IPagination {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
 }
 

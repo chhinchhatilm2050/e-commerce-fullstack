@@ -22,6 +22,7 @@
 
   // Modal States
   const isDeleteModalOpen = ref(false);
+  const isDeletePermanentModalOpen = ref(false);
   const isRestoreModalOpen = ref(false);
   const productToDelete = ref<{ id: string; name: string } | null>(null);
   const selectedProduct = ref<{ id: string; name: string } | null>(null);
@@ -111,17 +112,34 @@
     isRestoreModalOpen.value = true;
   };
 
-  // const handleConfirmRestore = async () => {
-  //   if (!selectedProduct.value) return;
-  //   try {
-  //     await productAdminStore.restoreProduct(selectedProduct.value.id);
-  //     isRestoreModalOpen.value = false;
-  //     selectedProduct.value = null;
-  //     await loadProducts();
-  //   } catch (err) {
-  //     // Handled in store
-  //   }
-  // };
+  const handleOpenDeletePermanentModal = async (payload: { id: string; name: string }) => {
+    productToDelete.value = payload;
+    isDeletePermanentModalOpen.value = true;
+  };
+
+  const handlePermanentDelete = async () => {
+    if (!productToDelete.value) return;
+    const result = await productAdminStore.deleteProductPermanently(productToDelete.value.id);
+    if (result?.success) {
+      showAlert(result.message, { type: 'success' });
+    }
+    isDeletePermanentModalOpen.value = false;
+    productToDelete.value = null;
+    productAdminStore.clearCache();
+    await loadProducts();
+  };
+
+  const handleConfirmRestore = async () => {
+    if (!selectedProduct.value) return;
+    const result = await productAdminStore.restoreProduct(selectedProduct.value.id);
+    if (result?.success) {
+      showAlert(result.message, { type: 'success' });
+    }
+    isRestoreModalOpen.value = false;
+    selectedProduct.value = null;
+    productAdminStore.clearCache();
+    await loadProducts();
+  };
 
   const handleRefresh = async () => {
     productAdminStore.clearCache();
@@ -130,9 +148,9 @@
 </script>
 
 <template>
-  <div class="space-y-5 animate-slide-up">
+  <div class="flex flex-col h-[calc(100vh-96px)] gap-4 ">
     <!-- Header Row -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#cdd0d5]/70 p-5 rounded-lg">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#cdd0d5]/70 p-5 rounded-lg shrink-0 animate-slide-up">
       <div class="flex items-center gap-3">
         <div class="p-2 bg-white text-black/80 shadow-lg rounded-lg">
           <i class="ri-box-3-line text-2xl"></i>
@@ -195,38 +213,46 @@
       v-model:selected-sort="selectedSort"
       :categories="formattedCategories"
       :is-trash-view="isTrashView"
+      class="shrink-0"
       @search="handleSearch"
       @reset="resetFilters"
     />
-  </div>
 
-  <div class="mt-5 animate-slide-up">
-    <!-- Product Table Component -->
-    <ProductListTable
-      :products="productAdminStore.products"
-      :loading="productAdminStore.loading"
-      :deleteLoading="productAdminStore.deleteLoading"
-      :is-trash-view="isTrashView"
-      @delete="handleOpenDeleteModal"
-      @restore="handleOpenRestoreModal"
-    />
+    <!-- Main Table + Pagination Box -->
+    <div class="flex flex-col flex-1 min-h-0 bg-[#cdd0d5]/30 dark:bg-[#cdd0d5]/70 rounded-lg shadow-2xs overflow-hidden">
+      <!-- Scrollable Table -->
+      <ProductListTable
+        :products="productAdminStore.products"
+        :loading="productAdminStore.loading"
+        :deleteLoading="productAdminStore.deleteLoading"
+        :is-trash-view="isTrashView"
+        class="flex-1 overflow-y-auto"
+        @delete="handleOpenDeleteModal"
+        @restore="handleOpenRestoreModal"
+        @permanent-delete="handleOpenDeletePermanentModal"
+      />
 
-    <!-- Pagination Component -->
-    <ProductPagination
-      :current-page="currentPage"
-      :pagination="productAdminStore.pagination"
-      :loading="productAdminStore.loading"
-      @prev="goToPreviousPage"
-      @next="goToNextPage"
-    />
+      <!-- Pinned Bottom Pagination -->
+      <ProductPagination
+        :current-page="currentPage"
+        :pagination="productAdminStore.pagination"
+        :loading="productAdminStore.loading"
+        class="shrink-0 "
+        @prev="goToPreviousPage"
+        @next="goToNextPage"
+      />
+    </div>
 
     <!-- Modals -->
     <DeleteConfirmModal
-      :is-open="isDeleteModalOpen"
+      :is-open="isDeleteModalOpen || isDeletePermanentModalOpen"
       :item-name="productToDelete?.name"
       :deleteLoading="productAdminStore.deleteLoading"
-      @close="isDeleteModalOpen = false"
-      @confirm="handleConfirmDelete"
+      :description="isDeleteModalOpen ? 'This action can be restored from the trash archive.' : 'This action cannot be restored.'"
+      :icon="isDeleteModalOpen ? 'ri-delete-bin-line' : 'ri-delete-bin-2-line'"
+      :title="isDeleteModalOpen ? 'Confirm Delete' : 'Confirm Permanent Delete'"
+      @close="isDeleteModalOpen = false, isDeletePermanentModalOpen = false"
+      @confirm="isDeleteModalOpen ? handleConfirmDelete() : handlePermanentDelete()"
     />
 
     <RestoreConfirmModel
@@ -234,6 +260,7 @@
       :item-name="selectedProduct?.name"
       :loading="productAdminStore.loading"
       @close="isRestoreModalOpen = false"
+      @confirm="handleConfirmRestore"
     />
   </div>
 </template>

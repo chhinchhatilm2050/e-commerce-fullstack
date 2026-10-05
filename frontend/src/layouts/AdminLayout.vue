@@ -27,7 +27,7 @@
       <AdminHeader @toggle-mobile-sidebar="isMobileOpen = !isMobileOpen" />
 
       <!-- Page Content -->
-      <main class="flex-1 p-6 min-w-0 overflow-x-hidden">
+      <main class="flex-1 px-4 py-4 min-w-0 overflow-x-hidden">
         <router-view />
       </main>
     </div>

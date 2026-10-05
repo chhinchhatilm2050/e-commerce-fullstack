@@ -10,7 +10,7 @@
 </script>
 
 <template>
-  <div class="bg-[#cdd0d5]/70 p-5 rounded-lg border border-slate-200/80 shadow-xs transition hover:shadow-md">
+  <div class="bg-[#cdd0d5]/70 p-4 rounded-lg border border-slate-200/80 shadow-xs transition hover:shadow-md">
     <!-- Skeleton Loading State -->
     <div v-if="isLoading" class="animate-pulse space-y-3">
       <div class="flex justify-between items-center">
