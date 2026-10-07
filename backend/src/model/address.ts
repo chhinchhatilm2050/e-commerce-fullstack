@@ -94,4 +94,4 @@ addressSchema.pre(
   }
 );
 
-export const AddressModel = mongoose.model<IAddress>('Address', addressSchema);
+export const AddressModel = mongoose.model<IAddress>('ShippingAddress', addressSchema);

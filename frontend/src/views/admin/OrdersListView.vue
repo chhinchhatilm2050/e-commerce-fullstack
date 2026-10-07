@@ -122,7 +122,7 @@
     const previousStatus = order.status;
     try {
       order.status = newStatus;
-      await orderStore.updateOrderStatus(order._id, newStatus);
+      await orderStore.updateOrderStatus(order._id, newStatus.toUpperCase());
       showAlert('Status changed successfully', { type: 'success' });
     } catch {
       order.status = previousStatus;
@@ -139,9 +139,9 @@
     if (!idTodelete.value || !tranIdToDelete.value) return;
     const result = await orderStore.deleteOrder(idTodelete.value, tranIdToDelete.value);
     if (result?.success) {
+      isDeleteOpen.value = false;
       await loadOrders();
       showAlert(result.message, { type: 'success' });
-      isDeleteOpen.value = false;
       idTodelete.value = null;
       tranIdToDelete.value = null;
     }
@@ -280,7 +280,9 @@
               @click="handleDeleteOrder"
               class="flex items-center gap-1.5 w-full subCategory-button cursor-pointer px-4 py-1.5 text-sm"
             >
-              Delete
+            <i v-if="orderStore.deleteOrderLoading" class="ri-loader-4-line animate-spin"></i>
+              <span>{{ orderStore.deleteOrderLoading ? 'Deleting...' : 'Delete Order' }}</span>
+         
             </button>
           </div>
         </div>

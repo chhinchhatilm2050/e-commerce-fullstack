@@ -145,6 +145,14 @@
     productAdminStore.clearCache();
     await loadProducts();
   };
+
+  const updateProductStatus = async ({ id, status }: { id: string; status: 'draft' | 'active' | 'out_of_stock' }) => {
+    const restult = await productAdminStore.updateProductStatus(id, status);
+    if (restult.success) {
+      showAlert(restult.message, { type: 'success' });
+    }
+  };
+
 </script>
 
 <template>
@@ -230,6 +238,7 @@
         @delete="handleOpenDeleteModal"
         @restore="handleOpenRestoreModal"
         @permanent-delete="handleOpenDeletePermanentModal"
+        @status-change="updateProductStatus"
       />
 
       <!-- Pinned Bottom Pagination -->
