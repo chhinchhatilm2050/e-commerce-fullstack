@@ -24,6 +24,12 @@
       day: 'numeric',
     });
   };
+  const orderStatusOption = [
+    { label: 'Pending', value: 'Pending' },
+    { label: 'Shipped', value: 'Shipped' },
+    { label: 'Delivered', value: 'Delivered' },
+    { label: 'Cancelled', value: 'Cancelled' },
+  ];
 </script>
 
 <template>
@@ -110,8 +116,9 @@
           <div class="flex items-center justify-center">
             <StatusDropdown
               v-model="order.status"
-              :order-id="order._id"
+              :entity-id="order._id"
               :disabled="isTrashView"
+              :options="orderStatusOption"
               @change="emit('status-change', { order, newStatus: $event })"
             />
           </div>

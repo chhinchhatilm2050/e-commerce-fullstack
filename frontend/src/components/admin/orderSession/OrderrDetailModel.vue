@@ -115,13 +115,14 @@
                   <img
                     :src="getImageUrl(item.image)"
                     :alt="item.name"
-                    class="w-16 h-18 object-cover bg-gray-100 shrink-0"
+                    class="w-18 h-22 object-cover bg-gray-100 shrink-0"
                   />
                   <div class="truncate">
                     <p class="text-sm font-semibold truncate capitalize text-black/90">{{ item.name }}</p>
                     <p class="text-xs text-black/60  mt-0.5">Qty: {{ item.quantity }}</p>
                     <p v-if="item.size" class="text-xs text-black/60 mt-0.5">Size: {{ item.size }}</p>
                     <p v-if="item.color" class="text-xs text-black/60  mt-0.5 capitalize">Color: {{ item.color }}</p>
+                    <p v-if="item.code" class="text-xs text-black/60  mt-0.5 capitalize">Code: {{ item.code }}</p>
                   </div>
                 </div>
 

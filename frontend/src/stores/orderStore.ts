@@ -172,11 +172,12 @@ export const useOrderStore = defineStore('order', () => {
   };
 
   const deleteOrder = async(id: string | null, tranId: string | null) => {
-    deleteOrderLoading.value = false;
+    deleteOrderLoading.value = true;
     error.value = null;
     try {
       const ids = id || tranId;
       const { data } = await api.delete(`/orders/${ids}`);
+      await delay(500);
       return { success: data.success, message: data.message };
     } catch (err) {
       const message = axios.isAxiosError(err)

@@ -27,7 +27,12 @@ export const getCart = asyncHandler(async(req: Request, res: Response, next: Nex
 
   res.status(200).json({
     success: true,
-    data: { cart }
+    data: { 
+      cart, 
+      cartTotalQuantity: cart.totalQuantity, 
+      cartTotalAmount: cart.totalAmount
+    },
+    
   });
 
 });

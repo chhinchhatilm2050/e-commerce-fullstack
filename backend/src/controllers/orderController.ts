@@ -423,7 +423,7 @@ export const getAllOrdersAdmin = asyncHandler(async (req: Request<unknown, unkno
   }
 
   // Execute using QueryBuilder
-  const result = await new QueryBuilder(OrderModel, queryParams, { isAdmin: true })
+  const result = await new QueryBuilder(OrderModel, queryParams, { isAdmin: true, allowedStatuses: ['PENDING', 'SHIPPED', 'DELIVERED', 'CANCELLED'], defaultStatus: 'PENDING' })
     .filter()
     .sort()
     .paginate()
@@ -545,20 +545,25 @@ export const deleteOrder = asyncHandler(async (req: Request<{ id: string }>, res
 export const getOrderStats = asyncHandler(async (req: Request, res: Response, _next: NextFunction) => {
   const stats = await OrderModel.aggregate([
     {
+      $match: {
+        isDeleted: false,
+      },
+    },
+    {
       $group: {
         _id: '$status',
-        count: { $sum: 1 }
-      }
-    }
+        count: { $sum: 1 },
+      },
+    },
   ]);
 
-  const total = await OrderModel.countDocuments();
+  const total = await OrderModel.countDocuments({ isDeleted: false });
 
   res.status(200).json({
     success: true,
     data: {
       total,
       stats,
-    }
+    },
   });
 });

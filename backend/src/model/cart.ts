@@ -34,10 +34,6 @@ const cartSchema = new mongoose.Schema<ICart>({
   toObject: { virtuals: true },
 }
 );
-cartSchema.virtual('totalQuantity').get(function (this: ICart) {
-  if (!this.items || !Array.isArray(this.items)) return 0;
-  return this.items.reduce((total, item) => total + (item.quantity || 0), 0);
-});
 
 const CartModel: Model<ICart> = mongoose.model<ICart>('Cart', cartSchema);
 export default CartModel;

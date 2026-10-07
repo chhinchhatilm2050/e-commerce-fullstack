@@ -241,7 +241,6 @@ export const updateProductStatus = asyncHandler(async(req: Request<{ id: string}
   res.status(200).json({ 
     success: true, 
     message: 'Status updated successfully',
-    data: { product } 
   });
 });
 

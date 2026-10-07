@@ -2,6 +2,7 @@ import { Types } from 'mongoose';
 
 export interface ICartItem {
   _id?: Types.ObjectId; 
+  price?: number;
   productId: Types.ObjectId;
   selectedAttributes?: Map<string, string>;
   quantity: number;
@@ -13,6 +14,7 @@ export interface ICart {
   totalQuantity: number;
   createdAt: Date;
   updatedAt: Date;
+  totalAmount: number;
 }
 
 export interface IAddToCartBody {
