@@ -5,8 +5,8 @@ export const updateOrderStatusValidator = [
   param('id').isMongoId().withMessage('Invalid status ID'),
   body('status')
     .notEmpty().withMessage('Status is required')
-    .isIn(['PENDING', 'SHIPPED', 'DELIVERED', 'CANCELLED'])
-    .withMessage('Status must be active or inactive'),
+    .isIn(['Pending', 'Shipped', 'Delivered', 'Cancelled', 'PENDING', 'SHIPPED', 'DELIVERED', 'CANCELLED'])
+    .withMessage('Status must be Pending, Shipped, Delivered, or Cancelled'),
   validateRequest,
 ];
 

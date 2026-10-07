@@ -1,27 +1,39 @@
 <script setup lang="ts">
   import type { IProduct } from '@/types/adminProduct';
   import { getPrimaryImage } from '@/utils/productImage';
+  import StatusDropdown from '../orderSession/StatusDropdown.vue';
 
   defineProps<{
     products: IProduct[];
     loading: boolean;
+    deleteLoading?: boolean;
     isTrashView?: boolean;
   }>();
 
   const emit = defineEmits<{
     (e: 'delete', payload: { id: string; name: string }): void;
-    (e: 'status-change', payload: { id: string; status: string }): void;
+    (e: 'status-change', payload: { id: string; status: 'draft' | 'active' | 'out_of_stock' }): void;
     (e: 'restore', product: { id: string; name: string }): void;
     (e: 'permanentDelete', product: { id: string; name: string }): void;
   }>();
 
+  const productStatusOptions = [
+    { label: 'Active', value: 'active' },
+    { label: 'Draft', value: 'draft' },
+    { label: 'Inactive', value: 'inactive' },
+    { label: 'No Stock', value: 'out_of_stock' },
+  ];
+
+  async function handleProductStatusChange(productId: string, newStatus: 'draft' | 'active' | 'out_of_stock') {
+    emit('status-change', { id: productId, status: newStatus });
+  }
 </script>
 
 <template>
   <div class="w-full h-full">
     <table class="w-full text-left text-xs border-collapse">
       <!-- Sticky Header -->
-      <thead class="sticky top-0 z-10  bg-[#cdd0d5] text-[11px] ont-semibold uppercase tracking-wider dark:bg-[#b0b3b8] text-black/90 shadow-xs">
+      <thead class="sticky top-0 z-10 bg-[#cdd0d5] text-[11px] font-semibold uppercase tracking-wider dark:bg-[#b0b3b8] text-black/90 shadow-xs">
         <tr>
           <th class="py-4 px-5">Product</th>
           <th class="py-4 px-5">Category</th>
@@ -36,7 +48,7 @@
         <!-- Loading State -->
         <tr v-if="loading">
           <td colspan="6" class="p-8 py-30 text-center text-black/90">
-            <i class="ri-refresh-line text-lg leading-none inline-block" :class="{ 'animate-spin': loading }"></i>
+            <i class="ri-refresh-line text-lg leading-none inline-block animate-spin"></i>
             <p class="mt-2 text-xs">Loading product catalog...</p>
           </td>
         </tr>
@@ -104,11 +116,15 @@
             </span>
           </td>
 
-          <!-- Status Badge -->
-          <td class="py-4 px-5">
-            <span class="px-2 py-0.5 rounded-full font-medium text-black/90 capitalize">
-              {{ product.status || 'active' }}
-            </span>
+          <!-- Status Dropdown Column -->
+          <td class="py-4 px-5 relative overflow-visible">
+            <StatusDropdown
+              v-model="product.status"
+              :entity-id="product._id"
+              :options="productStatusOptions"
+              :disabled="isTrashView"
+              @change="(newStatus) => handleProductStatusChange(product._id, newStatus as 'active' | 'draft' | 'out_of_stock')"
+            />
           </td>
 
           <!-- Action Column Buttons -->

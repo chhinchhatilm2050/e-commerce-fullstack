@@ -10,6 +10,7 @@ export const useProductAdminStore = defineStore('adminProduct', () => {
   const categories = ref<ICategory[]>([]);
   const loading = ref(false);
   const deleteLoading = ref(false);
+  const statusLoading = ref(false);
   const error = ref<string | null>(null);
   const categoryTree = ref<ICategoryNode[]>([]);
   const pagination = ref<IPagination | null>(null);
@@ -75,21 +76,27 @@ export const useProductAdminStore = defineStore('adminProduct', () => {
     }
   };
 
-  // Quick Status Toggle (PATCH /api/admin/products/:id/status)
-  // const updateProductStatus = async (id: string, status: string) => {
-  //   try {
-  //     const { data } = await api.patch(`/admin/products/${id}/status`, { status });
-  //     const index = products.value.findIndex((p) => p._id === id);
-  //     if (index !== -1) {
-  //       products.value[index].status = status as any;
-  //     }
-  //     return data;
-  //   } catch (err: any) {
-  //     error.value = err.response?.data?.message || 'Failed to update status';
-  //     throw err;
-  //   }
-  // };
-  
+  const updateProductStatus = async(id: string, newStatus: 'draft' | 'active' | 'out_of_stock') => {
+    statusLoading.value = true;
+    error.value = null;
+    try {
+      const { data } = await api.patch<{success: boolean; message: string}>(`/admin/products/${id}/status`, { status: newStatus });
+      if (data.success) {
+        const item = products.value.find((p) => p._id === id);
+        if (item) {
+          item.status = newStatus;
+        }
+      }
+      return data;
+    } catch (err) {
+      const message = axios.isAxiosError(err) ? (err.response?.data.message ?? 'Verification failed.') : 'An unexpected error occurred.';
+      error.value = message;
+      return { success: false, message };
+    } finally {
+      statusLoading.value = false;
+    }
+  };
+
   const fetchCategories = async () => {
     try {
       const response = await api.get('/admin/categories/tree');
@@ -158,11 +165,11 @@ export const useProductAdminStore = defineStore('adminProduct', () => {
     categories,
     pagination,
     deleteLoading,
+    categoryTree,
     clearCache,
     fetchProductsAdmin,
     deleteProduct,
-    // updateProductStatus,
-    categoryTree,
+    updateProductStatus,
     fetchCategories,
     flattenCategories,
     restoreProduct,

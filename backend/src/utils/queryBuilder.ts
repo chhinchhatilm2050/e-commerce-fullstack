@@ -25,7 +25,6 @@ const RESERVED_QUERY_KEYS = [
   'maxPrice',
   'minRating',
   'status',
-  'isDeleted',
 ];
 
 class QueryBuilder<T extends Document> {
