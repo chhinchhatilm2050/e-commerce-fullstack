@@ -56,7 +56,7 @@
       class="w-full min-w-[163px] flex justify-between items-center text-black/80 px-2 py-2 rounded-sm border text-xs transition-all cursor-pointer duration-200 input"
       :class="isOpen ? 'ring-1 ring-black/20 bg-white dark:bg-surface-800' : 'ring-black/20'"
     >
-      <span :class="selectedOption ? 'text-gray-900 dark:text-gray-100 font-medium' : 'text-gray-400 dark:text-white/50'">
+      <span :class="selectedOption ? 'text-gray-900 dark:text-gray-100 font-medium capitalize' : 'text-gray-400 dark:text-white/50'">
         {{ selectedLabel }}
       </span>
       <i 

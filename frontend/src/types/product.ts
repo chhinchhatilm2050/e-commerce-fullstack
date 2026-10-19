@@ -5,6 +5,11 @@ export interface IProductImage {
   order: number;
 }
 
+export interface ISpecificationItem {
+  key: string;
+  value: string;
+}
+
 export interface IProduct {
   _id: string;
   name: string;
@@ -18,7 +23,7 @@ export interface IProduct {
   stock: number;
   slug: string,
   code: string;
-  specification?: Record<string, unknown>;
+  specifications?: ISpecificationItem[];
   status: 'draft' | 'active' | 'out_of_stock';
 }
 

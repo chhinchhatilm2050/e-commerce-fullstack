@@ -8,10 +8,15 @@ import ProductModel from '../model/product.js';
 import { CategoryModel } from '../model/category.js';
 import connectDB from '../config/database.js';
 
+interface ISpecItem {
+  key: string;
+  value: string;
+}
+
 interface SubcategoryConfig {
   name: string;
   productNameFn: () => string;
-  specFn: () => Record<string, unknown>;
+  specFn: () => ISpecItem[];
 }
 
 interface CategoryConfig {
@@ -22,9 +27,6 @@ interface CategoryConfig {
 }
 
 // --- Size/Color helpers -----------------------------------------------
-// A product can have ONE size/color, MANY sizes/colors, or be "Free Size"
-// (single universal size, e.g. belts, scarves, one-size hats).
-
 function generateSizes(possibleSizes: string[], freeSizeProbability = 0): string[] {
   if (freeSizeProbability > 0 && faker.datatype.boolean({ probability: freeSizeProbability })) {
     return ['Free Size'];
@@ -36,7 +38,7 @@ function generateSizes(possibleSizes: string[], freeSizeProbability = 0): string
 function generateColors(): string[] {
   const count = faker.number.int({ min: 1, max: 3 });
   const colors = Array.from({ length: count }, () => faker.color.human());
-  return Array.from(new Set(colors)); // dedupe in case of repeats
+  return Array.from(new Set(colors));
 }
 
 const categoryConfig: CategoryConfig[] = [
@@ -48,46 +50,46 @@ const categoryConfig: CategoryConfig[] = [
       {
         name: 'Fiction',
         productNameFn: () => faker.commerce.productName() + ' - ' + faker.person.lastName(),
-        specFn: () => ({
-          author: faker.person.fullName(),
-          pages: faker.number.int({ min: 150, max: 700 }),
-          language: faker.helpers.arrayElement(['English', 'Spanish', 'French']),
-          publisher: faker.company.name(),
-          isbn: faker.commerce.isbn(),
-        }),
+        specFn: () => [
+          { key: 'Author', value: faker.person.fullName() },
+          { key: 'Pages', value: String(faker.number.int({ min: 150, max: 700 })) },
+          { key: 'Language', value: faker.helpers.arrayElement(['English', 'Spanish', 'French']) },
+          { key: 'Publisher', value: faker.company.name() },
+          { key: 'ISBN', value: faker.commerce.isbn() },
+        ],
       },
       {
         name: 'Non-Fiction',
         productNameFn: () => faker.commerce.productName() + ' - ' + faker.person.lastName(),
-        specFn: () => ({
-          author: faker.person.fullName(),
-          pages: faker.number.int({ min: 100, max: 900 }),
-          language: faker.helpers.arrayElement(['English', 'Spanish', 'French']),
-          publisher: faker.company.name(),
-          isbn: faker.commerce.isbn(),
-        }),
+        specFn: () => [
+          { key: 'Author', value: faker.person.fullName() },
+          { key: 'Pages', value: String(faker.number.int({ min: 100, max: 900 })) },
+          { key: 'Language', value: faker.helpers.arrayElement(['English', 'Spanish', 'French']) },
+          { key: 'Publisher', value: faker.company.name() },
+          { key: 'ISBN', value: faker.commerce.isbn() },
+        ],
       },
       {
         name: 'Comics',
         productNameFn: () => faker.commerce.productName() + ' Vol. ' + faker.number.int({ min: 1, max: 20 }),
-        specFn: () => ({
-          author: faker.person.fullName(),
-          pages: faker.number.int({ min: 20, max: 200 }),
-          language: 'English',
-          publisher: faker.company.name(),
-          isbn: faker.commerce.isbn(),
-        }),
+        specFn: () => [
+          { key: 'Author', value: faker.person.fullName() },
+          { key: 'Pages', value: String(faker.number.int({ min: 20, max: 200 })) },
+          { key: 'Language', value: 'English' },
+          { key: 'Publisher', value: faker.company.name() },
+          { key: 'ISBN', value: faker.commerce.isbn() },
+        ],
       },
       {
         name: 'Children',
         productNameFn: () => faker.commerce.productName() + ' for Kids',
-        specFn: () => ({
-          author: faker.person.fullName(),
-          pages: faker.number.int({ min: 10, max: 80 }),
-          language: 'English',
-          publisher: faker.company.name(),
-          isbn: faker.commerce.isbn(),
-        }),
+        specFn: () => [
+          { key: 'Author', value: faker.person.fullName() },
+          { key: 'Pages', value: String(faker.number.int({ min: 10, max: 80 })) },
+          { key: 'Language', value: 'English' },
+          { key: 'Publisher', value: faker.company.name() },
+          { key: 'ISBN', value: faker.commerce.isbn() },
+        ],
       },
     ],
   },
@@ -99,42 +101,42 @@ const categoryConfig: CategoryConfig[] = [
       {
         name: 'Laptops',
         productNameFn: () => faker.company.buzzAdjective() + ' Laptop ' + faker.string.alphanumeric(4).toUpperCase(),
-        specFn: () => ({
-          brand: faker.company.name(),
-          warrantyMonths: faker.helpers.arrayElement([6, 12, 24]),
-          color: faker.color.human(),
-          weightGrams: faker.number.int({ min: 1000, max: 3000 }),
-        }),
+        specFn: () => [
+          { key: 'Brand', value: faker.company.name() },
+          { key: 'Warranty', value: `${faker.helpers.arrayElement([6, 12, 24])} Months` },
+          { key: 'Color', value: faker.color.human() },
+          { key: 'Weight', value: `${faker.number.int({ min: 1000, max: 3000 })} g` },
+        ],
       },
       {
         name: 'Phones',
         productNameFn: () => faker.company.buzzAdjective() + ' Phone ' + faker.string.alphanumeric(4).toUpperCase(),
-        specFn: () => ({
-          brand: faker.company.name(),
-          warrantyMonths: faker.helpers.arrayElement([6, 12, 24]),
-          color: faker.color.human(),
-          weightGrams: faker.number.int({ min: 120, max: 250 }),
-        }),
+        specFn: () => [
+          { key: 'Brand', value: faker.company.name() },
+          { key: 'Warranty', value: `${faker.helpers.arrayElement([6, 12, 24])} Months` },
+          { key: 'Color', value: faker.color.human() },
+          { key: 'Weight', value: `${faker.number.int({ min: 120, max: 250 })} g` },
+        ],
       },
       {
         name: 'Audio',
         productNameFn: () => faker.helpers.arrayElement(['Headphones', 'Earbuds', 'Speaker']) + ' ' + faker.company.buzzNoun(),
-        specFn: () => ({
-          brand: faker.company.name(),
-          warrantyMonths: faker.helpers.arrayElement([6, 12, 24]),
-          color: faker.color.human(),
-          weightGrams: faker.number.int({ min: 50, max: 500 }),
-        }),
+        specFn: () => [
+          { key: 'Brand', value: faker.company.name() },
+          { key: 'Warranty', value: `${faker.helpers.arrayElement([6, 12, 24])} Months` },
+          { key: 'Color', value: faker.color.human() },
+          { key: 'Weight', value: `${faker.number.int({ min: 50, max: 500 })} g` },
+        ],
       },
       {
         name: 'Cameras',
         productNameFn: () => faker.company.buzzAdjective() + ' Camera ' + faker.string.alphanumeric(4).toUpperCase(),
-        specFn: () => ({
-          brand: faker.company.name(),
-          warrantyMonths: faker.helpers.arrayElement([6, 12, 24]),
-          color: faker.color.human(),
-          weightGrams: faker.number.int({ min: 300, max: 1200 }),
-        }),
+        specFn: () => [
+          { key: 'Brand', value: faker.company.name() },
+          { key: 'Warranty', value: `${faker.helpers.arrayElement([6, 12, 24])} Months` },
+          { key: 'Color', value: faker.color.human() },
+          { key: 'Weight', value: `${faker.number.int({ min: 300, max: 1200 })} g` },
+        ],
       },
     ],
   },
@@ -146,43 +148,42 @@ const categoryConfig: CategoryConfig[] = [
       {
         name: 'Men',
         productNameFn: () => faker.commerce.productAdjective() + ' ' + faker.commerce.productMaterial() + ' ' + faker.commerce.product(),
-        specFn: () => ({
-          sizes: generateSizes(['XS', 'S', 'M', 'L', 'XL'], 0.1),
-          colors: generateColors(),
-          material: faker.commerce.productMaterial(),
-          gender: 'men',
-        }),
+        specFn: () => [
+          { key: 'Sizes', value: generateSizes(['XS', 'S', 'M', 'L', 'XL'], 0.1).join(', ') },
+          { key: 'Colors', value: generateColors().join(', ') },
+          { key: 'Material', value: faker.commerce.productMaterial() },
+          { key: 'Gender', value: 'Men' },
+        ],
       },
       {
         name: 'Women',
         productNameFn: () => faker.commerce.productAdjective() + ' ' + faker.commerce.productMaterial() + ' ' + faker.commerce.product(),
-        specFn: () => ({
-          sizes: generateSizes(['XS', 'S', 'M', 'L', 'XL'], 0.1),
-          colors: generateColors(),
-          material: faker.commerce.productMaterial(),
-          gender: 'women',
-        }),
+        specFn: () => [
+          { key: 'Sizes', value: generateSizes(['XS', 'S', 'M', 'L', 'XL'], 0.1).join(', ') },
+          { key: 'Colors', value: generateColors().join(', ') },
+          { key: 'Material', value: faker.commerce.productMaterial() },
+          { key: 'Gender', value: 'Women' },
+        ],
       },
       {
         name: 'Kids',
         productNameFn: () => faker.commerce.productAdjective() + ' Kids ' + faker.commerce.product(),
-        specFn: () => ({
-          sizes: generateSizes(['2T', '4T', 'S', 'M'], 0.05),
-          colors: generateColors(),
-          material: faker.commerce.productMaterial(),
-          gender: 'unisex',
-        }),
+        specFn: () => [
+          { key: 'Sizes', value: generateSizes(['2T', '4T', 'S', 'M'], 0.05).join(', ') },
+          { key: 'Colors', value: generateColors().join(', ') },
+          { key: 'Material', value: faker.commerce.productMaterial() },
+          { key: 'Gender', value: 'Unisex' },
+        ],
       },
       {
         name: 'Accessories',
         productNameFn: () => faker.commerce.productAdjective() + ' ' + faker.helpers.arrayElement(['Belt', 'Scarf', 'Hat', 'Bag']),
-        specFn: () => ({
-          // Accessories are frequently one-size items (belts, scarves, hats, bags)
-          sizes: generateSizes(['S', 'M', 'L'], 0.6),
-          colors: generateColors(),
-          material: faker.commerce.productMaterial(),
-          gender: 'unisex',
-        }),
+        specFn: () => [
+          { key: 'Sizes', value: generateSizes(['S', 'M', 'L'], 0.6).join(', ') },
+          { key: 'Colors', value: generateColors().join(', ') },
+          { key: 'Material', value: faker.commerce.productMaterial() },
+          { key: 'Gender', value: 'Unisex' },
+        ],
       },
     ],
   },
@@ -194,56 +195,50 @@ const categoryConfig: CategoryConfig[] = [
       {
         name: 'Living Room',
         productNameFn: () => faker.commerce.productAdjective() + ' ' + faker.helpers.arrayElement(['Sofa', 'Coffee Table', 'TV Stand', 'Armchair', 'Bookshelf']),
-        specFn: () => ({
-          material: faker.helpers.arrayElement(['Wood', 'Metal', 'Fabric', 'Leather', 'Glass']),
-          color: faker.color.human(),
-          weightKg: faker.number.int({ min: 5, max: 60 }),
-          dimensions: `${faker.number.int({ min: 60, max: 220 })}x${faker.number.int({ min: 40, max: 100 })}x${faker.number.int({ min: 30, max: 90 })} cm`,
-        }),
+        specFn: () => [
+          { key: 'Material', value: faker.helpers.arrayElement(['Wood', 'Metal', 'Fabric', 'Leather', 'Glass']) },
+          { key: 'Color', value: faker.color.human() },
+          { key: 'Weight', value: `${faker.number.int({ min: 5, max: 60 })} kg` },
+          { key: 'Dimensions', value: `${faker.number.int({ min: 60, max: 220 })}x${faker.number.int({ min: 40, max: 100 })}x${faker.number.int({ min: 30, max: 90 })} cm` },
+        ],
       },
       {
         name: 'Bedroom',
         productNameFn: () => faker.commerce.productAdjective() + ' ' + faker.helpers.arrayElement(['Bed Frame', 'Wardrobe', 'Nightstand', 'Dresser', 'Mattress']),
-        specFn: () => ({
-          material: faker.helpers.arrayElement(['Wood', 'Metal', 'Fabric', 'Memory Foam']),
-          color: faker.color.human(),
-          weightKg: faker.number.int({ min: 8, max: 80 }),
-          dimensions: `${faker.number.int({ min: 90, max: 200 })}x${faker.number.int({ min: 60, max: 180 })}x${faker.number.int({ min: 20, max: 120 })} cm`,
-        }),
+        specFn: () => [
+          { key: 'Material', value: faker.helpers.arrayElement(['Wood', 'Metal', 'Fabric', 'Memory Foam']) },
+          { key: 'Color', value: faker.color.human() },
+          { key: 'Weight', value: `${faker.number.int({ min: 8, max: 80 })} kg` },
+          { key: 'Dimensions', value: `${faker.number.int({ min: 90, max: 200 })}x${faker.number.int({ min: 60, max: 180 })}x${faker.number.int({ min: 20, max: 120 })} cm` },
+        ],
       },
       {
         name: 'Office',
         productNameFn: () => faker.commerce.productAdjective() + ' ' + faker.helpers.arrayElement(['Office Chair', 'Desk', 'Filing Cabinet', 'Bookcase']),
-        specFn: () => ({
-          material: faker.helpers.arrayElement(['Wood', 'Metal', 'Mesh', 'Plastic']),
-          color: faker.color.human(),
-          weightKg: faker.number.int({ min: 5, max: 40 }),
-          adjustableHeight: faker.datatype.boolean(),
-        }),
+        specFn: () => [
+          { key: 'Material', value: faker.helpers.arrayElement(['Wood', 'Metal', 'Mesh', 'Plastic']) },
+          { key: 'Color', value: faker.color.human() },
+          { key: 'Weight', value: `${faker.number.int({ min: 5, max: 40 })} kg` },
+          { key: 'Adjustable Height', value: faker.datatype.boolean() ? 'Yes' : 'No' },
+        ],
       },
       {
         name: 'Outdoor',
         productNameFn: () => faker.commerce.productAdjective() + ' ' + faker.helpers.arrayElement(['Patio Set', 'Garden Bench', 'Hammock', 'Outdoor Table']),
-        specFn: () => ({
-          material: faker.helpers.arrayElement(['Rattan', 'Metal', 'Teak Wood', 'Aluminum']),
-          color: faker.color.human(),
-          weatherResistant: true,
-          weightKg: faker.number.int({ min: 3, max: 50 }),
-        }),
+        specFn: () => [
+          { key: 'Material', value: faker.helpers.arrayElement(['Rattan', 'Metal', 'Teak Wood', 'Aluminum']) },
+          { key: 'Color', value: faker.color.human() },
+          { key: 'Weather Resistant', value: 'Yes' },
+          { key: 'Weight', value: `${faker.number.int({ min: 3, max: 50 })} kg` },
+        ],
       },
     ],
   },
 ];
 
 const PRODUCT_PER_SUBCATEGORY = 100;
-
-// Incrementing counter used to assign each seeded product a unique 10-digit
-// code without needing a DB round-trip (unlike the pre('save') hook, which
-// checks uniqueness via ProductModel.exists() on every real product creation).
-// Declared once at module scope so it persists across the whole seed run.
 let codeCounter = 1_000_000_000;
-// Reliable direct Unsplash images organized by keyword
-// 20 high-quality, real Unsplash photos per category keyword
+
 const categoryImagePool: Record<string, string[]> = {
   books: [
     'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c',
@@ -339,7 +334,6 @@ function generateFakeImages(keyword: string, count: number) {
   const pool = categoryImagePool[keyword.toLowerCase()] || categoryImagePool['technology'];
 
   return Array.from({ length: count }).map((_, i) => {
-    // Selects a random photo from the 20 available photos
     const baseUrl = faker.helpers.arrayElement(pool);
     const imageUrl = `${baseUrl}?auto=format&fit=crop&w=600&h=800&q=80`;
 
@@ -357,8 +351,7 @@ function generateCategoryImage(keyword: string) {
   const baseUrl = faker.helpers.arrayElement(pool);
   return `${baseUrl}?auto=format&fit=crop&w=600&h=800&q=80`;
 }
-// generates a realistic rating: most products cluster around 3.5-4.8,
-// with roughly 15% of products having zero reviews (rating 0, count 0)
+
 function generateRating(): { ratingAvg: number; ratingCount: number } {
   const hasReviews = faker.datatype.boolean({ probability: 0.85 });
 
@@ -372,8 +365,6 @@ function generateRating(): { ratingAvg: number; ratingCount: number } {
   return { ratingAvg, ratingCount };
 }
 
-// derives status from stock — out of stock products are automatically marked as such,
-// remaining products are mostly active with a small percentage left as draft
 function generateStatus(stock: number): 'draft' | 'active' | 'out_of_stock' {
   if (stock === 0) return 'out_of_stock';
   return faker.helpers.arrayElement(['active', 'active', 'active', 'active', 'draft']);
@@ -411,7 +402,7 @@ const seed = async () => {
 
         await ProductModel.create({
           name: sub.productNameFn(),
-          code: (codeCounter++).toString(), // pre-assigned, skips the hook's exists() check
+          code: (codeCounter++).toString(),
           description: faker.commerce.productDescription(),
           categoryId: subDoc._id,
           price: Number(faker.commerce.price({ min: 5, max: 1000 })),
@@ -420,7 +411,7 @@ const seed = async () => {
             : undefined,
           images: generateFakeImages(category.imageKeyword, faker.number.int({ min: 1, max: 4 })),
           stock,
-          specification: sub.specFn(),
+          specifications: sub.specFn(), // Emits array: [{ key, value }]
           ratingAvg,
           ratingCount,
           status: generateStatus(stock),

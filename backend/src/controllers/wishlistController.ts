@@ -14,7 +14,7 @@ export const getWishlist = asyncHandler(async (req: Request, res: Response, _nex
         name: 1,
         code: 1,
         slug: 1,
-        specification: 1,
+        specifications: 1,
         images: { $slice: 1 }
       }
     });

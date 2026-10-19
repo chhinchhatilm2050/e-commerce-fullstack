@@ -1,16 +1,17 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import api from '@/composables/useFetch'; 
-import type { IProduct, ICategory, IPagination, IDeleteProductResponse, ICategoryNode, IFormattedCategory } from '@/types/adminProduct';
+import type { IProduct, ICategory, IPagination, IDeleteProductResponse, ICategoryNode, IFormattedCategory, ICreateProduct } from '@/types/adminProduct';
 import type { IProductListResponse } from '@/types/product';
 import axios from 'axios';
 
 export const useProductAdminStore = defineStore('adminProduct', () => {
   const products = ref<IProduct[]>([]);
   const categories = ref<ICategory[]>([]);
-  const loading = ref(false);
-  const deleteLoading = ref(false);
-  const statusLoading = ref(false);
+  const loading = ref<boolean>(false);
+  const deleteLoading = ref<boolean>(false);
+  const statusLoading = ref<boolean>(false);
+  const createProductLoading = ref<boolean>(false);
   const error = ref<string | null>(null);
   const categoryTree = ref<ICategoryNode[]>([]);
   const pagination = ref<IPagination | null>(null);
@@ -41,7 +42,7 @@ export const useProductAdminStore = defineStore('adminProduct', () => {
     } catch (err) {
       products.value = [];
       pagination.value = null;
-      const message = axios.isAxiosError(err) ? (err.response?.data.message ?? 'Failed to fetch products') : 'Failed to fetch products';
+      const message = axios.isAxiosError(err) ? (err.response?.data.message ?? 'Failed to fetch products') : 'An unexpected error occurred.';
       error.value = message;
     } finally {
       loading.value = false;
@@ -112,7 +113,7 @@ export const useProductAdminStore = defineStore('adminProduct', () => {
     let result: IFormattedCategory[] = [];
     
     for (const node of nodes) {
-      const prefix = '#'.repeat(level);
+      const prefix = '↳ '.repeat(level);
       result.push({
         _id: node._id,
         name: level > 0 ? `${prefix}${node.name}` : node.name,
@@ -158,6 +159,38 @@ export const useProductAdminStore = defineStore('adminProduct', () => {
     }
   };
 
+  const crateProduct = async(payload: ICreateProduct) => {
+    createProductLoading.value = true;
+    error.value = null;
+    try {
+      const formData = new FormData();
+      formData.append('name', payload.name);
+      formData.append('categoryId', payload.categoryId);
+      formData.append('price', String(payload.price));
+      formData.append('stock', String(payload.stock));
+      formData.append('status', payload.status);
+      if (payload.comparePrice !== undefined) {
+        formData.append('comparePrice', String(payload.comparePrice));
+      }
+      if (payload.description) {
+        formData.append('description', payload.description);
+      }
+      formData.append('specifications', JSON.stringify(payload.specifications));
+      payload.images.forEach((file) => {
+        formData.append('images', file);
+      });
+
+      const { data } = await api.post<{message: string, success: boolean}>('/admin/products', formData);
+      return { message: data.message, success: data.success };
+    } catch (err) {
+      const message = axios.isAxiosError(err) ? (err.response?.data.message ?? 'Create Product fail.') : 'An unexpected error occurred.';
+      error.value = message;
+      throw err;
+    } finally {
+      createProductLoading.value = false;
+    }
+  };
+
   return {
     products,
     loading,
@@ -166,6 +199,7 @@ export const useProductAdminStore = defineStore('adminProduct', () => {
     pagination,
     deleteLoading,
     categoryTree,
+    createProductLoading,
     clearCache,
     fetchProductsAdmin,
     deleteProduct,
@@ -174,5 +208,6 @@ export const useProductAdminStore = defineStore('adminProduct', () => {
     flattenCategories,
     restoreProduct,
     deleteProductPermanently,
+    crateProduct,
   };
 });

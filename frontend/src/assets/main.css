@@ -181,6 +181,12 @@
   .section-title {
     @apply font-display text-2xl font-bold text-gray-800 dark:text-gray-200;
   }
+  .product-input {
+    @apply w-full px-3 py-2  border border-black/30 rounded-sm
+    bg-white text-gray-800 placeholder:text-black/50 placeholder:text-sm
+    focus:outline-none focus:ring-1 focus:ring-gray-600 focus:border-transparent
+    transition-all duration-200;
+  }
 }
 
 @layer utilities {
