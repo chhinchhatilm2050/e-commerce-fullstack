@@ -1,5 +1,9 @@
 import type { IProductImage } from './product';
 
+export interface ISpecificationItem {
+  key: string;
+  value: string;
+}
 export interface IItem {
   _id: string;
   name: string;
@@ -7,7 +11,7 @@ export interface IItem {
   code: string,
   slug: string,
   comparePrice: number;
-  specification: Record<string,unknown>;
+  specifications: ISpecificationItem[];
   images: IProductImage[]; 
   createdAt: string;       
   updatedAt: string;
