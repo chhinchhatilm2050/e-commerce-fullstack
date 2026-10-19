@@ -14,7 +14,7 @@ export const getCart = asyncHandler(async(req: Request, res: Response, next: Nex
       price: 1,
       comparePrice: 1,
       stock: 1,
-      specification: 1,
+      specifications: 1,
       code: 1,
       slug: 1,
       images: { $slice: 1 }
@@ -97,7 +97,7 @@ export const addToCart = asyncHandler(
         images: { $slice: 1},
         stock: 1,
         code: 1,
-        specification:1 
+        specifications:1 
       },
     });
 

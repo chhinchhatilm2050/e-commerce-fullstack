@@ -7,9 +7,11 @@
   import ProductFilterBar from '@/components/admin/productSession/ProductFilterBar.vue';
   import ProductPagination from '@/components/admin/productSession/ProductPagination.vue';
   import { useAlert } from '@/composables/useAlert';
+  import ProductCreateModal from '@/components/admin/productSession/createProduct/ProductCreateModal.vue';
 
   const productAdminStore = useProductAdminStore();
   const { showAlert } = useAlert();
+  const isCreateProductOpen = ref<boolean>(false);
 
   // Filter & Sort States
   const searchInput = ref('');
@@ -204,6 +206,7 @@
         </div>
 
         <button
+          @click="isCreateProductOpen = true"
           class="inline-flex items-center gap-1.5 bg-white/50 hover:bg-white/20 text-black/80 text-xs px-3 py-2 rounded-md font-medium transition shadow-sm cursor-pointer"
         >
           <i class="ri-add-circle-line text-sm leading-none"></i>
@@ -271,5 +274,10 @@
       @close="isRestoreModalOpen = false"
       @confirm="handleConfirmRestore"
     />
+
+    <ProductCreateModal 
+      :is-open="isCreateProductOpen"
+      @close="isCreateProductOpen = false"
+      />
   </div>
 </template>

@@ -78,12 +78,12 @@
       :disabled="disabled"
       :class="[
         disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer',
-        'w-[90px] flex items-center justify-between px-2.5 py-1 text-xs border border-gray-300 dark:border-surface-600 rounded-sm text-black/90 dark:text-white shadow-xs focus:outline-none transition'
+        'w-[90px] flex items-center justify-between px-2.5 py-0.5 text-xs border border-black/50 rounded-sm text-black/90  shadow-xs focus:outline-none transition'
       ]"
     >
       <span class="font-medium text-xs capitalize">{{ formatStatusLabel(modelValue) }}</span>
       <i 
-        class="ri-arrow-down-s-line text-black/60 dark:text-white/60 text-sm transition-transform duration-200"
+        class="ri-arrow-down-s-line text-black/60 text-sm transition-transform duration-200"
         :class="{ 'rotate-180': isOpen }"
       ></i>
     </button>
@@ -105,7 +105,7 @@
           v-for="status in options"
           :key="status.value"
           @click="selectStatus(status.value)"
-          class="w-full flex items-center justify-between px-3 py-1.5 text-xs text-black dark:text-white hover:bg-gray-100 dark:hover:bg-surface-600 transition cursor-pointer"
+          class="w-full flex items-center justify-between px-3 py-1.5 text-xs text-black dark:text-white hover:bg-black/20 dark:hover:bg-surface-600 transition cursor-pointer"
           :class="status.value.toLowerCase() === modelValue?.toLowerCase()
             ? 'bg-gray-100 dark:bg-surface-800 font-semibold'
             : ''"

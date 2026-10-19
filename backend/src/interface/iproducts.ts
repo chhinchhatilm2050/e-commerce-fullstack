@@ -18,7 +18,7 @@ export interface IProduct extends Document {
   ratingAvg: number;
   ratingCount: number;
   stock: number;
-  specification?: Record<string, unknown>;
+  specifications?: ISpecificationItem[];
   status: string;
   updatedBy?: Types.ObjectId | null;
   isDeleted: boolean;
@@ -57,6 +57,11 @@ export interface BaseFilter {
   [key: string]: unknown;
 }
 
+export interface ISpecificationItem {
+  key: string;
+  value: string;
+}
+
 export interface CreateProductBody {
   name: string;
   description: string;
@@ -64,5 +69,6 @@ export interface CreateProductBody {
   comparePrice?: number;  
   categoryId: Types.ObjectId;
   stock: number;          
-  specification?: string | undefined; 
+  specifications?: ISpecificationItem[]; 
+  status: string;
 }

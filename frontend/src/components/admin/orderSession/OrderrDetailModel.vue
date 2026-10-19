@@ -73,7 +73,7 @@
       @click.self="emit('close')"
     >
       <div 
-        class="bg-white animate-slide-up rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden border border-slate-200 animate-scale-up"
+        class="bg-white animate-slide-up rounded-xl shadow-xl w-full max-w-xl max-h-[90vh] flex flex-col overflow-hidden border border-slate-200 animate-scale-up"
       >
         <!-- Modal Header -->
         <div class="px-6 pt-7 py-4 border-b border-slate-200  flex items-center justify-between bg-[#cdd0d5]/70 ">

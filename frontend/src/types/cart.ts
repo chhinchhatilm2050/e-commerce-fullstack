@@ -1,5 +1,10 @@
 import type { IProductImage } from './product';
 
+export interface ISpecificationItem {
+  key: string;
+  value: string;
+}
+
 export interface ICartProduct {
   _id: string;
   name: string;
@@ -13,7 +18,7 @@ export interface ICartProduct {
   stock: number;
   slug: string,
   code: string;
-  specification?: Record<string, unknown>;
+  specifications?: ISpecificationItem[];
   status: 'draft' | 'active' | 'out_of_stock';
 };
 

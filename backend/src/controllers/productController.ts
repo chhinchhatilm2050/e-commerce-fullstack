@@ -5,7 +5,7 @@ import { getAllDescendantIds } from '../utils/categoryTree.js';
 import { uploadTopCloudinary } from '../utils/uploadTocloudinary.js';
 import { deleteFromCaloudinay } from '../utils/deleteFromCloudinary.js';
 import QueryBuilder from '../utils/queryBuilder.js';
-import type { CreateProductBody, IProduct, IProductImage } from '../interface/iproducts.js';
+import type { CreateProductBody, IProduct, IProductImage, ISpecificationItem } from '../interface/iproducts.js';
 import AppError from '../utils/appError.js';
 import { CategoryModel } from '../model/category.js';
 
@@ -34,7 +34,6 @@ export const getAllProducts = asyncHandler(
 
 export const getProductById = asyncHandler(async(req: Request<{ slug: string }>, res: Response, next: NextFunction): Promise<void> => {
   const { slug } = req.params;
-  console.log(slug);
 
   const product = await ProductModel.findOne({ slug }).populate('categoryId', 'name slug').lean();
   if(!product) {
@@ -89,12 +88,23 @@ export const getProductsByCategorySlug = asyncHandler(async (
 });
 
 export const createProduct = asyncHandler(async(req: Request<unknown, unknown, CreateProductBody>, res: Response, next: NextFunction): Promise<void> => {
-  const { name, description, price, comparePrice, categoryId, stock, specification } = req.body;
+  const { name, description, price, comparePrice, categoryId, stock, specifications, status } = req.body;
 
   const categoryExists = await CategoryModel.findById(categoryId);
   if (!categoryExists) {
     return next(new AppError('Category not found', 400));
   };
+
+  const rawSpec = (specifications) as string | ISpecificationItem[] | undefined;
+  let parsedSpecifications : ISpecificationItem[] = [];
+
+  if (rawSpec) {
+    try {
+      parsedSpecifications = typeof rawSpec === 'string' ? (JSON.parse(rawSpec) as ISpecificationItem[]) : rawSpec;
+    } catch {
+      return next(new AppError('Invalid JSON in specification field', 400));
+    }
+  }
 
   const files = req.files as Express.Multer.File[] | undefined;
   let images: IProductImage[] = [];
@@ -112,21 +122,15 @@ export const createProduct = asyncHandler(async(req: Request<unknown, unknown, C
     }));
   }
 
-  let parsedSpecification: string | undefined;
-  try {
-    parsedSpecification = specification ? JSON.parse(specification) as string : undefined;
-  } catch {
-    return next(new AppError('Invalid JSON in specification field', 400));
-  }
-
   const product = new ProductModel({
     name, 
     description,
     price,
     comparePrice,
+    status,
     categoryId,
     stock: stock || 0,
-    specification: parsedSpecification,
+    specifications: parsedSpecifications,
     images,
   });
 
@@ -135,7 +139,6 @@ export const createProduct = asyncHandler(async(req: Request<unknown, unknown, C
   res.status(201).json({ 
     success: true, 
     message: 'Product created successfully', 
-    data: { product } 
   });
 });
 
@@ -189,7 +192,7 @@ export const getProductByIdAdmin = asyncHandler(async (req: Request<{ id: string
 
 export const updateProduct = asyncHandler(async(req: Request<{ id: string }, unknown, IProduct>, res: Response, next: NextFunction): Promise<void> => {
   const { id } = req.params;
-  const { name, description, price, comparePrice, categoryId, stock, specification } = req.body;
+  const { name, description, price, comparePrice, categoryId, stock, specifications } = req.body;
 
   const product = await ProductModel.findById(id);
   if (!product) {
@@ -213,7 +216,7 @@ export const updateProduct = asyncHandler(async(req: Request<{ id: string }, unk
   if (price !== undefined) product.price = price;
   if (comparePrice !== undefined) product.comparePrice = comparePrice;
   if (stock !== undefined) product.stock = stock;
-  if (specification !== undefined) product.specification = specification;
+  if (specifications !== undefined) product.specifications = specifications;
   product.updatedBy = req.user?._id;
   await product.save();
 

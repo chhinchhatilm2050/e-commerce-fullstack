@@ -62,10 +62,13 @@ const productSchema = new mongoose.Schema<IProduct>({
     min: 0,
     default: 0
   },
-  specification: {
-    type: mongoose.Schema.Types.Mixed,
-    default: {},
-  },
+  specifications: [
+    {
+      key: { type: String, required: true },
+      value: { type: String, required: true },
+      _id: false 
+    }
+  ],
   status: {
     type: String,
     enum: ['draft', 'active', 'inactive', 'out_of_stock'],

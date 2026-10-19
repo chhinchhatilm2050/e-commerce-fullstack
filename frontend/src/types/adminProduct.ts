@@ -68,4 +68,21 @@ export interface IFormattedCategory {
   _id: string;
   name: string;
   level: number;
+};
+
+export interface ISpecificationItem {
+  key: string;
+  value: string;
+}
+
+export interface ICreateProduct {
+  name: string;
+  description?: string;
+  price: number; 
+  comparePrice?: number;
+  categoryId: string;
+  stock: number;
+  status: string;
+  specifications: ISpecificationItem[]; 
+  images: File[];
 }
