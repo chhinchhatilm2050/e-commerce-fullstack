@@ -54,7 +54,7 @@
         </div>
         <div class="container-xl relative py-12 lg:py-16 flex md:py-15 lg:flex-row items-center flex-col">
              <div class="max-w-3xl">
-                <h1 class="font-home text-3xl sm:text-4xl md:text-[43px] lg:text-7xl font-bold leading-tight mb-6 animate-slide-up bg-gradient-to-r from-surface-800 via-gray-500 to-surface-800 bg-clip-text text-transparent inline-block" >
+                <h1 class=" font-home text-3xl sm:text-4xl md:text-[43px] lg:text-7xl font-bold leading-tight mb-6 animate-slide-up bg-gradient-to-r from-surface-800 via-gray-500 to-surface-800 bg-clip-text text-transparent inline-block" >
                     {{ $t('home.hero_title') }}
                 </h1>
                                 <p class="hidden sm:block text-xl text-gray-800 mb-10 max-w-xl leading-relaxed animate-slide-up dark:text-gray-200" >
@@ -65,11 +65,13 @@
                     {{ $t('home.hero_cta') }}
                 </RouterLink>
                 </div>
-                <div class="hidden lg:flex gap-10 mt-14 animate-slide-up" >
-                    <div @click="goToCustomerService" v-for="fea in feature" :key="fea.icon" class="flex flex-col justify-center items-center cursor-pointer">
-                        <p class="font-display text-[20px] text-gray-70 dark:text-gray-200" v-html="fea.icon"></p>
-                        <p class="text-[17px] shadow-lg">{{ $t(fea.title) }}</p>
-                    </div>
+                <div  class="animate-bounce-sm">
+                  <div class="hidden lg:flex gap-10 mt-14 animate-slide-up" >
+                      <div @click="goToCustomerService" v-for="fea in feature" :key="fea.icon" class="flex flex-col justify-center items-center cursor-pointer">
+                          <p class="font-display text-[20px] text-gray-70 dark:text-gray-200" v-html="fea.icon"></p>
+                          <p class="text-[17px] shadow-lg">{{ $t(fea.title) }}</p>
+                      </div>
+                  </div>
                 </div>
             </div>
             <div class="">

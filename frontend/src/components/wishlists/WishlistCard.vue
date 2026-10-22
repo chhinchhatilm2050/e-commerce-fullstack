@@ -139,7 +139,7 @@
       <button
         @click="handleMoveToBag"
         :disabled="isMoving"
-        class="mt-4 text-sm flex items-center justify-center gap-2 sm:mt-auto w-full sm:w-32 bg-black/90 dark:border border-white/30 text-white py-2 rounded font-medium disabled:opacity-40 cursor-pointer"
+        class="mt-4 text-sm flex items-center justify-center gap-2 sm:mt-auto w-full sm:w-32 bg-black/90 dark:border border-white/30 text-white py-1 rounded font-medium disabled:opacity-40 cursor-pointer"
       >
         <svg
           v-if="isMoving"

@@ -196,7 +196,7 @@
                         <p v-if="errors.confirm" class="error-msg">{{ errors.confirm }}</p>
                     </div>
                     <label class="flex items-start gap-3 cursor-pointer">
-                        <input v-model="agreedToTerms" type="checkbox" class="mt-0.5 w-4 h-4 rounded accent-primary-600 " />
+                        <input v-model="agreedToTerms" type="checkbox" class="mt-0.5 w-3 h-3 rounded accent-black " />
                         <span class="text-sm text-gray-600">
                         {{$t('register.agree')}} <a href="#" class="text-black hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-400 font-medium">Terms of Service</a> {{$t('register.and')}}
                         <a href="#" class=" hover:text-gray-900 text-black dark:text-gray-300 dark:hover:text-gray-400 font-medium">Privacy Policy</a>

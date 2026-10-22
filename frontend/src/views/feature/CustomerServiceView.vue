@@ -48,10 +48,10 @@
           <h2 class="text-2xl font-bold text-black/80 dark:text-white/80">Free Shipping Policy</h2>
         </div>
 
-        <div class="bg-gradient-to-r from-black/70 via-black/30 to-black/70 text-white rounded-sm p-6 mb-6 shadow-md flex flex-col md:flex-row items-center justify-between">
+        <div class="bg-[#cdd0d5] text-black rounded-sm p-6 mb-6 shadow-md flex flex-col md:flex-row items-center justify-between">
           <div>
             <h3 class="text-lg font-semibold">Free Delivery on Orders Over $50</h3>
-            <p class="text-white/60 text-sm mt-1">Automatic threshold applied at checkout.</p>
+            <p class="text-black/60 text-sm mt-1">Automatic threshold applied at checkout.</p>
           </div>
           <button @click="goToShop" class="mt-4 md:mt-0 subCategory-button">
             Shop Now
@@ -93,8 +93,8 @@
           </div>
         </div>
 
-        <div class="flex flex-wrap gap-3 items-center text-sm font-medium text-slate-600 bg-gradient-to-r from-black/70 via-black/30 to-black/70 p-4 rounded-sm">
-          <span class="text-xs uppercase tracking-wider text-white/80  font-bold mr-2">Accepted Cards & Payments:</span>
+        <div class="flex flex-wrap gap-3 items-center text-sm font-medium text-slate-600 bg-[#cdd0d5] p-4 rounded-sm">
+          <span class="text-xs uppercase tracking-wider text-black  font-bold mr-2">Accepted Cards & Payments:</span>
           <span class="subCategory-button py-1">Visa</span>
           <span class="subCategory-button py-1">Mastercard</span>
           <span class="subCategory-button py-1">PayPal</span>
@@ -113,17 +113,17 @@
         </div>
 
         <div class="grid md:grid-cols-3 gap-4">
-          <div class="p-5 shadow-xl border border-slate-200 dark:border-white/30  rounded-sm">
-            <span class="inline-block w-6 h-6 rounded-full bg-black/80 dark:bg-white/80 text-white dark:text-black font-bold text-center text-xs leading-6 mb-2">1</span>
+          <div class="p-5 shadow-xl flex flex-col items-center border border-slate-200 dark:border-white/30  rounded-sm">
+            <span class=" inline-block w-6 h-6 rounded-full bg-black/80 dark:bg-white/80 text-white dark:text-black font-bold text-center text-xs leading-6 mb-2">1</span>
             <h4 class="font-semibold text-black/80 dark:text-white/80">Request Online</h4>
             <p class="text-black/60 dark:text-white/60 text-xs mt-1">Submit a return request from your account dashboard.</p>
           </div>
-          <div class="p-5 shadow-xl border border-slate-200 dark:border-white/30  rounded-sm">
+          <div class="p-5 shadow-xl flex flex-col items-center border border-slate-200 dark:border-white/30  rounded-sm">
             <span class="inline-block w-6 h-6 rounded-full bg-black/80 dark:bg-white/80 text-white dark:text-black font-bold text-center text-xs leading-6 mb-2">2</span>
             <h4 class="font-semibold text-black/80 dark:text-white/80">Print Free Label</h4>
             <p class="text-black/60 dark:text-white/60 text-xs mt-1">Attach the pre-paid shipping label to your package.</p>
           </div>
-          <div class="p-5 shadow-xl border border-slate-200 dark:border-white/30  rounded-sm">
+          <div class="p-5 shadow-xl flex flex-col items-center border border-slate-200 dark:border-white/30  rounded-sm">
             <span class="inline-block w-6 h-6 rounded-full bg-black/80 dark:bg-white/80 text-white dark:text-black font-bold text-center text-xs leading-6 mb-2">3</span>
             <h4 class="font-semibold text-black/80 dark:text-white/80">Get Refunded</h4>
             <p class="text-black/60 dark:text-white/60 text-xs mt-1">Drop off package; refunds issue within 3–5 days.</p>

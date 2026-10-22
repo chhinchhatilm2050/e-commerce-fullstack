@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import { ref, onMounted, watch, computed } from 'vue';
+  import { useRoute, useRouter } from 'vue-router';
   import { useProductAdminStore } from '@/stores/adminProduct';
   import ProductListTable from '@/components/admin/productSession/ProductListTable.vue';
   import DeleteConfirmModal from '@/components/admin/productSession/DeleteConfirmModal.vue';
@@ -8,19 +9,24 @@
   import ProductPagination from '@/components/admin/productSession/ProductPagination.vue';
   import { useAlert } from '@/composables/useAlert';
   import ProductCreateModal from '@/components/admin/productSession/createProduct/ProductCreateModal.vue';
+  import type { IProduct } from '@/types/adminProduct'; 
 
+  const route = useRoute();
+  const router = useRouter();
   const productAdminStore = useProductAdminStore();
   const { showAlert } = useAlert();
-  const isCreateProductOpen = ref<boolean>(false);
 
-  // Filter & Sort States
-  const searchInput = ref('');
-  const selectedCategory = ref('');
-  const selectedStatus = ref('');
-  const selectedStockStatus = ref('');
-  const selectedSort = ref('recommend');
-  const currentPage = ref(1);
-  const isTrashView = ref(false);
+  const isCreateProductOpen = ref<boolean>(false);
+  const productToEdit = ref<IProduct | null>(null); 
+
+  // Initialize Filter & Sort States directly from URL Query Parameters
+  const searchInput = ref(String(route.query.search || ''));
+  const selectedCategory = ref(String(route.query.categoryId || ''));
+  const selectedStatus = ref(String(route.query.status || ''));
+  const selectedStockStatus = ref(String(route.query.stockStatus || ''));
+  const selectedSort = ref(String(route.query.sort || 'recommend'));
+  const currentPage = ref(Number(route.query.page) || 1);
+  const isTrashView = ref(route.query.isTrash === 'true');
 
   // Modal States
   const isDeleteModalOpen = ref(false);
@@ -33,6 +39,22 @@
     return productAdminStore.flattenCategories(productAdminStore.categoryTree || []);
   });
 
+  // Sync state values into URL parameters
+  const updateQueryParams = () => {
+    const query: Record<string, string | number> = {};
+
+    if (currentPage.value > 1) query.page = currentPage.value;
+    if (searchInput.value.trim()) query.search = searchInput.value.trim();
+    if (selectedCategory.value) query.categoryId = selectedCategory.value;
+    if (!isTrashView.value && selectedStatus.value) query.status = selectedStatus.value;
+    if (!isTrashView.value && selectedStockStatus.value) query.stockStatus = selectedStockStatus.value;
+    if (selectedSort.value && selectedSort.value !== 'recommend') query.sort = selectedSort.value;
+    if (isTrashView.value) query.isTrash = 'true';
+
+    router.push({ query });
+  };
+
+  // Load products using current active filter state
   const loadProducts = async () => {
     const params: Record<string, number | string> = {
       page: currentPage.value.toString(),
@@ -51,6 +73,7 @@
 
   const handleFilterChange = () => {
     currentPage.value = 1;
+    updateQueryParams();
     loadProducts();
   };
 
@@ -65,12 +88,12 @@
 
   const handleSearch = () => {
     handleFilterChange();
-    searchInput.value = '';
   };
 
   const goToPreviousPage = () => {
     if (currentPage.value > 1) {
       currentPage.value--;
+      updateQueryParams();
       loadProducts();
     }
   };
@@ -78,13 +101,29 @@
   const goToNextPage = () => {
     if (currentPage.value < (productAdminStore.pagination?.totalPages || 1)) {
       currentPage.value++;
+      updateQueryParams();
       loadProducts();
     }
   };
 
+  // Watch dropdown filters and trash view toggle to trigger state sync
   watch([selectedCategory, selectedStatus, selectedStockStatus, selectedSort, isTrashView], () => {
     handleFilterChange();
   });
+
+  // Watch route query changes (handles browser Back/Forward navigation)
+  watch(
+    () => route.query,
+    (newQuery) => {
+      currentPage.value = Number(newQuery.page) || 1;
+      searchInput.value = String(newQuery.search || '');
+      selectedCategory.value = String(newQuery.categoryId || '');
+      selectedStatus.value = String(newQuery.status || '');
+      selectedStockStatus.value = String(newQuery.stockStatus || '');
+      selectedSort.value = String(newQuery.sort || 'recommend');
+      isTrashView.value = newQuery.isTrash === 'true';
+    },
+  );
 
   onMounted(async () => {
     await Promise.all([
@@ -92,6 +131,17 @@
       loadProducts(),
     ]);
   });
+
+  // Modal Triggers for Create & Edit
+  const handleOpenCreateModal = () => {
+    productToEdit.value = null;
+    isCreateProductOpen.value = true;
+  };
+
+  const handleOpenEditModal = (product: IProduct) => {
+    productToEdit.value = product;
+    isCreateProductOpen.value = true;
+  };
 
   const handleOpenDeleteModal = (payload: { id: string; name: string }) => {
     productToDelete.value = payload;
@@ -154,11 +204,10 @@
       showAlert(restult.message, { type: 'success' });
     }
   };
-
 </script>
 
 <template>
-  <div class="flex flex-col h-[calc(100vh-96px)] gap-4 ">
+  <div class="flex flex-col h-[calc(100vh-96px)] gap-4">
     <!-- Header Row -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#cdd0d5]/70 p-5 rounded-lg shrink-0 animate-slide-up">
       <div class="flex items-center gap-3">
@@ -206,7 +255,7 @@
         </div>
 
         <button
-          @click="isCreateProductOpen = true"
+          @click="handleOpenCreateModal"
           class="inline-flex items-center gap-1.5 bg-white/50 hover:bg-white/20 text-black/80 text-xs px-3 py-2 rounded-md font-medium transition shadow-sm cursor-pointer"
         >
           <i class="ri-add-circle-line text-sm leading-none"></i>
@@ -238,6 +287,7 @@
         :deleteLoading="productAdminStore.deleteLoading"
         :is-trash-view="isTrashView"
         class="flex-1 overflow-y-auto"
+        @edit="handleOpenEditModal"
         @delete="handleOpenDeleteModal"
         @restore="handleOpenRestoreModal"
         @permanent-delete="handleOpenDeletePermanentModal"
@@ -249,7 +299,7 @@
         :current-page="currentPage"
         :pagination="productAdminStore.pagination"
         :loading="productAdminStore.loading"
-        class="shrink-0 "
+        class="shrink-0"
         @prev="goToPreviousPage"
         @next="goToNextPage"
       />
@@ -277,7 +327,9 @@
 
     <ProductCreateModal 
       :is-open="isCreateProductOpen"
+      :product-to-edit="productToEdit"
       @close="isCreateProductOpen = false"
-      />
+      @saved="loadProducts"
+    />
   </div>
 </template>

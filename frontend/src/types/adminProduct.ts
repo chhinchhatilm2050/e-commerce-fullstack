@@ -86,3 +86,13 @@ export interface ICreateProduct {
   specifications: ISpecificationItem[]; 
   images: File[];
 }
+
+export interface IUpdateProduct {
+  name: string;
+  description?: string;
+  price: number; 
+  comparePrice?: number;
+  categoryId: string;
+  stock: number;
+  specifications: ISpecificationItem[]; 
+}
