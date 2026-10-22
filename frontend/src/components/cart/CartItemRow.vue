@@ -81,7 +81,7 @@
   });
 
   const toDropdownOptions = (values: string[]) => {
-    return values.map((v) => ({ value: v, label:  v.toUpperCase() }));
+    return values.map((v) => ({ value: v, label:  v }));
   };
 
   // Keep local dropdown value synchronized with item.selectedAttributes
@@ -138,23 +138,23 @@
         </p>
 
         <!-- Interactive Color & Size Dropdowns -->
-        <div v-if="specEntries.length" class="flex gap-2 mt-2 flex-wrap">
-          <div
-            v-for="[key, options] in specEntries"
-            :key="key"
-            class="flex flex-col gap-1 min-w-[90px] flex-1"
-          >
-            <label class="text-xs text-black/70 dark:text-white/70 capitalize">
-              {{ specLabels[key] ?? key }}
-            </label>
-            <BaseDropdown
-              class="uppercase"
-              :model-value="selected[key]"
-              :options="toDropdownOptions(options)"
-              @update:model-value="(val: string) => handleSelectChange(key, val)"
-            />
-          </div>
-        </div>
+  <div v-if="specEntries.length" class="grid grid-cols-2 gap-3 mt-2 w-full max-w-[240px]">
+    <div
+      v-for="[key, options] in specEntries"
+      :key="key"
+      class="flex flex-col gap-1 min-w-0"
+    >
+      <label class="text-xs text-black/70 dark:text-white/70 capitalize">
+        {{ specLabels[key] ?? key }}
+      </label>
+      <BaseDropdown
+        class="capitalize"
+        :model-value="selected[key]"
+        :options="toDropdownOptions(options)"
+        @update:model-value="(val: string) => handleSelectChange(key, val)"
+      />
+    </div>
+  </div>
       </div>
 
       <!-- Quantity Adjuster & Pricing -->

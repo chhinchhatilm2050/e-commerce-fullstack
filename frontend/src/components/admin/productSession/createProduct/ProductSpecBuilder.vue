@@ -24,8 +24,6 @@
     // Option A: Overwrite empty array OR append preset items
     const existing = specifications.value.filter((s) => s.key.trim() || s.value.trim());
     const combined = [...existing, ...presetSpecs];
-  
-    // Cap at max 10 specifications
     specifications.value = combined.slice(0, 10);
   };
 </script>
@@ -34,7 +32,7 @@
   <div class="space-y-3">
     <!-- Header Controls -->
     <div class="flex items-center justify-between">
-      <span class="text-sm font-medium">
+      <span class="text-sm text-black font-medium">
         Specifications ({{ specifications.length }}/10)
       </span>
       <div class="flex items-center gap-3">
@@ -52,9 +50,9 @@
           type="button"
           @click="addSpec"
           :disabled="specifications.length >= 10"
-          class="text-xs font-semibold text-black dark:text-white hover:underline cursor-pointer disabled:opacity-40"
+          class="text-xs font-semibold text-black  cursor-pointer disabled:opacity-40"
         >
-          + Add spec
+          +<span class="hover:underline"> Add spec</span>
         </button>
       </div>
     </div>
@@ -67,24 +65,23 @@
     >
       <input
         v-model="spec.key"
-        placeholder="Key (e.g. Size)"[cite: 14]
-        class="flex-1 px-3 py-2 border rounded-sm text-sm"
+        placeholder="Key (e.g. Size)"
+        class="flex-1 product-input"
       />
       <input
         v-model="spec.value"
-        placeholder="Value (e.g. S, M, L)"[cite: 14]
-        class="flex-1 px-3 py-2 border rounded-sm text-sm"
+        placeholder="Value (e.g. S, M, L)"
+        class="flex-1 product-input"
       />
       <button
         type="button"
         @click="removeSpec(index)"
-        class="text-red-500 hover:text-red-700"
+        class="text-red-500 hover:text-red-700 text-sm border border-black/30 px-2 py-1 rounded-sm cursor-pointer"
       >
         <i class="ri-delete-bin-line"></i>
       </button>
     </div>
 
-    <!-- Suggestions Modal -->
     <ProductSpecSuggestionsModal
       v-model="isSuggestionsOpen"
       @apply-preset="applyPresetSpecs"

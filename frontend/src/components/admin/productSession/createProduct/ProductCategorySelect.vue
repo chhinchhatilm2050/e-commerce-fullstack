@@ -58,7 +58,7 @@
     return flattenCategories(tree);
   });
 
-  // Selected Category Label
+  // Selected Category Label (Strips indentation prefixes when displaying selected label in trigger)
   const selectedCategoryName = computed(() => {
     if (!model.value) return props.placeholder;
     const found = formattedCategories.value.find((cat) => cat._id === model.value);
@@ -95,7 +95,7 @@
 
 <template>
   <div ref="dropdownRef" class="relative w-full z-50 text-xs font-sans">
-    <label class="block label dark:text-black/80 ">
+    <label class="block label dark:text-black/80">
       Category <span class="text-red-600">*</span>
     </label>
 
@@ -134,14 +134,16 @@
           :key="cat._id"
           type="button"
           @click="selectCategory(cat._id)"
-          class="w-full flex items-center cursor-pointer justify-between px-3.5 py-2 text-left hover:bg-black/10  transition-colors"
+          class="w-full flex items-center cursor-pointer justify-between px-3.5 py-2 text-left hover:bg-black/10 transition-colors"
+          :style="{ paddingLeft: cat.level > 0 ? `${cat.level * 1.25 + 0.875}rem` : '0.875rem' }"
           :class="[
             { 'bg-gray-100 text-black font-semibold': model === cat._id },
-            cat.level > 0 ? 'pl-6 text-black ' : 'font-semibold text-black/80 '
+            cat.level === 0 ? 'font-semibold text-black/90' : 'text-black/80'
           ]"
         >
-          <span class="truncate">
-            <template v-if="cat.level > 0">↳ </template>{{ cat.name }}
+          <span class="truncate flex items-center gap-1">
+            <span v-if="cat.level > 0" class="text-black font-mono">•</span>
+            {{ cat.name }}
           </span>
           <i v-if="model === cat._id" class="ri-check-line text-black text-sm"></i>
         </button>

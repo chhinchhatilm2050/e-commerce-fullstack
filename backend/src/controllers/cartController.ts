@@ -137,7 +137,7 @@ export const updateCartItem = asyncHandler(
     await cart.save();
     await cart.populate({
       path: 'items.productId',
-      select: 'name price images stock specification',
+      select: 'name price images stock specifications',
   
     });
 

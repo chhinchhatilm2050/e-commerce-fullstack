@@ -15,6 +15,7 @@
     (e: 'status-change', payload: { id: string; status: 'draft' | 'active' | 'out_of_stock' }): void;
     (e: 'restore', product: { id: string; name: string }): void;
     (e: 'permanentDelete', product: { id: string; name: string }): void;
+    (e: 'edit', product: IProduct): void; 
   }>();
 
   const productStatusOptions = [
@@ -147,13 +148,17 @@
             </template>
 
             <template v-else>
-              <router-link
-                :to="`/admin/products/edit/${product._id}`"
+              <!-- Edit Button Emits Product for Modal -->
+              <button
+                type="button"
+                @click="emit('edit', product)"
                 title="Edit Product"
                 class="p-1.5 hover:text-black/70 text-black/90 transition cursor-pointer inline-block"
               >
                 <i class="ri-edit-line text-base"></i>
-              </router-link>
+              </button>
+
+              <!-- Move to Trash Button -->
               <button
                 @click="emit('delete', { id: product._id, name: product.name })"
                 title="Move to Trash"
