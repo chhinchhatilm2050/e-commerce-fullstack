@@ -12,4 +12,10 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  server: {
+    allowedHosts: [
+      '.ngrok-free.dev', // Allows all subdomains under ngrok-free.dev
+      '.ngrok-free.app',
+    ],
+  },
 });

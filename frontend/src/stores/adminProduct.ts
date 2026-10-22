@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import api from '@/composables/useFetch'; 
-import type { IProduct, ICategory, IPagination, IDeleteProductResponse, ICategoryNode, IFormattedCategory, ICreateProduct } from '@/types/adminProduct';
+import type { IProduct, ICategory, IPagination, IDeleteProductResponse, ICategoryNode, IFormattedCategory, ICreateProduct, IUpdateProduct } from '@/types/adminProduct';
 import type { IProductListResponse } from '@/types/product';
 import axios from 'axios';
 
@@ -12,6 +12,7 @@ export const useProductAdminStore = defineStore('adminProduct', () => {
   const deleteLoading = ref<boolean>(false);
   const statusLoading = ref<boolean>(false);
   const createProductLoading = ref<boolean>(false);
+  const updateProductLoading = ref<boolean>(false);
   const error = ref<string | null>(null);
   const categoryTree = ref<ICategoryNode[]>([]);
   const pagination = ref<IPagination | null>(null);
@@ -111,19 +112,23 @@ export const useProductAdminStore = defineStore('adminProduct', () => {
   // Flatten helper to add visual depth prefixes
   const flattenCategories = (nodes: ICategoryNode[], level = 0): IFormattedCategory[] => {
     let result: IFormattedCategory[] = [];
-    
+
     for (const node of nodes) {
-      const prefix = '↳ '.repeat(level);
+      // Adds non-breaking spaces for depth, plus a single arrow
+      const indent = '\u00A0\u00A0\u00A0\u00A0'.repeat(level > 0 ? level - 1 : 0);
+      const prefix = level > 0 ? `${indent}•  ` : '';
+
       result.push({
         _id: node._id,
         name: level > 0 ? `${prefix}${node.name}` : node.name,
         level,
       });
-      
+
       if (node.children && node.children.length > 0) {
         result = result.concat(flattenCategories(node.children, level + 1));
       }
     }
+
     return result;
   };
 
@@ -137,7 +142,7 @@ export const useProductAdminStore = defineStore('adminProduct', () => {
     } catch (err) {
       const message = axios.isAxiosError(err) ? (err.response?.data.message ?? 'Verification failed.') : 'An unexpected error occurred.';
       error.value = message;
-      throw err;
+      return { success: false, message };
     } finally {
       loading.value = false;
     }
@@ -153,7 +158,7 @@ export const useProductAdminStore = defineStore('adminProduct', () => {
     } catch (err) {
       const message = axios.isAxiosError(err) ? (err.response?.data.message ?? 'Verification failed.') : 'An unexpected error occurred.';
       error.value = message;
-      throw err;
+      return { success: false, message };
     } finally {
       deleteLoading.value = false;
     }
@@ -185,9 +190,56 @@ export const useProductAdminStore = defineStore('adminProduct', () => {
     } catch (err) {
       const message = axios.isAxiosError(err) ? (err.response?.data.message ?? 'Create Product fail.') : 'An unexpected error occurred.';
       error.value = message;
-      throw err;
+      return { success: false, message };
     } finally {
       createProductLoading.value = false;
+    }
+  };
+
+  const updateProduct = async(id: string, payload: IUpdateProduct) => {
+    updateProductLoading.value = true;
+    error.value = null;
+    try {
+      const { data } = await api.put<{ message: string, success: boolean }>(`/admin/products/${id}`, payload);
+      return { message: data.message, success: data.success };
+    } catch (err) {
+      const message = axios.isAxiosError(err) ? (err.response?.data.message ?? 'Update Product fail.') : 'An unexpected error occurred.';
+      error.value = message;
+      return { success: false, message };
+    } finally {
+      updateProductLoading.value = false;
+    }
+  };
+
+  const uploadProductImages = async (id: string, files: File[]) => {
+    loading.value = true;
+    error.value = null;
+    const formData = new FormData();
+    files.forEach((file) => formData.append('images', file));
+    try {
+      const { data } = await api.post<{message: string, success: boolean}>(`/admin/products/${id}/images`, formData);
+      return { message: data.message, success: data.success };
+    } catch (err) {
+      const message = axios.isAxiosError(err) ? (err.response?.data.message ?? 'Fail to upload image.') : 'An unexpected error occurred.';
+      error.value = message;
+      return { success: false, message };
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  const removeProductImage = async(id: string, publicId: string) => {
+    loading.value = true;
+    error.value = null;
+    try {
+      const { data } = await api.delete<{message: string, success: boolean}>(`/admin/products/${id}/image`, { data: { publicId } });
+      return { message: data.message, success: data.success };
+    } catch (err) {
+      const message = axios.isAxiosError(err) ? (err.response?.data.message ?? 'Fail to upload image.') : 'An unexpected error occurred.';
+      error.value = message;
+      return { success: false, message };
+    } finally {
+      loading.value = false;
     }
   };
 
@@ -200,6 +252,7 @@ export const useProductAdminStore = defineStore('adminProduct', () => {
     deleteLoading,
     categoryTree,
     createProductLoading,
+    updateProductLoading,
     clearCache,
     fetchProductsAdmin,
     deleteProduct,
@@ -209,5 +262,8 @@ export const useProductAdminStore = defineStore('adminProduct', () => {
     restoreProduct,
     deleteProductPermanently,
     crateProduct,
+    updateProduct,
+    uploadProductImages,
+    removeProductImage,
   };
 });

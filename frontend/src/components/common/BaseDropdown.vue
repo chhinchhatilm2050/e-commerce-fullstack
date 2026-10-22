@@ -48,42 +48,42 @@
   onClickOutside(dropdownRef, () => (isOpen.value = false));
 </script>
 
+<!-- BaseDropdown.vue template snippet -->
 <template>
   <div class="relative w-full" ref="dropdownRef">
     <button 
       type="button" 
       @click="isOpen = !isOpen"
-      class="w-full min-w-[163px] flex justify-between items-center text-black/80 px-2 py-2 rounded-sm border text-xs transition-all cursor-pointer duration-200 input"
-      :class="isOpen ? 'ring-1 ring-black/20 bg-white dark:bg-surface-800' : 'ring-black/20'"
+      class="w-full flex justify-between items-center text-black/80 px-2.5 py-1.5 rounded-sm border text-xs transition-all cursor-pointer duration-200 input bg-white dark:bg-surface-800 border-gray-200 dark:border-gray-700"
+      :class="isOpen ? 'ring-1 ring-black/20' : ''"
     >
-      <span :class="selectedOption ? 'text-gray-900 dark:text-gray-100 font-medium capitalize' : 'text-gray-400 dark:text-white/50'">
+      <span class="truncate capitalize pr-1" :class="selectedOption ? 'text-gray-900 dark:text-gray-100 font-medium' : 'text-gray-400 dark:text-white/50'">
         {{ selectedLabel }}
       </span>
       <i 
-        class="ri-arrow-down-s-line text-gray-400 transition-transform duration-200"
+        class="ri-arrow-down-s-line text-gray-400 transition-transform duration-200 shrink-0"
         :class="isOpen ? 'rotate-180' : ''"
       ></i>
     </button>
 
-    <div name="dropdown">
+    <!-- Ensure absolute positioning and z-index -->
+    <div v-if="isOpen" class="absolute left-0 top-full z-50 w-full mt-1">
       <ul
-        v-if="isOpen"
-        class="absolute z-50 w-full min-w-[163px] mt-1 max-h-60 overflow-y-auto bg-white dark:bg-surface-800 border border-gray-200 dark:border-gray-700 rounded-sm shadow-lg"
+        class="w-full max-h-48 overflow-y-auto bg-white dark:bg-surface-800 border border-gray-200 dark:border-gray-700 rounded-sm shadow-lg"
       >
         <li
           v-for="option in options"
           :key="option.value"
           @click="select(option)"
-          class="flex items-center justify-between px-3 py-2 text-xs cursor-pointer transition-colors duration-150"
+          class="flex items-center justify-between px-2.5 py-1.5 text-xs cursor-pointer transition-colors duration-150"
           :class="option.value === modelValue
             ? 'bg-gray-100 text-gray-900 font-semibold dark:bg-surface-700 dark:text-white'
             : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-surface-700'"
         >
-          <span>{{ option.label }}</span>
-          <i v-if="option.value === modelValue" class="ri-check-line text-black dark:text-white"></i>
+          <span class="truncate pr-1">{{ option.label }}</span>
+          <i v-if="option.value === modelValue" class="ri-check-line text-black dark:text-white shrink-0"></i>
         </li>
       </ul>
     </div>
   </div>
 </template>
-

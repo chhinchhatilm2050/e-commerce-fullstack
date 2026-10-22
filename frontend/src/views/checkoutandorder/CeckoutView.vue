@@ -387,6 +387,7 @@
           >
             {{ orderStore.loading ? 'Processing Order...' : 'Proceed to Checkout' }}
           </button>
+          <img class="w-full h-60" src="https://i.pinimg.com/1200x/4b/c9/94/4bc994720fb628c185f5cdfbbbf0b456.jpg" alt="">
         </div>
       </div>
     </div>

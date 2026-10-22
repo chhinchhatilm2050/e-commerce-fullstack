@@ -1,28 +1,33 @@
 <script setup lang="ts">
-  import { ref } from 'vue';
+  import { ref, computed, watch, toRef } from 'vue';
   import { useProductAdminStore } from '@/stores/adminProduct';
   import ProductCategorySelect from './ProductCategorySelect.vue';
   import ProductImagePicker from './ProductImagePicker.vue';
   import ProductSpecBuilder from './ProductSpecBuilder.vue';
-  import type { ISpecificationItem } from '@/types/product.ts';
+  import type { ISpecificationItem, IProduct } from '@/types/product.ts';
   import { useAlert } from '@/composables/useAlert.ts';
+  import { useProductFormValidation } from '@/composables/useProductFormValidation';
 
-  withDefaults(
+  const props = withDefaults(
     defineProps<{
       isOpen?: boolean;
+      productToEdit?: IProduct | null;
     }>(),
     {
       isOpen: false,
+      productToEdit: null,
     },
   );
 
   const emit = defineEmits<{
     (e: 'close'): void;
-    (e: 'created'): void;
+    (e: 'saved'): void;
   }>();
 
   const productAdminStore = useProductAdminStore();
   const { showAlert } = useAlert();
+
+  const isEditMode = computed(() => !!props.productToEdit?._id);
 
   // Form Data State
   const name = ref('');
@@ -37,56 +42,71 @@
   const specifications = ref<ISpecificationItem[]>([{ key: '', value: '' }]);
   const selectedFiles = ref<File[]>([]);
   const previewUrls = ref<string[]>([]);
+  const existingImages = ref<{ _id?: string; url: string; publicId: string }[]>([]);
+  const isSubmitting = ref(false);
 
-  // UI & Validation State
-  const errorMessage = ref<string | null>(null);
-  const fieldErrors = ref<Record<string, string>>({});
+  // Plug in Validation Composable
+  const {
+    fieldErrors,
+    errorMessage,
+    isFormDirty,
+    validateForm,
+    clearErrors,
+    captureInitialSnapshot,
+  } = useProductFormValidation({
+    name,
+    categoryId,
+    price,
+    comparePrice,
+    stock,
+    description,
+    specifications,
+    selectedFiles,
+    isEditMode,
+    productToEdit: toRef(props, 'productToEdit'),
+  });
 
-  // Form Validation
-  const validateForm = (): boolean => {
-    fieldErrors.value = {};
-    errorMessage.value = null;
+  // Watch for changes in productToEdit or isOpen
+  watch(
+    () => [props.isOpen, props.productToEdit],
+    () => {
+      if (!props.isOpen) return;
 
-    if (!name.value.trim()) {
-      fieldErrors.value.name = 'Product name is required.';
-    }
-    if (!categoryId.value) {
-      fieldErrors.value.categoryId = 'Please select a category.';
-    }
-    if (price.value === '' || Number(price.value) <= 0) {
-      fieldErrors.value.price = 'Price must be greater than 0.';
-    }
-    if (
-      comparePrice.value !== '' &&
-      price.value !== '' &&
-      Number(comparePrice.value) <= Number(price.value)
-    ) {
-      fieldErrors.value.comparePrice =
-        'Compare price must be greater than regular price.';
-    }
-    if (
-      stock.value === '' ||
-      Number(stock.value) < 0 ||
-      !Number.isInteger(Number(stock.value))
-    ) {
-      fieldErrors.value.stock = 'Stock must be a non-negative integer.';
-    }
-    if (selectedFiles.value.length === 0) {
-      fieldErrors.value.images = 'Please select at least one product image.';
-    }
+      if (props.productToEdit) {
+        const p = props.productToEdit;
+        name.value = p.name || '';
+        categoryId.value = typeof p.categoryId === 'string' ? p.categoryId : p.categoryId?._id || '';
+        price.value = p.price ?? '';
+        comparePrice.value = p.comparePrice ?? '';
+        stock.value = p.stock ?? '';
+        description.value = p.description || '';
+        isPublished.value = p.status === 'active';
+        
+        specifications.value = p.specifications && p.specifications.length > 0 
+          ? JSON.parse(JSON.stringify(p.specifications))
+          : [{ key: '', value: '' }];
 
-    for (let i = 0; i < specifications.value.length; i++) {
-      const spec = specifications.value[i];
-      if ((spec?.key && !spec?.value) || (!spec?.key && spec?.value)) {
-        fieldErrors.value.specs = `Specification row #${i + 1} must have both key and value.`;
-        break;
+        existingImages.value = p.images ? [...p.images] : [];
+        selectedFiles.value = [];
+        previewUrls.value.forEach((url) => URL.revokeObjectURL(url));
+        previewUrls.value = [];
+
+        captureInitialSnapshot();
+      } else {
+        resetForm();
       }
+    },
+    { immediate: true },
+  );
+
+  const isSubmitDisabled = computed(() => {
+    if (productAdminStore.createProductLoading || productAdminStore.updateProductLoading || isSubmitting.value) {
+      return true;
     }
+    if (isEditMode.value && !isFormDirty.value) return true;
+    return false;
+  });
 
-    return Object.keys(fieldErrors.value).length === 0;
-  };
-
-  // Reset Form State
   const resetForm = () => {
     name.value = '';
     categoryId.value = '';
@@ -99,8 +119,8 @@
     previewUrls.value.forEach((url) => URL.revokeObjectURL(url));
     selectedFiles.value = [];
     previewUrls.value = [];
-    errorMessage.value = null;
-    fieldErrors.value = {};
+    existingImages.value = [];
+    clearErrors();
   };
 
   const handleClose = () => {
@@ -108,34 +128,80 @@
     emit('close');
   };
 
-  const handleSubmit = async() => {
+  const handleRemoveExistingImage = async (publicId: string) => {
+    if (!props.productToEdit?._id) return;
+    
+    if (existingImages.value.length <= 1 && selectedFiles.value.length === 0) {
+      showAlert('Product must have at least one image', { type: 'error' });
+      return;
+    }
+
+    const respone = await productAdminStore.removeProductImage(props.productToEdit._id, publicId);
+    if (respone.success) {
+      existingImages.value = existingImages.value.filter((img) => img.publicId !== publicId);
+      captureInitialSnapshot();
+      showAlert(respone.message, { type: 'success' });
+    } else {
+      showAlert(respone.message || 'Failed to remove image', { type: 'error' });
+    }
+  };
+
+  const handleSubmit = async () => {
     if (!validateForm()) return;
-    errorMessage.value = null;
+    isSubmitting.value = true;
 
     const cleanSpecs = specifications.value.filter(
       (s) => s.key.trim() !== '' && s.value.trim() !== '',
     );
 
-    const result = await productAdminStore.crateProduct({
-      name: name.value.trim(),
-      categoryId: categoryId.value,
-      price: Number(price.value), 
-      comparePrice: comparePrice.value !== '' ? Number(comparePrice.value) : undefined,
-      stock: Number(stock.value || 0),
-      description: description.value.trim(),
-      status: isPublished.value ? 'active' : 'draft',
-      specifications: cleanSpecs,
-      images: selectedFiles.value,
-    });
+    try {
+      if (isEditMode.value && props.productToEdit?._id) {
+        const productId = props.productToEdit._id;
 
-    if (result.success) {
-      emit('created');
-      handleClose();
-      showAlert(result.message, { type: 'success' });
-    } else {
-      emit('created');
-      handleClose();
-      showAlert(result.message, { type: 'error' });
+        const updateRes = await productAdminStore.updateProduct(productId, {
+          name: name.value.trim(),
+          categoryId: categoryId.value,
+          price: Number(price.value),
+          comparePrice: comparePrice.value !== '' ? Number(comparePrice.value) : undefined,
+          stock: Number(stock.value || 0),
+          description: description.value.trim(),
+          specifications: cleanSpecs,
+        });
+
+        if (selectedFiles.value.length > 0) {
+          await productAdminStore.uploadProductImages(productId, selectedFiles.value);
+        }
+
+        if (updateRes.success) {
+          showAlert(updateRes.message || 'Product updated successfully', { type: 'success' });
+          emit('saved');
+          handleClose();
+        } else {
+          showAlert(updateRes.message || 'Failed to update product', { type: 'error' });
+        }
+      } else {
+        const result = await productAdminStore.crateProduct({
+          name: name.value.trim(),
+          categoryId: categoryId.value,
+          price: Number(price.value),
+          comparePrice: comparePrice.value !== '' ? Number(comparePrice.value) : undefined,
+          stock: Number(stock.value || 0),
+          description: description.value.trim(),
+          status: isPublished.value ? 'active' : 'draft',
+          specifications: cleanSpecs,
+          images: selectedFiles.value,
+        });
+
+        if (result.success) {
+          emit('saved');
+          handleClose();
+          showAlert(result.message, { type: 'success' });
+        } else {
+          showAlert(result.message, { type: 'error' });
+        }
+      }
+    } finally {
+      isSubmitting.value = false;
     }
   };
 
@@ -161,7 +227,7 @@
         class="flex items-center justify-between p-6 pt-4 pb-4 border-b border-gray-200 bg-[#cdd0d5]/70 dark:border-surface-600 shrink-0"
       >
         <h3 class="text-base font-semibold text-gray-900">
-          Add New Product
+          {{ isEditMode ? 'Edit Product' : 'Add New Product' }}
         </h3>
         <button
           type="button"
@@ -263,7 +329,31 @@
           />
         </div>
 
-        <!-- Component: Product Image Picker -->
+        <!-- Existing Images Display (EDIT MODE ONLY) -->
+        <div v-if="isEditMode && existingImages.length > 0">
+          <label class="block label dark:text-black/80 mb-1">
+            Current Images
+          </label>
+          <div class="flex flex-wrap gap-3">
+            <div
+              v-for="img in existingImages"
+              :key="img.publicId"
+              class="relative w-18 h-18 rounded border overflow-hidden group bg-gray-100"
+            >
+              <img :src="img.url" class="w-full h-full object-cover" />
+              <button
+                type="button"
+                @click="handleRemoveExistingImage(img.publicId)"
+                class="absolute top-1 right-1 text-red-600 hover:text-red-700 bg-white/80 dark:bg-surface-800/80 hover:bg-red-500/10 hover:backdrop-blur-xs w-6 h-6 rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer shadow-xs border border-red-200/50 dark:border-red-500/30"
+                title="Remove image from DB"
+              >
+                <i class="ri-delete-bin-line text-sm"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Component: Product Image Picker (Adds New Files) -->
         <ProductImagePicker
           v-model:files="selectedFiles"
           v-model:previews="previewUrls"
@@ -290,8 +380,8 @@
           :error="fieldErrors.specs"
         />
 
-        <!-- Immediate Publish Checkbox -->
-        <div class="flex items-center gap-2 pt-2 dark:border-surface-600">
+        <!-- Immediate Publish Checkbox (Only shown on creation) -->
+        <div v-if="!isEditMode" class="flex items-center gap-2 pt-2 dark:border-surface-600">
           <input
             id="publishCheck"
             v-model="isPublished"
@@ -321,30 +411,31 @@
         <button
           type="button"
           @click="handleSubmit"
-          :disabled="productAdminStore.createProductLoading"
-          class="flex items-center gap-1.5 w-full subCategory-button cursor-pointer px-4 py-1.5 text-sm"
+          :disabled="isSubmitDisabled"
+          class="flex items-center justify-center gap-1.5 w-full subCategory-button px-4 py-1.5 text-sm transition-all duration-150"
+          :class="isSubmitDisabled ? 'opacity-50 cursor-not-allowed ' : 'cursor-pointer'"
         >
-         <svg
-              v-if="productAdminStore.createProductLoading"
-              class="w-4 h-4 animate-spin"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                class="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                stroke-width="4"
-              />
-              <path
-                class="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-              />
-            </svg>
-          {{ productAdminStore.createProductLoading ? 'Creating...' : 'Create Product' }}
+          <svg
+            v-if="productAdminStore.createProductLoading || productAdminStore.updateProductLoading || isSubmitting"
+            class="w-4 h-4 animate-spin"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              class="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              stroke-width="4"
+            />
+            <path
+              class="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+            />
+          </svg>
+          {{ isEditMode ? 'Update Product' : 'Create Product' }}
         </button>
       </div>
     </div>
