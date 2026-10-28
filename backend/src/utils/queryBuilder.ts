@@ -5,8 +5,12 @@ interface QueryBuilderOptions {
   isAdmin?: boolean;
   defaultStatus?: string;
   allowedStatuses?: string[];
-  
+  searchFields?: string[];   
+  allowedFilters?: string[];
 }
+
+const escapeRegex = (s: string): string =>
+  s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 const SORT_MAP: Record<string, string> = {
   recommend: '-ratingAvg -ratingCount',
@@ -88,14 +92,14 @@ class QueryBuilder<T extends Document> {
 
     // 2. Dynamic key assignments (casts 'true'/'false' strings to boolean and converts ObjectIds)
     Object.keys(queryString).forEach((key) => {
-      if (!RESERVED_QUERY_KEYS.includes(key) && key !== 'isDeleted') {
-        let val = queryString[key];
-        if (val === 'true') val = true;
-        if (val === 'false') val = false;
-        filter[key] = QueryBuilder.castObjectId(val);
-      }
-    });
+      if (RESERVED_QUERY_KEYS.includes(key) || key === 'isDeleted') return;
+      if (options.allowedFilters && !options.allowedFilters.includes(key)) return; // NEW
 
+      let val = queryString[key];
+      if (val === 'true') val = true;
+      if (val === 'false') val = false;
+      filter[key] = QueryBuilder.castObjectId(val);
+    });
     // 3. Dynamic status logic (works for products or categories)
     const requestedStatus = queryString.status as string;
 
@@ -144,15 +148,16 @@ class QueryBuilder<T extends Document> {
     this.query = this.query.find(baseFilter as Record<string, unknown>);
 
     // 4. Handle Search (Code, SKU, Name, Brand)
-    if (search && typeof search === 'string') {
-      const searchRegex = new RegExp(search.trim(), 'i');
+    if (search && typeof search === 'string' && search.trim()) {
+      const fields = this.options.searchFields ?? ['code', 'name'];
+      const words = search.trim().split(/\s+/).map(escapeRegex);
 
       this.query = this.query.find({
-        $or: [
-          { code: searchRegex },        // Match product code
-          { name: searchRegex },        // Match name    
-        ],
-      });
+        $and: words.map((word) => {
+          const regex = new RegExp(word, 'i');
+          return { $or: fields.map((f) => ({ [f]: regex })) };
+        }),
+      } as Record<string, unknown>);
     }
 
     // 5. Apply inventory/stock condition
