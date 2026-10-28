@@ -151,7 +151,7 @@ const userSchema = new mongoose.Schema<IUser>(
 userSchema.index(
   { createdAt: 1 },
   {
-    expireAfterSeconds: 120,
+    expireAfterSeconds: 300,
     partialFilterExpression: { isVerified: false },
   },
 );
@@ -195,6 +195,8 @@ userSchema.methods.isMatch = async function (
 // });
 
 userSchema.pre(/^find/, function (this: Query<unknown, IUser>): void {
+  if (this.getOptions().includeDeleted) return;
+
   const filter = this.getFilter();
   if (filter.isDeleted === undefined) {
     this.where({ isDeleted: false });

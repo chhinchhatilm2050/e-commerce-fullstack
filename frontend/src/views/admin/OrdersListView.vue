@@ -108,6 +108,9 @@
 
   // Handlers
   const handleRefresh = async () => {
+    selectedStatusFilter.value = 'All Status';
+    selectedPaymentStatusFilter.value = 'All Payment';
+    searchInput.value = '';
     await loadOrders();
     await orderStore.getOrderStatus();
   };
@@ -158,16 +161,17 @@
   <div class="flex flex-col h-[calc(100vh-96px)] gap-3 font-sans text-slate-800 dark:text-slate-100">
     <!-- Header Row -->
     <div class="bg-[#cdd0d5]/70 text-black p-4 rounded-lg shadow-2xs flex items-center justify-between shrink-0 animate-slide-up">
-      <div>
-        <h1 class="text-xl font-bold text-black/80 flex items-center gap-2">
-          <i :class="isTrashView ? 'ri-delete-bin-line' : 'ri-shopping-bag-3-line'" class="text-black/80"></i>
-          {{ isTrashView ? 'Trash Orders' : 'Orders' }}
-        </h1>
-        <p class="text-xs text-black/80 mt-0.5">
-          {{ isTrashView ? 'Review deleted customer orders' : 'Review and manage all orders placed by customers' }}
-        </p>
+      <div class="flex items-center gap-3">
+        <div class="p-2 bg-white text-black/80 shadow-lg rounded-lg">
+          <i :class="isTrashView ? 'ri-delete-bin-line ' : 'ri-shopping-bag-3-line '" class="text-black/80 text-2xl"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold text-black/80">
+            {{ isTrashView ? 'Trash Orders' : 'Orders' }}
+          </h1>
+          <p class="text-xs text-black/80 mt-0.5">{{ isTrashView ? 'Review deleted customer orders' : 'Review and manage all orders placed by customers' }}</p>
+        </div>
       </div>
-
       <div class="flex items-center gap-2">
         <!-- Refresh Button -->
         <button

@@ -12,7 +12,8 @@
     "lint:fix": "eslint src/**/*.ts --fix",
     "seed:admin": "tsx src/scripts/seedAdmin.ts",
     "seed": "tsx src/scripts/seedProducts.ts",
-    "seed:clean": "tsx src/scripts/cleanProducts.ts"
+    "seed:clean": "tsx src/scripts/cleanProducts.ts",
+    "seed:users": "tsx src/scripts/seedUser.ts"
   },
   "keywords": [],
   "author": "",

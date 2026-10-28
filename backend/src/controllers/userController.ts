@@ -5,6 +5,7 @@ import { uploadTopCloudinary } from '../utils/uploadTocloudinary.js';
 import { deleteFromCaloudinay } from '../utils/deleteFromCloudinary.js';
 import AppError from '../utils/appError.js';
 import type { IUser, UpdateUserBody, UpdateMe } from '../interface/iuser.js';
+import QueryBuilder from '../utils/queryBuilder.js';
 
 export const promoteToAdmin = asyncHandler(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -45,32 +46,34 @@ export const getSingleUser = asyncHandler(
 
 export const getAllUser = asyncHandler(
   async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
-    const page = Number(req.query.page) || 1;
-    const limit = Number(req.query.limit) || 10;
-    const skip = (page - 1) * limit;
+    const { fields: _fields, ...query } = req.query;
 
-    const [users, total] = await Promise.all([
-      UserModel.find({ isDeleted: false })
-        .select(
-          '-password -refreshToken -isDeleted -deletedAt -deletedBy -updatedBy',
-        )
-        .skip(skip)
-        .limit(limit)
-        .sort({ createdAt: -1 }),
-      UserModel.countDocuments({ isDeleted: false }),
-    ]);
+    const { data, pagination } = await new QueryBuilder(
+      UserModel,
+      { ...query},
+      {
+        isAdmin: true,
+        allowedStatuses: ['active', 'inactive', 'blocked'],
+        searchFields: ['firstName', 'lastName', 'email', 'phoneNumber'],
+        allowedFilters: ['role', 'gender', 'isVerified'],
+      },
+    )
+      .filter()
+      .sort()
+      .paginate()
+      .select('-password,-refreshToken,-deletedAt,-deletedBy,-updatedBy')
+      .execute();
+
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
 
     res.status(200).json({
       success: true,
-      result: users.length,
-      total,
-      page,
-      totalPages: Math.ceil(total / limit),
-      data: { users },
+      result: data.length,
+      data: { users: data },
+      pagination,
     });
   },
 );
-
 export const updateUser = asyncHandler(
   async (
     req: Request<{ id: string }, unknown, UpdateUserBody>,
@@ -113,6 +116,40 @@ export const updateUser = asyncHandler(
     });
   },
 );
+
+export const updateUserStatus = asyncHandler(
+  async (
+    req: Request< {id: string}, unknown, { status: 'active' | 'inactive' | 'blocked'} >,res: Response,next: NextFunction,): Promise<void> => {
+    const { id } = req.params;
+    const { status } = req.body;
+    console.log(status);
+
+    if (!['active', 'inactive', 'blocked'].includes(status)) {
+      return next(new AppError('Invalid status value', 400));
+    }
+
+    const users = await UserModel.findById(id);
+    if (!users) {
+      return next(new AppError('User not found', 404));
+    }
+
+    const user = await UserModel.findByIdAndUpdate(
+      id,
+      { status, updatedBy: req.user?._id },
+      { new: true , runValidators: true }
+    );
+
+    if (!user) {
+      return next(new AppError('User not found', 404));
+    }
+    res.status(200).json({
+      success: true,
+      message: 'User status updated successfully',
+      data: { user },
+    });
+  },
+);
+
 export const updateMe = asyncHandler(
   async (
     req: Request<{ id: string }, unknown, UpdateMe>,
@@ -162,14 +199,11 @@ export const updateMe = asyncHandler(
 );
 
 export const deleteUser = asyncHandler(
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const user = req.resource as IUser;
+  async (req: Request<{ id: string }>, res: Response, _next: NextFunction): Promise<void> => {
+    const { id } = req.params;
+    const user = await UserModel.findById(id);
 
-    if (!req.user?._id) {
-      return next(new AppError('Unauthorized', 401));
-    }
-
-    await user.softDelete(req.user._id);
+    await user?.softDelete(req.user!._id);
 
     res.status(200).json({
       success: true,
@@ -237,3 +271,29 @@ export const uploadAvatar = asyncHandler(
     });
   }
 );
+
+export const getUserStats = asyncHandler(async (req: Request, res: Response, _next: NextFunction) => {
+  const stats = await UserModel.aggregate([
+    {
+      $match: {
+        isDeleted: false,
+      },
+    },
+    {
+      $group: {
+        _id: '$status',
+        count: { $sum: 1 },
+      },
+    },
+  ]);
+
+  const total = await UserModel.countDocuments({ isDeleted: false });
+
+  res.status(200).json({
+    success: true,
+    data: {
+      total,
+      stats,
+    },
+  });
+});

@@ -30,3 +30,28 @@ export interface UpdateProfilePayload {
   data: { user: User};
   message: string
 }
+
+export interface IPagination {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+}
+
+export interface IUserResponse {
+  success: boolean;
+  data:{
+    users: User[];
+  } 
+  pagination: IPagination;
+}
+
+export interface IUserStats {
+  total: number;
+  blocked: number;
+  active: number;
+  inactive: number;
+}
+
