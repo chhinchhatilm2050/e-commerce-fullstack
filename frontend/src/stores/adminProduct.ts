@@ -54,7 +54,6 @@ export const useProductAdminStore = defineStore('adminProduct', () => {
     pageCache.value.clear();
   };
 
-  // Soft Delete Product (DELETE /api/admin/products/:id)
   const deleteProduct = async (id: string) => {
     deleteLoading.value = true;
     error.value = null;

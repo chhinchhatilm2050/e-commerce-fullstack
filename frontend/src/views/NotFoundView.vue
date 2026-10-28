@@ -24,7 +24,7 @@
 
     <router-link
       to="/"
-      class="subCategory-button"
+      class="subCategory-button rounded-full"
     >
       Go to Home Page
     </router-link>

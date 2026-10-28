@@ -15,7 +15,7 @@
 <template>
   <div class="flex flex-col sm:flex-row items-center justify-between gap-3 px-5 py-3 bg-[#cdd0d5]/80 text-xs text-black/80 font-sans">
     <div>
-      <span>Showing Page </span>
+      <span>Showing Page</span>
       <span class="font-bold">{{ currentPage }}</span>
       <span> of </span>
       <span class="font-bold">{{ pagination?.totalPages || 1 }}</span>

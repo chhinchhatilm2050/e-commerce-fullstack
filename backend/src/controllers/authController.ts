@@ -106,16 +106,21 @@ export const register = asyncHandler(async (req: Request<unknown, unknown, Creat
 export const login = asyncHandler(
   async (req: Request<unknown, unknown, LoginBody>, res: Response, next: NextFunction) => {
     const { email, password } = req.body;
-    const user = await UserModel.findOne({ email }).select(
-      '+password email role isVerified status',
-    );
+    const user = await UserModel.findOne({ email })
+      .setOptions({ includeDeleted: true })
+      .select('+password email role isVerified status isDeleted');
     if (!user || !(await user.isMatch(password))) {
       return next(new AppError('Email or password incorrect', 400));
+    };
+
+    if (user.isDeleted) {
+      return next(new AppError('This account has been deleted. Please contact Admin for restore your account.', 403));
     }
+
     if (!user.isVerified) {
       return next(new AppError('Please verify your email before login.', 403));
     }
-    console.log((user.status as string) === 'blocked');
+
     if ((user.status as string) === 'blocked') {
       return next(new AppError('Your account has been blocked', 403));
     }

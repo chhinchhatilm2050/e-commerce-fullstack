@@ -194,6 +194,7 @@
   };
 
   const handleRefresh = async () => {
+    resetFilters();
     productAdminStore.clearCache();
     await loadProducts();
   };

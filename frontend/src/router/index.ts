@@ -20,8 +20,7 @@ const DashboardOverview = () => import('@/views/admin/DashboardOverview.vue');
 const OrdersListView = () => import('@/views/admin/OrdersListView.vue');
 const ProductsListView = () => import('@/views/admin/ProductsListView.vue');
 const CategoriesListView = () => import('@/views/admin/CategoriesListView.vue');
-const CustomerListView = () => import('@/views/admin/CustomersListView.vue');
-
+const UserListView = () => import('@/views/admin/UsersListView.vue');
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
@@ -150,7 +149,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'customers',
         name: 'admin-customers',
-        component: CustomerListView,
+        component: UserListView,
         meta: { title: 'Customer List' },
       },
     ],

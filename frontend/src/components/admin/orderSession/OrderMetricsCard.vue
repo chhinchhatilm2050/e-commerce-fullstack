@@ -6,6 +6,7 @@
 
   const getStatusBadgeStyle = (status: string) => {
     switch (status) {
+    case 'Canceled Orders' : return 'border-slate-700 text-red-700 bg-white/50 border-slate-200 shadow-lg';
     default:
       return 'border-slate-700 text-slate-700 bg-white/50 border-slate-200 shadow-lg';
     }
