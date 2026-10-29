@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getAllUser, getSingleUser, updateUser, deleteUser, promoteToAdmin, getMe, updateMe, uploadAvatar, updateUserStatus, getUserStats } from '../controllers/userController.js';
+import { getAllUser, getSingleUser, updateUser, deleteUser, promoteToAdmin, getMe, updateMe, uploadAvatar, updateUserStatus, getUserStats, deleteUserPermanently, restoreUser } from '../controllers/userController.js';
 import { authenticate } from '../middlewares/authenticate.js';
 import { authorize } from '../middlewares/authorize.js';
 import { updateUserValidation, userIdValidation} from '../validators/userValidators.js';
@@ -16,6 +16,8 @@ userRouter.get('/:id', userIdValidation, authorize('admin'), getSingleUser);
 userRouter.patch('/:id', updateUserValidation, authorize('admin'), updateUser);
 userRouter.patch('/:id/promote', userIdValidation, authorize('admin'), promoteToAdmin);
 userRouter.patch('/:id/status', userIdValidation, authorize('admin'), updateUserStatus);
-userRouter.delete('/:id', authorize('admin'), deleteUser);
+userRouter.delete('/:id', userIdValidation, authorize('admin'), deleteUser);
+userRouter.delete('/:id/permanent', userIdValidation, authorize('admin'), deleteUserPermanently);
+userRouter.patch('/:id/restore', userIdValidation, authorize('admin'), restoreUser);
 
 export default userRouter;

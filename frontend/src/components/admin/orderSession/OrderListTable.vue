@@ -126,6 +126,7 @@
 
         <!-- Action Icons -->
         <td class="py-3 px-5 text-right">
+      
           <div class="flex items-center justify-end gap-2 text-slate-400">
             <!-- View Button -->
             <button

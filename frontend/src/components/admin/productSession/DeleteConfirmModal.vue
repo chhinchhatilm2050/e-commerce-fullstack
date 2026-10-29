@@ -6,6 +6,7 @@
     deleteLoading?: boolean;
     description?: string;
     icon?: string;
+    button: string;
   }>();
 
   const emit = defineEmits(['close', 'confirm']);
@@ -51,7 +52,7 @@
           class="flex items-center gap-1.5 w-full subCategory-button px-4 py-1.5 text-sm"
         >
           <i v-if="deleteLoading" class="ri-loader-4-line animate-spin"></i>
-          <span>{{ deleteLoading ? 'Deleting...' : 'Delete Product' }}</span>
+          <span>{{ deleteLoading ? 'Deleting...' : button }}</span>
         </button>
       </div>
     </div>
