@@ -4,6 +4,7 @@
     isOpen: boolean;
     itemName?: string;
     loading?: boolean;
+    title: string;
   }>();
 
   const handleBackdropClick = (event: MouseEvent) => {
@@ -30,7 +31,7 @@
           <i class="ri-restart-line text-xl"></i>
         </div>
         <div>
-          <h3 class="text-xl font-bold text-slate-900 dark:text-white">Restore Product</h3>
+          <h3 class="text-xl font-bold text-slate-900 dark:text-white">{{title}}</h3>
         </div>
       </div>
     
@@ -52,7 +53,7 @@
           class="flex items-center gap-1.5 w-full subCategory-button px-4 py-1.5 text-sm disabled:opacity-50"
         >
           <i v-if="loading" class="ri-loader-4-line animate-spin text-xs"></i>
-          <span>{{ loading ? 'Restoring...' : 'Restore Product' }}</span>
+          <span>{{ loading ? 'Restoring...' : title }}</span>
         </button>
       </div>
     </div>

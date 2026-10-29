@@ -394,6 +394,19 @@ export const getOrderDetail = asyncHandler(async (req: Request<{ id: string }>, 
   });
 });
 
+export const getOrderDetailAdmin = asyncHandler(async (req: Request<{ id: string }>, res: Response, next: NextFunction): Promise<void> => {
+  const order = await OrderModel.findById(req.params.id).lean();
+
+  if (!order) {
+    return next(new AppError('Order not found', 404));
+  }
+
+  res.status(200).json({
+    success: true,
+    data: { order },
+  });
+});
+
 // 5. ADMIN: GET ALL ORDERS WITH FILTERS
 
 export const getAllOrdersAdmin = asyncHandler(async (req: Request<unknown, unknown, unknown, IOrderQuery>,res: Response,_next: NextFunction): Promise<void> => {
