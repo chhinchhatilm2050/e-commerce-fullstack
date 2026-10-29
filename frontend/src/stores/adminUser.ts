@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import type { IUserResponse, IUserStats, User } from '@/types/user';
+import type { IUserResponse, IUserStats, SingleUserResponse, User } from '@/types/user';
 import api from '@/composables/useFetch.js'; 
 import axios from 'axios';
 import type { IPagination } from '@/types/user';
@@ -9,8 +9,12 @@ export const useUserAdminStore = defineStore('adminUser', () => {
   const loading = ref<boolean>(false);
   const updateUserLoading = ref<boolean>(false);
   const statusCardLoading = ref<boolean>(false);
+  const deleteUserLoading = ref<boolean>(false);
+  const userDetailLoading = ref<boolean>(false);
+  const promoteUserLoading = ref<boolean>(false);
   const error = ref<string | null>(null);
   const users = ref<User[]>([]);
+  const selectedUser = ref<User | null>(null);
   const pageCache = ref<Map<string, { data: User[]; pagination: IPagination }>>(new Map());
   const pagination = ref<IPagination | null>(null);
   const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -69,6 +73,67 @@ export const useUserAdminStore = defineStore('adminUser', () => {
     }
   };
 
+  const fetchUserById = async (id: string): Promise<boolean> => {
+    userDetailLoading.value = true;
+    error.value = null;
+    selectedUser.value = null;
+
+    try {
+      const { data } = await api.get<SingleUserResponse>(`/users/${id}`);
+      selectedUser.value = data.data.user;
+      return true;
+    } catch (err) {
+      const message = axios.isAxiosError(err)
+        ? (err.response?.data?.message ?? 'Failed to fetch user details.')
+        : 'An unexpected error occurred.';
+      error.value = message;
+      return false;
+    } finally {
+      userDetailLoading.value = false;
+    }
+  };
+
+  const promoteUser = async (id: string) => {
+    promoteUserLoading.value = true;
+    error.value = null;
+    try {
+      const { data } = await api.patch<{ success: boolean; data: { user: User } }>(`/users/${id}/promote`);
+      await delay(300);
+
+      if (!data.success) {
+        const message = 'Failed to promote user to admin.';
+        error.value = message;
+        return { success: false, message };
+      }
+
+      if (selectedUser.value?._id === id) {
+        selectedUser.value.role = data.data.user.role;
+      }
+
+      const listedUser = users.value.find((user) => user._id === id);
+      if (listedUser) {
+        listedUser.role = data.data.user.role;
+      }
+
+      for (const cachedPage of pageCache.value.values()) {
+        const cachedUser = cachedPage.data.find((user) => user._id === id);
+        if (cachedUser) {
+          cachedUser.role = data.data.user.role;
+        }
+      }
+
+      return { success: true, message: 'User promoted to admin successfully.' };
+    } catch (err) {
+      const message = axios.isAxiosError(err)
+        ? (err.response?.data?.message ?? 'Failed to promote user to admin.')
+        : 'An unexpected error occurred.';
+      error.value = message;
+      return { success: false, message };
+    } finally {
+      promoteUserLoading.value = false;
+    }
+  };
+
   const userStatus = ref<IUserStats>({
     total: 0,
     active: 0,
@@ -110,6 +175,59 @@ export const useUserAdminStore = defineStore('adminUser', () => {
     }
   };
 
+  const deleteUser = async (id: string) => {
+    deleteUserLoading.value = true;
+    error.value = null;
+    try {
+      const { data } = await api.delete<{message: string, success: boolean}>(`/users/${id}`);
+      await delay(300);
+      
+      users.value = users.value.filter((u) => u._id !== id);
+      
+      clearCache();
+      
+      return { message: data.message, success: data.success };
+    } catch (err) {
+      const message = axios.isAxiosError(err) ? (err.response?.data.message ?? 'Verification failed.') : 'An unexpected error occurred.';
+      error.value = message;
+      return { success: false, message };
+    } finally {
+      deleteUserLoading.value = false;
+    }
+  };
+
+  const deleteUserPermanently = async (id: string) => {
+    deleteUserLoading.value = true;
+    error.value = null;
+    try {
+      const { data } = await api.delete<{ message: string, success: boolean }>(`/users/${id}/permanent`);
+      await delay(300);
+      return { message: data.message, success: data.success };
+    } catch (err) {
+      const message = axios.isAxiosError(err) ? (err.response?.data.message ?? 'Verification failed.') : 'An unexpected error occurred.';
+      error.value = message;
+      return { success: false, message };
+    } finally {
+      deleteUserLoading.value = false;
+    }
+  };
+
+  const restoreUser = async (id: string) => {
+    loading.value = true;
+    error.value = null;
+    try {
+      const { data } = await api.patch<{ message: string, success: boolean }>(`/users/${id}/restore`);
+      await delay(300);
+      return { message: data.message, success: data.success };
+    } catch (err) {
+      const message = axios.isAxiosError(err) ? (err.response?.data.message ?? 'Verification failed.') : 'An unexpected error occurred.';
+      error.value = message;
+      return { success: false, message };
+    } finally {
+      loading.value = false;
+    }
+  };
+
   const clearCache = () => {
     pageCache.value.clear();
     pagination.value = null;
@@ -119,14 +237,22 @@ export const useUserAdminStore = defineStore('adminUser', () => {
     loading,
     statusCardLoading,
     updateUserLoading,
+    deleteUserLoading,
+    userDetailLoading,
+    promoteUserLoading,
     error,
     users,
+    selectedUser,
     pagination,
     userStatus,
     fetchUsers,
     updateUserStatus,
+    fetchUserById,
+    promoteUser,
     getUserStatus,
+    deleteUser,
+    deleteUserPermanently,
+    restoreUser,
     clearCache,
   };
 });
-

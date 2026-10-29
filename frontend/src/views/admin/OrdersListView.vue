@@ -116,7 +116,12 @@
   };
 
   const handleOpenModal = async (id: { id: string }) => {
-    await orderStore.fetchOrderDetail(id.id);
+    const success = await orderStore.fetchAdminOrderDetail(id.id);
+    if (!success) {
+      showAlert(orderStore.error ?? 'Failed to fetch order detail', { type: 'error' });
+      return;
+    }
+
     selectedOrder.value = orderStore.currentOrder;
     isModalOpen.value = true;
   };

@@ -5,12 +5,15 @@
   defineProps<{
     customers: User[];
     loading: boolean;
+    isTrashView?: boolean;
   }>();
 
   const emit = defineEmits<{
     (e: 'status-change', payload: { id: string; status: 'active' | 'inactive' | 'blocked' }): void;
     (e: 'view', customer: User): void;
     (e: 'delete', payload: { id: string; name: string }): void;
+    (e: 'restore', customer: { id: string; name: string }): void;
+    (e: 'permanentDelete', customer: { id: string; name: string }): void;
   }>();
 
   const statusOptions = [
@@ -132,7 +135,23 @@
 
           <!-- Actions Column -->
           <td class="py-4 px-5 text-right">
-            <div class="flex items-center justify-end gap-1.5">
+             <template v-if="isTrashView" class="flex items-center justify-end gap-1.5">
+              <button
+                @click="emit('restore', { id: customer._id, name: `${customer.firstName} ${customer.lastName}` })"
+                title="Restore Product"
+                class="p-1.5 hover:text-black/70 text-black/90 cursor-pointer"
+              >
+                <i class="ri-restart-line text-base"></i>
+              </button>
+              <button
+                @click="emit('permanentDelete', { id: customer._id,  name: `${customer.firstName} ${customer.lastName}`})"
+                title="Delete Permanently"
+                class="p-1.5 ml-1 text-red-600 transition cursor-pointer"
+              >
+                <i class="ri-delete-bin-2-line text-base"></i>
+              </button>
+            </template>
+            <template v-else class="flex items-center justify-end gap-1.5">
               <button
                 type="button"
                 @click="emit('view', customer)"
@@ -143,13 +162,17 @@
               </button>
               <button
                 type="button"
+                :disabled="customer.role == 'admin'"
                 @click="emit('delete', { id: customer._id, name: `${customer.firstName} ${customer.lastName}` })"
-                title="Delete User"
-                class="p-1.5 ml-1 text-red-600 hover:text-red-700 transition cursor-pointer inline-block"
+                :title="customer.role == 'admin' ? 'Admin users cannot be deleted' : 'Delete User'"
+                class="p-1.5 ml-1 text-red-600 hover:text-red-700 transition cursor-pointer inline-block
+                disabled:text-red-600 disabled:hover:text-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <i class="ri-delete-bin-line text-base"></i>
               </button>
-            </div>
+             
+            </template>
+      
           </td>
         </tr>
       </tbody>

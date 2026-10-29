@@ -297,3 +297,30 @@ export const getUserStats = asyncHandler(async (req: Request, res: Response, _ne
     },
   });
 });
+
+export const deleteUserPermanently = asyncHandler(async(req: Request<{ id: string }>, res: Response, next: NextFunction): Promise<void> => {
+  const { id } = req.params;
+  const user = await UserModel.findOneAndDelete({ _id: id, isDeleted: true });
+  if (!user) {
+    return next(new AppError('User not found', 404));
+  }
+  res.status(200).json({ success: true, message: 'User deleted permanently' });
+});
+
+export const restoreUser = asyncHandler(async(req: Request<{ id: string }>, res: Response, next: NextFunction): Promise<void> => {
+  const { id } = req.params;
+
+  const user = await UserModel.findOne({ _id: id, isDeleted: true });
+  if (!user) {
+    return next(new AppError('User product not found', 404));
+  };
+
+  user.isDeleted = false;
+  user.deletedAt = null;
+  user.deletedBy = null;
+  user.updatedBy = req.user?._id;
+
+  await user.save();
+
+  res.status(200).json({ success: true, message: 'User restored successfully' });
+});

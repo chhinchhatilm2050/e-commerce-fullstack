@@ -9,9 +9,17 @@ export interface User {
   status: 'active' | 'inactive' | 'blocked';
   avatar: string;
   createdAt: string;
+  isVerified?: boolean;
   orderCount: number;
   totalSpent: number;
   phoneNumber: string;
+}
+
+export interface SingleUserResponse {
+  success: boolean;
+  data: {
+    user: User;
+  };
 }
 
 export interface MeResponse {
@@ -54,4 +62,3 @@ export interface IUserStats {
   active: number;
   inactive: number;
 }
-

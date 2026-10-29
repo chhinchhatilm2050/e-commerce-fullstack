@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { createOrder, checkOrderStatus, createPaywayPurchase, getMyOrder, 
-  getOrderDetail, cancelOrder, getAllOrdersAdmin, updateOrderStatus, getOrderStats,
+  getOrderDetail, getOrderDetailAdmin, cancelOrder, getAllOrdersAdmin, updateOrderStatus, getOrderStats,
   deleteOrder} from '../controllers/orderController.js';
 import { authenticate } from '../middlewares/authenticate.js';
 import { authorize } from '../middlewares/authorize.js';
@@ -15,9 +15,9 @@ orderRouter.get('/my-orders', getMyOrder);
 orderRouter.get('/my-orders/:id',isMongoIdValidator, getOrderDetail);
 orderRouter.patch('/cancel/:id', isMongoIdValidator, cancelOrder);
 orderRouter.get('/admin/all', authorize('admin'), getAllOrdersAdmin);
+orderRouter.get('/admin/:id', isMongoIdValidator, authorize('admin'), getOrderDetailAdmin);
 orderRouter.patch('/status/:id', updateOrderStatusValidator, authorize('admin'), updateOrderStatus);
 orderRouter.delete('/:id', isMongoIdValidator, authorize('admin'), deleteOrder);
 orderRouter.get('/order-status', authorize('admin'), getOrderStats);
 
 export default orderRouter;
-

@@ -314,6 +314,7 @@
       :description="isDeleteModalOpen ? 'This action can be restored from the trash archive.' : 'This action cannot be restored.'"
       :icon="isDeleteModalOpen ? 'ri-delete-bin-line' : 'ri-delete-bin-2-line'"
       :title="isDeleteModalOpen ? 'Confirm Delete' : 'Confirm Permanent Delete'"
+      button="Delete Product"
       @close="isDeleteModalOpen = false, isDeletePermanentModalOpen = false"
       @confirm="isDeleteModalOpen ? handleConfirmDelete() : handlePermanentDelete()"
     />
@@ -324,6 +325,7 @@
       :loading="productAdminStore.loading"
       @close="isRestoreModalOpen = false"
       @confirm="handleConfirmRestore"
+      title="Restore Product"
     />
 
     <ProductCreateModal 

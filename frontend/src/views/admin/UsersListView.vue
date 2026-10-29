@@ -6,14 +6,23 @@
   import userStatusCards from '@/components/admin/userSession/userStatusCards.vue';
   import { useUserAdminStore } from '@/stores/adminUser';
   import userPagination from '@/components/admin/userSession/userPagination.vue';
+  import DeleteConfirmModal from '@/components/admin/productSession/DeleteConfirmModal.vue';
+  import RestoreConfirmModel from '@/components/admin/productSession/RestoreConfirmModel.vue';
+  import userViewModel from '@/components/admin/userSession/userViewModel.vue';
 
   const { showAlert } = useAlert();
   const userAdminStore = useUserAdminStore();
 
-  const currentPage = ref(1);
-  const itemsPerPage = ref(10);
-  const searchInput = ref('');
-  const isTrashView = ref(false);
+  const currentPage = ref<number>(1);
+  const itemsPerPage = ref<number>(10);
+  const searchInput = ref<string>('');
+  const isTrashView = ref<boolean>(false);
+  const isDeleteModalOpen = ref<boolean>(false);
+  const isDeletePermanentModalOpen = ref<boolean>(false);
+  const isUserDetailsOpen = ref<boolean>(false);
+  const userToDelete = ref<{ id: string; name: string } | null>(null);
+  const selectedUser = ref<{ id: string; name: string } | null>(null);
+  const isRestoreModalOpeon = ref<boolean>(false);
 
   const tableContainerRef = ref<HTMLElement | null>(null);
   const selectedUsersFilter = ref<string>('All Status');
@@ -98,6 +107,68 @@
     { label: 'Inactive', value: 'inactive' },
     { label: 'Bloacked', value: 'blocked' },
   ];
+
+  const handleOpenDeleteModal = (payload: { id: string; name: string }) => {
+    userToDelete.value = payload;
+    isDeleteModalOpen.value = true;
+  };
+
+  const handleOpenUserDetails = async (user: { _id: string }) => {
+    isUserDetailsOpen.value = true;
+    await userAdminStore.fetchUserById(user._id);
+  };
+
+  const handlePromoteUser = async (id: string) => {
+    const result = await userAdminStore.promoteUser(id);
+    showAlert(result.message, { type: result.success ? 'success' : 'error' });
+    isUserDetailsOpen.value = false;
+    
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!userToDelete.value) return;
+    const result = await userAdminStore.deleteUser(userToDelete.value.id);
+    if (result?.success) {
+      showAlert(result.message, { type: 'success' });
+    }
+    isDeleteModalOpen.value = false;
+    userToDelete.value = null;
+    await loadUsers();
+  };
+
+  const handleOpenDeletePermanentModal = async (payload: { id: string; name: string }) => {
+    userToDelete.value = payload;
+    isDeletePermanentModalOpen.value = true;
+  };
+
+  const handlePermanentDelete = async () => {
+    if (!userToDelete.value) return;
+    const result = await userAdminStore.deleteUserPermanently(userToDelete.value.id);
+    if (result?.success) {
+      showAlert(result.message, { type: 'success' });
+    }
+    isDeletePermanentModalOpen.value = false;
+    userToDelete.value = null;
+    userAdminStore.clearCache();
+    await loadUsers();
+  };
+
+  const handleOpenRestoreModal = (payload: { id: string; name: string }) => {
+    selectedUser.value = payload;
+    isRestoreModalOpeon.value = true;
+  };
+
+  const handleConfirmRestore = async () => {
+    if (!selectedUser.value) return;
+    const result = await userAdminStore.restoreUser(selectedUser.value.id);
+    if (result?.success) {
+      showAlert(result.message, { type: 'success' });
+    }
+    isRestoreModalOpeon.value = false;
+    selectedUser.value = null;
+    userAdminStore.clearCache();
+    await loadUsers();
+  };
 </script>
 
 <template>
@@ -152,6 +223,33 @@
       </div>
     </div>
 
+    <RestoreConfirmModel 
+      title="Restore User"
+      :item-name="selectedUser?.name"
+      :is-open="isRestoreModalOpeon"
+      :loading="userAdminStore.loading"
+      @close="isRestoreModalOpeon = false"
+      @confirm="handleConfirmRestore"
+    />
+    <DeleteConfirmModal 
+      :is-open="isDeleteModalOpen || isDeletePermanentModalOpen"
+      :item-name="userToDelete?.name"
+      :delete-loading="userAdminStore.deleteUserLoading"
+      :description="isDeleteModalOpen ? 'This action can be restored from the trash archive.' : 'This action cannot be restored.'"
+      @close="isDeleteModalOpen = false, isDeletePermanentModalOpen = false"
+      button="Delete User"
+      @confirm="isDeleteModalOpen ? handleConfirmDelete() : handlePermanentDelete()"
+    />
+    <userViewModel
+      :is-open="isUserDetailsOpen"
+      :user="userAdminStore.selectedUser"
+      :loading="userAdminStore.userDetailLoading"
+      :promote-loading="userAdminStore.promoteUserLoading"
+      :error="userAdminStore.error"
+      @close="isUserDetailsOpen = false"
+      @promote="handlePromoteUser"
+    />
+
     <!-- 1. Stats Cards Component -->
     <userStatusCards :stats="userAdminStore.userStatus" :is-loading="userAdminStore.statusCardLoading"/>
 
@@ -172,6 +270,11 @@
           :customers="userAdminStore.users"
           :loading="userAdminStore.loading"
           @status-change="handleStatusChange"
+          @view="handleOpenUserDetails"
+          @delete="handleOpenDeleteModal"
+          @permanent-delete="handleOpenDeletePermanentModal"
+          @restore="handleOpenRestoreModal"
+          :is-trash-view="isTrashView"
         />
       </div>
       <userPagination 
@@ -185,4 +288,3 @@
     </div>
   </div>
 </template>
-

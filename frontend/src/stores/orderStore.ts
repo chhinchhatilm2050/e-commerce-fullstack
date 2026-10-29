@@ -82,21 +82,27 @@ export const useOrderStore = defineStore('order', () => {
     }
   };
 
-  const fetchOrderDetail = async (id: string) => {
+  const fetchOrderDetailFromEndpoint = async (endpoint: string): Promise<boolean> => {
     orderDetailLoading.value = true;
     error.value = null;
+    currentOrder.value = null;
     try {
-      const { data } = await api.get<IOrderDetailRes>(`/orders/my-orders/${id}`);
+      const { data } = await api.get<IOrderDetailRes>(endpoint);
       currentOrder.value = data.data.order;
+      return true;
     } catch (err) {
       const message = axios.isAxiosError(err)
         ? err.response?.data?.message ?? 'Failed to fetch order detail'
         : 'Failed to fetch order detail';
       error.value = message;
+      return false;
     } finally {
       orderDetailLoading.value = false;
     }
   };
+
+  const fetchOrderDetail = (id: string) => fetchOrderDetailFromEndpoint(`/orders/my-orders/${id}`);
+  const fetchAdminOrderDetail = (id: string) => fetchOrderDetailFromEndpoint(`/orders/admin/${id}`);
 
   const cancelOrder = async(id: string | null ): Promise<{success: boolean;
      message: string}> => {
@@ -247,6 +253,7 @@ export const useOrderStore = defineStore('order', () => {
     createPaywayPurchase,
     fetchMyorder,
     fetchOrderDetail,
+    fetchAdminOrderDetail,
     cancelOrder,
     fetchAllOrdersAdmin,
     updateOrderStatus,
@@ -254,4 +261,3 @@ export const useOrderStore = defineStore('order', () => {
     deleteOrder,
   };
 });
-
