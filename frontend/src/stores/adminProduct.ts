@@ -6,6 +6,8 @@ import type { IProductListResponse } from '@/types/product';
 import axios from 'axios';
 
 export const useProductAdminStore = defineStore('adminProduct', () => {
+  const productMetrics = ref({ total: 0, active: 0, inactive: 0, outOfStock: 0 });
+  const metricsLoading = ref(false);
   const products = ref<IProduct[]>([]);
   const categories = ref<ICategory[]>([]);
   const loading = ref<boolean>(false);
@@ -18,6 +20,24 @@ export const useProductAdminStore = defineStore('adminProduct', () => {
   const pagination = ref<IPagination | null>(null);
   const pageCache = ref<Map<string, { data: IProduct[]; pagination: IPagination }>>(new Map());
   const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  const fetchProductMetrics = async () => {
+    metricsLoading.value = true;
+    try {
+      const { data } = await api.get<{
+        success: boolean;
+        data: { total: number; active: number; inactive: number; outOfStock: number };
+      }>('/admin/products/metrics');
+      productMetrics.value = data.data;
+    } catch (err) {
+      const message = axios.isAxiosError(err)
+        ? err.response?.data.message ?? 'Failed to fetch product metrics.'
+        : 'An unexpected error occurred while fetching product metrics.';
+      error.value = message;
+    } finally {
+      metricsLoading.value = false;
+    }
+  };
   
   const fetchProductsAdmin = async (params: Record<string, number | string> = {}, forceRefresh = false) => {
     const cacheKey = JSON.stringify(params);
@@ -243,6 +263,8 @@ export const useProductAdminStore = defineStore('adminProduct', () => {
   };
 
   return {
+    productMetrics,
+    metricsLoading,
     products,
     loading,
     error,
@@ -253,6 +275,7 @@ export const useProductAdminStore = defineStore('adminProduct', () => {
     createProductLoading,
     updateProductLoading,
     clearCache,
+    fetchProductMetrics,
     fetchProductsAdmin,
     deleteProduct,
     updateProductStatus,

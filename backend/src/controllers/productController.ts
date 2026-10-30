@@ -181,6 +181,21 @@ export const getAllProductsAdmin = asyncHandler(
   }
 );
 
+export const getAdminProductMetrics = asyncHandler(async (_req: Request, res: Response): Promise<void> => {
+  const activeFilter = { isDeleted: false };
+  const [total, active, inactive, outOfStock] = await Promise.all([
+    ProductModel.countDocuments(activeFilter),
+    ProductModel.countDocuments({ ...activeFilter, status: 'active' }),
+    ProductModel.countDocuments({ ...activeFilter, status: 'inactive' }),
+    ProductModel.countDocuments({ ...activeFilter, status: 'out_of_stock' }),
+  ]);
+
+  res.status(200).json({
+    success: true,
+    data: { total, active, inactive, outOfStock },
+  });
+});
+
 export const getProductByIdAdmin = asyncHandler(async (req: Request<{ id: string }>,res: Response, next: NextFunction): Promise<void> => {
   const { id } = req.params;
   const product = await ProductModel.findById(id).populate('categoryId', 'name slug').lean();

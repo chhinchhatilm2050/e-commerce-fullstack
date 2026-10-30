@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { ref, computed, onMounted, watch } from 'vue';
+  import { ref, onMounted, watch } from 'vue';
   import OrderrDetailModel from '@/components/admin/orderSession/OrderrDetailModel.vue';
   import OrderMetricsCard from '@/components/admin/orderSession/OrderMetricsCard.vue';
   import OrderListTable from '@/components/admin/orderSession/OrderListTable.vue';
@@ -82,14 +82,14 @@
     loadOrders();
   });
 
-  const searchDisable = computed(() => searchInput.value.trim() === '');
-
   // Search Action
   const handleSearch = () => {
     activeSearchQuery.value = searchInput.value;
     currentPage.value = 1;
-    loadOrders();
-    searchInput.value = '';
+    if (searchInput.value !== '') {
+      loadOrders();
+      searchInput.value = '';
+    }
   };
 
   const goToPreviousPage = () => {
@@ -231,7 +231,6 @@
       v-model:selected-status-filter="selectedStatusFilter"
       :payment-status-option="paymentStatusOption"
       :order-status-option="orderStatusOption"
-      :search-disabled="searchDisable"
       @search="handleSearch"
     />
 
