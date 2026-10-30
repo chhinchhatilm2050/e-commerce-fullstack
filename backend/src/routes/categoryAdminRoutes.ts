@@ -7,6 +7,7 @@ import {
   updateCategory,
   updateCategoryStatus,
   deleteCategory,
+  deleteCategoryPermanently,
   moveCategory,
   getDeleteCategories,
   restoreCategory
@@ -37,6 +38,7 @@ categoryAdminRouter.get('/:id', categoryIdValidator, getCategoryById);
 categoryAdminRouter.put('/:id', upload.single('image'), updateCategoryValidator, updateCategory);
 categoryAdminRouter.patch('/:id/move', moveCategoryValidator, moveCategory);
 categoryAdminRouter.patch('/:id/status', updateCategoryStatusValidator, updateCategoryStatus);
+categoryAdminRouter.delete('/:id/permanent', deleteCategoryValidator, deleteCategoryPermanently);
 categoryAdminRouter.delete('/:id', deleteCategoryValidator, deleteCategory);
 
 export default categoryAdminRouter;

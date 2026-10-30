@@ -15,10 +15,12 @@
       modelValue?: string;
       options: DropdownOption[];
       placeholder?: string;
+      disabled?: boolean;
     }>(),
     {
       modelValue: '',
       placeholder: 'Select an option',
+      disabled: false,
     },
   );
 
@@ -41,6 +43,7 @@
   });
 
   const select = (option: DropdownOption) => {
+    if (props.disabled) return;
     emit('update:modelValue', option.value);
     isOpen.value = false;
   };
@@ -54,7 +57,8 @@
     <button 
       type="button" 
       @click="isOpen = !isOpen"
-      class="w-full flex justify-between items-center text-black/80 px-2.5 py-1.5 rounded-sm border text-xs transition-all cursor-pointer duration-200 input bg-white dark:bg-surface-800 border-gray-200 dark:border-gray-700"
+      :disabled="disabled"
+      class="w-full flex justify-between items-center text-black/80 px-2.5 py-1.5 rounded-sm border text-xs transition-all cursor-pointer duration-200 input bg-white dark:bg-surface-800 border-gray-200 dark:border-gray-700 disabled:cursor-not-allowed disabled:opacity-50"
       :class="isOpen ? 'ring-1 ring-black/20' : ''"
     >
       <span class="truncate capitalize pr-1" :class="selectedOption ? 'text-gray-900 dark:text-gray-100 font-medium' : 'text-gray-400 dark:text-white/50'">
@@ -67,7 +71,7 @@
     </button>
 
     <!-- Ensure absolute positioning and z-index -->
-    <div v-if="isOpen" class="absolute left-0 top-full z-50 w-full mt-1">
+    <div v-if="isOpen && !disabled" class="absolute left-0 top-full z-50 w-full mt-1">
       <ul
         class="w-full max-h-48 overflow-y-auto bg-white dark:bg-surface-800 border border-gray-200 dark:border-gray-700 rounded-sm shadow-lg"
       >

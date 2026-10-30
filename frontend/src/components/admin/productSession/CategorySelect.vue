@@ -11,6 +11,7 @@
     modelValue: string;
     categories: CategoryOption[];
     placeholder?: string;
+    fullWidth?: boolean;
   }>();
 
   const emit = defineEmits<{
@@ -52,7 +53,7 @@
 </script>
 
 <template>
-  <div ref="dropdownRef" class="relative w-full sm:w-44 z-50 text-xs font-sans">
+  <div ref="dropdownRef" class="relative z-50 w-full text-xs font-sans" :class="{ 'sm:w-44': !fullWidth }">
     <!-- Trigger Button -->
     <button
       type="button"
@@ -112,4 +113,3 @@
     </transition>
   </div>
 </template>
-
