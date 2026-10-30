@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { 
   createProduct,
   getAllProductsAdmin,
+  getAdminProductMetrics,
   getProductByIdAdmin,
   updateProduct,
   updateProductStatus,
@@ -33,6 +34,7 @@ adminProductRouter.use(authenticate, authorize('admin'));
 
 adminProductRouter.post('', upload.array('images', 6),  createProductValidator, createProduct );
 adminProductRouter.get('', getAllProductsValidator, getAllProductsAdmin);
+adminProductRouter.get('/metrics', getAdminProductMetrics);
 adminProductRouter.get('/:id', productIdValidator, getProductByIdAdmin);
 adminProductRouter.put('/:id', updateProductValidator, updateProduct);
 adminProductRouter.patch('/:id/status', updateStatusValidator, updateProductStatus);
@@ -44,4 +46,3 @@ adminProductRouter.delete('/:id', productIdValidator, deleteProduct);
 adminProductRouter.delete('/:id/permanent', productIdValidator, deleteProductPermanently);
 
 export default adminProductRouter;
-

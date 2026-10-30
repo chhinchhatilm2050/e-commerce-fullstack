@@ -8,7 +8,6 @@
   defineProps<{
     paymentStatusOption: { label: string; value: string }[];
     orderStatusOption: { label: string; value: string }[];
-    searchDisabled: boolean;
   }>();
 
   const emit = defineEmits<{
@@ -33,8 +32,7 @@
         </div>
         <button
           @click="emit('search')"
-          :disabled="searchDisabled"
-          class="px-3 py-2 text-xs shrink-0 rounded-sm bg-black/80 text-white font-medium hover:bg-black transition cursor-pointer disabled:opacity-50"
+          class="px-3 py-2 text-xs shrink-0 rounded-sm bg-black/80 text-white font-medium hover:bg-black transition cursor-pointer "
         >
           Search
         </button>

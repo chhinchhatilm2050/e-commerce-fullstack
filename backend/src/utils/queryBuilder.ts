@@ -9,8 +9,7 @@ interface QueryBuilderOptions {
   allowedFilters?: string[];
 }
 
-const escapeRegex = (s: string): string =>
-  s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const escapeRegex = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 const SORT_MAP: Record<string, string> = {
   recommend: '-ratingAvg -ratingCount',
@@ -31,6 +30,8 @@ const RESERVED_QUERY_KEYS = [
   'status',
 ];
 
+// Build a query in stages: filter -> sort -> paginate -> execute.
+// Each stage returns this builder so controllers can chain them in that order.
 class QueryBuilder<T extends Document> {
   private model: Model<T>;
   private queryString: Record<string, unknown>;
@@ -57,6 +58,7 @@ class QueryBuilder<T extends Document> {
     };
   }
 
+  // Convert request string values to MongoDB types before they are used in filters.
   private static castObjectId(val: unknown): unknown {
     if (typeof val === 'string' && Types.ObjectId.isValid(val)) {
       return new Types.ObjectId(val);
@@ -82,25 +84,27 @@ class QueryBuilder<T extends Document> {
 
     const filter: Record<string, unknown> = {};
 
-    // 1. Soft-delete logic: Admins see soft-deleted records unless explicitly filtered
-    // QueryBuilder.ts
+    // Non-admin queries exclude deleted records by default. Admin queries include both
+    // states unless the caller explicitly supplies isDeleted (for example, Trash = true).
     if (queryString.isDeleted !== undefined) {
       filter.isDeleted = queryString.isDeleted === 'true' || queryString.isDeleted === true;
     } else if (!isAdmin) {
       filter.isDeleted = false;
     }
 
-    // 2. Dynamic key assignments (casts 'true'/'false' strings to boolean and converts ObjectIds)
+    // Add non-reserved query parameters as filters. allowedFilters, when configured,
+    // is an allowlist; booleans and ObjectId values are cast for MongoDB.
     Object.keys(queryString).forEach((key) => {
       if (RESERVED_QUERY_KEYS.includes(key) || key === 'isDeleted') return;
-      if (options.allowedFilters && !options.allowedFilters.includes(key)) return; // NEW
+      if (options.allowedFilters && !options.allowedFilters.includes(key)) return;
 
       let val = queryString[key];
       if (val === 'true') val = true;
       if (val === 'false') val = false;
       filter[key] = QueryBuilder.castObjectId(val);
     });
-    // 3. Dynamic status logic (works for products or categories)
+    // Only accept supported statuses. Public queries fall back to defaultStatus;
+    // admins without a valid explicit status are not restricted by status.
     const requestedStatus = queryString.status as string;
 
     if (requestedStatus && allowedStatuses.includes(requestedStatus)) {
@@ -109,7 +113,7 @@ class QueryBuilder<T extends Document> {
       filter.status = defaultStatus;
     }
 
-    // 4. Price & Rating range filters
+    // Build numeric range filters used by product listings.
     if (queryString.minPrice || queryString.maxPrice) {
       const price: PriceRange = {};
       if (queryString.minPrice) price.$gte = Number(queryString.minPrice);
@@ -121,7 +125,7 @@ class QueryBuilder<T extends Document> {
       filter.ratingAvg = { $gte: Number(queryString.minRating) };
     }
 
-    // 5. Full-text search
+    // MongoDB text-search filter for callers using buildBaseFilter directly.
     if (typeof queryString.search === 'string' && queryString.search.trim()) {
       filter.$text = { $search: queryString.search.trim() };
     }
@@ -134,20 +138,20 @@ class QueryBuilder<T extends Document> {
   }
 
   filter(): this {
-    // 1. Extract non-direct query params
+    // Search and stockStatus need custom query conditions, so remove them before
+    // turning the remaining request parameters into the base filter.
     const stockStatus = this.queryString.stockStatus;
     const search = this.queryString.search;
     
     delete this.queryString.stockStatus;
     delete this.queryString.search;
 
-    // 2. Build base filter without search and stockStatus
     const baseFilter = QueryBuilder.buildBaseFilter(this.queryString, this.options);
 
-    // 3. Apply base filter
     this.query = this.query.find(baseFilter as Record<string, unknown>);
 
-    // 4. Handle Search (Code, SKU, Name, Brand)
+    // Escape each search word to treat user input literally. Every word must match
+    // at least one configured field; fields default to code and name.
     if (search && typeof search === 'string' && search.trim()) {
       const fields = this.options.searchFields ?? ['code', 'name'];
       const words = search.trim().split(/\s+/).map(escapeRegex);
@@ -160,7 +164,7 @@ class QueryBuilder<T extends Document> {
       } as Record<string, unknown>);
     }
 
-    // 5. Apply inventory/stock condition
+    // Apply optional inventory filters after the common filters and search.
     if (stockStatus === 'low-stock') {
       this.query = this.query.find({ stock: { $gt: 0, $lte: 5 } });
     } else if (stockStatus === 'out-of-stock') {
@@ -170,7 +174,7 @@ class QueryBuilder<T extends Document> {
     return this;
   }
 
-  // Inside your QueryBuilder class definition
+  // Select only the requested response fields; fields may be passed here or in the URL.
   select(fields?: string): this {
     let fieldsToSelect = '';
     if (fields) {
@@ -188,6 +192,8 @@ class QueryBuilder<T extends Document> {
     const rawSort = this.queryString.sort;
 
     if (typeof rawSort === 'string' && rawSort) {
+      // Friendly sort names use SORT_MAP; other values are treated as comma-separated
+      // MongoDB sort fields (prefix a field with '-' for descending order).
       const translated = SORT_MAP[rawSort];
       this.query = translated
         ? this.query.sort(translated)
@@ -202,6 +208,7 @@ class QueryBuilder<T extends Document> {
   }
 
   paginate(): this {
+    // Clamp invalid pages and limits, then apply MongoDB skip/limit to the result query.
     this.page = Math.max(1, Number(this.queryString.page) || 1);
     this.limit = Math.min(100, Math.max(1, Number(this.queryString.limit) || 20));
     const skip = (this.page - 1) * this.limit;
@@ -210,6 +217,8 @@ class QueryBuilder<T extends Document> {
   }
 
   async execute(): Promise<IQueryResult<T>> {
+    // Run the page query and a count with the same filters in parallel. The count is
+    // unpaginated and drives totalPages and the next/previous-page flags.
     const filter = this.query.getFilter();
     const [data, total] = await Promise.all([
       this.query,
@@ -240,6 +249,8 @@ class QueryBuilder<T extends Document> {
     queryString: Record<string, unknown>,
     options?: QueryBuilderOptions
   ): Promise<IQueryResult<T>> {
+    // Discount sorting needs an aggregation because discountAmount is calculated
+    // from comparePrice and price rather than stored as a sortable field.
     const direction = queryString.sort === 'discount_high' ? -1 : 1;
     const page = Math.max(1, Number(queryString.page) || 1);
     const limit = Math.min(100, Math.max(1, Number(queryString.limit) || 20));
@@ -267,6 +278,7 @@ class QueryBuilder<T extends Document> {
     };
 
     const pipeline: PipelineStage[] = [
+      // Filter first, calculate and discard non-discounted products, then sort/page.
       { $match: match },
       discountCalculationStage,
       { $match: { discountAmount: { $gt: 0 } } },
@@ -276,6 +288,7 @@ class QueryBuilder<T extends Document> {
     ];
 
     const countPipeline: PipelineStage[] = [
+      // Mirror the same match/calculation stages so pagination totals match the page.
       { $match: match },
       discountCalculationStage,
       { $match: { discountAmount: { $gt: 0 } } },

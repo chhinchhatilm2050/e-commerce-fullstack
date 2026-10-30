@@ -150,21 +150,61 @@ export const createCategory = asyncHandler(async(req: Request<unknown, unknown,I
   });
 });
 
+import { HydratedDocument, Types } from 'mongoose';
+
+type CategoryDoc = HydratedDocument<ICategory>;
+type CategoryObject = ICategory & { _id: Types.ObjectId };
+
 export const getAllCategoriesAdmin = asyncHandler(
   async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
-    const result = await new QueryBuilder(CategoryModel, req.query, {
-      isAdmin: true,
-      allowedStatuses: ['active', 'inactive'],
-      defaultStatus: 'active',
-    })
+    const result = await new QueryBuilder(
+      CategoryModel,
+      {
+        ...req.query,
+        isDeleted: req.query.isDeleted ?? false,
+      },
+      {
+        isAdmin: true,
+        allowedStatuses: ['active', 'inactive'],
+        defaultStatus: 'active',
+      }
+    )
       .filter()
       .sort()
       .paginate()
       .execute();
 
+    const categories = result.data as CategoryDoc[];
+
+    const parentIds = categories.flatMap((category) =>
+      category.parentId ? [category.parentId] : []
+    );
+
+    const parents = parentIds.length
+      ? await CategoryModel.find({_id: { $in: parentIds },isDeleted: { $in: [false, true] },})
+        .select('_id name')
+        .lean<{ _id: Types.ObjectId; name: string }[]>()
+      : [];
+
+    const parentNames = new Map(
+      parents.map((parent) => [String(parent._id), parent.name] as const)
+    );
+
     res.status(200).json({
       success: true,
-      data: result.data,
+      data: categories.map((category) => {
+        const categoryData = category.toObject<CategoryObject>();
+
+        return {
+          ...categoryData,
+          createdAt: categoryData.createdAt.toISOString(),
+          updatedAt: categoryData.updatedAt.toISOString(),
+          deletedAt: categoryData.deletedAt?.toISOString() ?? null,
+          parentName: categoryData.parentId
+            ? parentNames.get(String(categoryData.parentId)) ?? null
+            : null,
+        };
+      }),
       pagination: result.pagination,
     });
   }
@@ -312,16 +352,62 @@ export const deleteCategory = asyncHandler(async(req: Request, res: Response, ne
   });
 });
 
-export const getDeleteCategories = asyncHandler(async(req: Request, res: Response, next: NextFunction): Promise<void> => {
-  const deleteCategories = await CategoryModel.find({isDeleted: true})
-    .populate('deletedBy', 'firstName lastName email');
-  if(!deleteCategories) {
-    return next(new AppError('No delete category found.', 404));
-  };
+export const deleteCategoryPermanently = asyncHandler(async(
+  req: Request<{ id: string }>,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  const { id } = req.params;
+  const category = await CategoryModel.findOne({ _id: id, isDeleted: true });
+  if (!category) {
+    return next(new AppError('Deleted category not found', 404));
+  }
+
+  const hasChildren = await CategoryModel.exists({
+    parentId: id,
+    isDeleted: { $in: [false, true] },
+  });
+  if (hasChildren) {
+    return next(new AppError('Cannot permanently delete a category with subcategories', 400));
+  }
+
+  const hasProducts = await ProductModel.exists({
+    categoryId: id,
+    isDeleted: { $in: [false, true] },
+  });
+  if (hasProducts) {
+    return next(new AppError('Cannot permanently delete a category that is referenced by products', 400));
+  }
+
+  if (category.imagePublicId) {
+    await deleteFromCaloudinay(category.imagePublicId);
+  }
+
+  await CategoryModel.findOneAndDelete({ _id: id, isDeleted: true });
+  res.status(200).json({
+    success: true,
+    message: 'Category deleted permanently',
+  });
+});
+
+export const getDeleteCategories = asyncHandler(async(req: Request, res: Response, _next: NextFunction): Promise<void> => {
+  const result = await new QueryBuilder(CategoryModel, {
+    ...req.query,
+    isDeleted: true,
+  }, {
+    isAdmin: true,
+    allowedStatuses: ['active', 'inactive'],
+  })
+    .filter()
+    .populate('deletedBy', 'firstName lastName email')
+    .sort()
+    .paginate()
+    .execute();
 
   res.status(200).json({
     success: true,
-    data: { deleteCategories }
+    data: { deleteCategories: result.data },
+    pagination: result.pagination,
   });
 });
 

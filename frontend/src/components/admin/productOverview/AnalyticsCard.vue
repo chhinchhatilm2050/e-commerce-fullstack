@@ -9,7 +9,7 @@
 
   const getStatusBadgeStyle = (status: string) => {
     switch (status) {
-    case 'Low Stock' : return ' text-red-700';
+    case 'Low Stock' : return ' text-red-700 dark:text-red-700';
     default:
       return 'text-2xl font-bold text-red-80 tracking-tight';
     }
@@ -44,7 +44,7 @@
       </div>
 
       <div>
-        <h3 :class="getStatusBadgeStyle(label)" class="text-2xl font-bold text-red-80 tracking-tight">{{ value }}</h3>
+        <h3 :class="getStatusBadgeStyle(label)" class="text-2xl font-bold dark:text-black tracking-tight">{{ value }}</h3>
         <p class="text-xs font-medium text-black/50 mt-0.5">{{ label }}</p>
       </div>
     </div>

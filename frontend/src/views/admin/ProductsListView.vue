@@ -7,6 +7,7 @@
   import RestoreConfirmModel from '@/components/admin/productSession/RestoreConfirmModel.vue';
   import ProductFilterBar from '@/components/admin/productSession/ProductFilterBar.vue';
   import ProductPagination from '@/components/admin/productSession/ProductPagination.vue';
+  import ProductMetricsCards from '@/components/admin/productSession/ProductMetricsCards.vue';
   import { useAlert } from '@/composables/useAlert';
   import ProductCreateModal from '@/components/admin/productSession/createProduct/ProductCreateModal.vue';
   import type { IProduct } from '@/types/adminProduct'; 
@@ -128,9 +129,14 @@
   onMounted(async () => {
     await Promise.all([
       productAdminStore.fetchCategories(),
+      productAdminStore.fetchProductMetrics(),
       loadProducts(),
     ]);
   });
+
+  const handleProductSaved = async () => {
+    await Promise.all([loadProducts(), productAdminStore.fetchProductMetrics()]);
+  };
 
   // Modal Triggers for Create & Edit
   const handleOpenCreateModal = () => {
@@ -156,7 +162,7 @@
     }
     isDeleteModalOpen.value = false;
     productToDelete.value = null;
-    await loadProducts();
+    await Promise.all([loadProducts(), productAdminStore.fetchProductMetrics()]);
   };
 
   const handleOpenRestoreModal = (payload: { id: string; name: string }) => {
@@ -178,7 +184,7 @@
     isDeletePermanentModalOpen.value = false;
     productToDelete.value = null;
     productAdminStore.clearCache();
-    await loadProducts();
+    await Promise.all([loadProducts(), productAdminStore.fetchProductMetrics()]);
   };
 
   const handleConfirmRestore = async () => {
@@ -190,7 +196,7 @@
     isRestoreModalOpen.value = false;
     selectedProduct.value = null;
     productAdminStore.clearCache();
-    await loadProducts();
+    await Promise.all([loadProducts(), productAdminStore.fetchProductMetrics()]);
   };
 
   const handleRefresh = async () => {
@@ -203,6 +209,7 @@
     const restult = await productAdminStore.updateProductStatus(id, status);
     if (restult.success) {
       showAlert(restult.message, { type: 'success' });
+      await productAdminStore.fetchProductMetrics();
     }
   };
 </script>
@@ -264,6 +271,12 @@
         </button>
       </div>
     </div>
+
+    <ProductMetricsCards
+      v-if="!isTrashView"
+      v-bind="productAdminStore.productMetrics"
+      :loading="productAdminStore.metricsLoading"
+    />
 
     <!-- Filter Component -->
     <ProductFilterBar
@@ -332,7 +345,7 @@
       :is-open="isCreateProductOpen"
       :product-to-edit="productToEdit"
       @close="isCreateProductOpen = false"
-      @saved="loadProducts"
+      @saved="handleProductSaved"
     />
   </div>
 </template>
