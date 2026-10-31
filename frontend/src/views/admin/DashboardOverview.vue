@@ -5,6 +5,8 @@
   import AnalyticsCard from '@/components/admin/productOverview/AnalyticsCard.vue';
   import RevenueChart from '@/components/admin/productOverview/RevenueChart.vue';
   import TopProductsChart from '@/components/admin/productOverview/TopProductsChart.vue';
+  import StockAlertsPanel from '@/components/admin/productOverview/StockAlertsPanel.vue';
+  import RecentUsersProducts from '@/components/admin/productOverview/RecentUsersProducts.vue';
 
   const adminStore = useAdminStore();
   const { analylicesData, loading, error } = storeToRefs(adminStore);
@@ -83,28 +85,40 @@
         label="Low Stock"
         :value="analylicesData?.lowStockCount ?? 0"
         icon="ri-box-3-line"
-        badge-text="+10% increase"
+        badge-text="1–10 units"
         :is-loading="loading"
       />
     </div>
-   <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-    <div class="lg:col-span-2">
-      <!-- Updated prop bindings to match RevenueChart props -->
-      <RevenueChart
-        :monthly-revenue="adminStore.chartsData?.monthlySales ?? []"
-        :monthly-orders="adminStore.chartsData?.monthlyOrders ?? []"
-        :monthly-orders-pending="adminStore.chartsData?.monthlyPending ?? []"
-        :monthly-pending-revenue="adminStore.chartsData?.monthlyPendingRevenue ?? []"
-        :is-loading="adminStore.chartsLoading"
-      />
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div class="lg:col-span-2">
+        <!-- Updated prop bindings to match RevenueChart props -->
+        <RevenueChart
+          :monthly-revenue="adminStore.chartsData?.monthlySales ?? []"
+          :monthly-orders="adminStore.chartsData?.monthlyOrders ?? []"
+          :monthly-orders-pending="adminStore.chartsData?.monthlyPending ?? []"
+          :monthly-pending-revenue="adminStore.chartsData?.monthlyPendingRevenue ?? []"
+          :is-loading="adminStore.chartsLoading"
+        />
+      </div>
+      <div>
+        <TopProductsChart
+          :names="adminStore.chartsData?.topProducts?.names ?? []"
+          :counts="adminStore.chartsData?.topProducts?.counts ?? []"
+          :is-loading="adminStore.chartsLoading"
+        />
+      </div>
     </div>
-    <div>
-      <TopProductsChart
-        :names="adminStore.chartsData?.topProducts?.names ?? []"
-        :counts="adminStore.chartsData?.topProducts?.counts ?? []"
-        :is-loading="adminStore.chartsLoading"
-      />
-    </div>
-</div>
+    <RecentUsersProducts
+      :users="analylicesData?.recentUsers ?? []"
+      :products="analylicesData?.recentProducts ?? []"
+      :loading="loading"
+    />
+    <StockAlertsPanel
+      :out-of-stock-count="analylicesData?.outOfStockCount ?? 0"
+      :low-stock-count="analylicesData?.lowStockCount ?? 0"
+      :out-of-stock-products="analylicesData?.outOfStockProducts ?? []"
+      :low-stock-products="analylicesData?.lowStockProducts ?? []"
+      :loading="loading"
+    />
   </div>
 </template>
