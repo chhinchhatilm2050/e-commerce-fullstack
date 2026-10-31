@@ -64,7 +64,29 @@ export const getDashboardAnalytics = asyncHandler(async (req: Request, res: Resp
   }
 
   const LOW_STOCK_THRESHOLD = 10;
-  const lowStockCount = await ProductModel.countDocuments({ stock: { $lte: LOW_STOCK_THRESHOLD } });
+  const [lowStockCount, outOfStockCount, outOfStockProducts, lowStockProducts, recentUsers, recentProducts] = await Promise.all([
+    ProductModel.countDocuments({ stock: { $gt: 0, $lte: LOW_STOCK_THRESHOLD } }),
+    ProductModel.countDocuments({ $or: [{ stock: { $lte: 0 } }, { status: 'out_of_stock' }] }),
+    ProductModel.find({ $or: [{ stock: { $lte: 0 } }, { status: 'out_of_stock' }] })
+      .select('name stock status images createdAt')
+      .sort({ stock: 1, createdAt: -1 })
+      .limit(5),
+    ProductModel.find({
+      stock: { $gt: 0, $lte: LOW_STOCK_THRESHOLD },
+      status: { $ne: 'out_of_stock' },
+    })
+      .select('name stock status images createdAt')
+      .sort({ stock: 1, createdAt: -1 })
+      .limit(5),
+    UserModel.find({ role: 'customer' })
+      .select('firstName lastName email avatar status createdAt')
+      .sort({ createdAt: -1 })
+      .limit(5),
+    ProductModel.find()
+      .select('name stock price status images createdAt')
+      .sort({ createdAt: -1 })
+      .limit(5),
+  ]);
 
   // Counts
   const totalOrders = await OrderModel.countDocuments({ status: { $ne: 'CANCELLED' } });
@@ -81,6 +103,11 @@ export const getDashboardAnalytics = asyncHandler(async (req: Request, res: Resp
       totalCustomers,
       revenueGrowth,
       lowStockCount,
+      outOfStockCount,
+      outOfStockProducts,
+      lowStockProducts,
+      recentUsers,
+      recentProducts,
     }
   });
 });
