@@ -202,3 +202,185 @@ export const getSalesChartsData = asyncHandler(async (req: Request, res: Respons
     }
   });
 });
+
+interface BusinessReportAggregations {
+  summary: Array<{
+    totalOrders: number;
+    cancelledOrders: number;
+    refundedOrders: number;
+    refundedAmount: number;
+  }>;
+  paid: Array<{ revenue: number; orders: number }>;
+  pending: Array<{ revenue: number; orders: number }>;
+  timeline: Array<{ _id: number; revenue: number; orders: number }>;
+  statuses: Array<{ _id: string; count: number }>;
+  paymentMethods: Array<{ _id: string; revenue: number; orders: number }>;
+  topProducts: Array<{ _id: string; unitsSold: number; revenue: number }>;
+}
+
+export const getBusinessReport = asyncHandler(async (req: Request, res: Response) => {
+  const period = req.query.period;
+  const yearValue = req.query.year;
+  const monthValue = req.query.month;
+  const currentYear = new Date().getUTCFullYear();
+
+  if (
+    (period !== 'month' && period !== 'year')
+    || typeof yearValue !== 'string'
+    || !/^\d{4}$/.test(yearValue)
+    || Number(yearValue) < 2000
+    || Number(yearValue) > currentYear
+    || (period === 'month' && (
+      typeof monthValue !== 'string'
+      || !/^(?:[1-9]|1[0-2])$/.test(monthValue)
+    ))
+  ) {
+    res.status(400).json({ success: false, message: 'A valid report period, year, and month are required.' });
+    return;
+  }
+
+  const year = Number(yearValue);
+  const month = period === 'month' ? Number(monthValue) : undefined;
+  const startDate = month
+    ? new Date(Date.UTC(year, month - 1, 1))
+    : new Date(Date.UTC(year, 0, 1));
+  const endDate = month
+    ? new Date(Date.UTC(year, month, 1))
+    : new Date(Date.UTC(year + 1, 0, 1));
+
+  const [aggregated, newCustomers] = await Promise.all([
+    OrderModel.aggregate<BusinessReportAggregations>([
+      {
+        $match: {
+          isDeleted: false,
+          createdAt: { $gte: startDate, $lt: endDate },
+        },
+      },
+      {
+        $facet: {
+          summary: [
+            {
+              $group: {
+                _id: null,
+                totalOrders: { $sum: 1 },
+                cancelledOrders: { $sum: { $cond: [{ $eq: ['$status', 'CANCELLED'] }, 1, 0] } },
+                refundedOrders: { $sum: { $cond: [{ $eq: ['$paymentStatus', 'REFUNDED'] }, 1, 0] } },
+                refundedAmount: {
+                  $sum: { $cond: [{ $eq: ['$paymentStatus', 'REFUNDED'] }, '$amount', 0] },
+                },
+              },
+            },
+          ],
+          paid: [
+            { $match: paidRevenueFilter },
+            {
+              $group: {
+                _id: null,
+                revenue: { $sum: '$amount' },
+                orders: { $sum: 1 },
+              },
+            },
+          ],
+          pending: [
+            { $match: pendingRevenueFilter },
+            {
+              $group: {
+                _id: null,
+                revenue: { $sum: '$amount' },
+                orders: { $sum: 1 },
+              },
+            },
+          ],
+          timeline: [
+            { $match: paidRevenueFilter },
+            {
+              $group: {
+                _id: month ? { $dayOfMonth: '$createdAt' } : { $month: '$createdAt' },
+                revenue: { $sum: '$amount' },
+                orders: { $sum: 1 },
+              },
+            },
+            { $sort: { _id: 1 } },
+          ],
+          statuses: [
+            { $group: { _id: '$status', count: { $sum: 1 } } },
+            { $sort: { count: -1 } },
+          ],
+          paymentMethods: [
+            { $match: paidRevenueFilter },
+            {
+              $group: {
+                _id: '$paymentMethod',
+                revenue: { $sum: '$amount' },
+                orders: { $sum: 1 },
+              },
+            },
+            { $sort: { revenue: -1 } },
+          ],
+          topProducts: [
+            { $match: paidRevenueFilter },
+            { $unwind: '$items' },
+            {
+              $group: {
+                _id: '$items.name',
+                unitsSold: { $sum: '$items.quantity' },
+                revenue: { $sum: { $multiply: ['$items.price', '$items.quantity'] } },
+              },
+            },
+            { $sort: { unitsSold: -1 } },
+            { $limit: 5 },
+          ],
+        },
+      },
+    ]),
+    UserModel.countDocuments({
+      role: 'customer',
+      createdAt: { $gte: startDate, $lt: endDate },
+    }),
+  ]);
+
+  const result = aggregated[0];
+  const summary = result?.summary[0];
+  const paid = result?.paid[0];
+  const pending = result?.pending[0];
+  const bucketCount = month
+    ? new Date(Date.UTC(year, month, 0)).getUTCDate()
+    : 12;
+  const timelineByBucket = new Map((result?.timeline ?? []).map((item) => [item._id, item]));
+  const timeline = Array.from({ length: bucketCount }, (_, index) => {
+    const bucket = index + 1;
+    const value = timelineByBucket.get(bucket);
+    return {
+      label: month ? String(bucket) : new Date(Date.UTC(year, index, 1)).toLocaleString('en-US', { month: 'long', timeZone: 'UTC' }),
+      revenue: value?.revenue ?? 0,
+      orders: value?.orders ?? 0,
+    };
+  });
+  const revenue = paid?.revenue ?? 0;
+  const paidOrders = paid?.orders ?? 0;
+
+  res.status(200).json({
+    success: true,
+    data: {
+      period,
+      year,
+      month,
+      summary: {
+        totalOrders: summary?.totalOrders ?? 0,
+        paidOrders,
+        paidRevenue: revenue,
+        averageOrderValue: paidOrders ? revenue / paidOrders : 0,
+        pendingOrders: pending?.orders ?? 0,
+        pendingRevenue: pending?.revenue ?? 0,
+        cancelledOrders: summary?.cancelledOrders ?? 0,
+        refundedOrders: summary?.refundedOrders ?? 0,
+        refundedAmount: summary?.refundedAmount ?? 0,
+        newCustomers,
+      },
+      timeline,
+      orderStatuses: result?.statuses ?? [],
+      paymentMethods: result?.paymentMethods ?? [],
+      topProducts: result?.topProducts ?? [],
+    },
+  });
+});

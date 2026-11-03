@@ -66,10 +66,10 @@
           v-else
           v-for="product in products"
           :key="product._id"
-          class="hover:bg-slate-50/60 dark:hover:bg-surface-700/30"
+          class="mobile-list-row hover:bg-slate-50/60 dark:hover:bg-surface-700/30"
         >
           <!-- Product Thumbnail & Name -->
-          <td class="py-4 px-5">
+          <td data-label="Product" class="py-4 px-5">
             <div class="flex items-center gap-3">
               <img
                 :src="getPrimaryImage(product)?.url"
@@ -88,14 +88,14 @@
           </td>
 
           <!-- Category -->
-          <td class="py-4 px-5 text-black/90">
+          <td data-label="Category" class="py-4 px-5 text-black/90">
             <div class="font-medium">
               {{ typeof product.categoryId === 'object' && product.categoryId ? product.categoryId.name : 'Uncategorized' }}
             </div>
           </td>
 
           <!-- Price & Compare Price -->
-          <td class="py-4 px-5 font-semibold text-red-600">
+          <td data-label="Price" class="py-4 px-5 font-semibold text-red-600">
             ${{ product.price.toFixed(2) }}
             <span
               v-if="product.comparePrice && product.comparePrice > product.price"
@@ -106,7 +106,7 @@
           </td>
 
           <!-- Stock Level -->
-          <td class="py-4 px-5">
+          <td data-label="Stock" class="py-4 px-5">
             <span
               :class="{
                 'text-red-600 font-semibold': product.stock <= 5,
@@ -118,7 +118,7 @@
           </td>
 
           <!-- Status Dropdown Column -->
-          <td class="py-4 px-5 relative overflow-visible">
+          <td data-label="Status" class="py-4 px-5 relative overflow-visible">
             <StatusDropdown
               v-model="product.status"
               :entity-id="product._id"
@@ -129,7 +129,7 @@
           </td>
 
           <!-- Action Column Buttons -->
-          <td class="py-4 px-5 text-right">
+          <td data-label="Actions" class="py-4 px-5 text-right">
             <template v-if="isTrashView">
               <button
                 @click="emit('restore', { id: product._id, name: product.name })"
@@ -173,3 +173,72 @@
     </table>
   </div>
 </template>
+
+<style scoped>
+@media (max-width: 767px) {
+  table {
+    display: block;
+    width: 100%;
+  }
+
+  thead {
+    display: none;
+  }
+
+  tbody {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  tbody > tr.mobile-list-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    overflow: visible;
+    border: 1px solid rgb(148 163 184 / 0.35);
+    border-radius: 0.5rem;
+    background: rgb(255 255 255 / 0.55);
+  }
+
+  tbody > tr:not(.mobile-list-row) {
+    display: block;
+  }
+
+  td {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 0.75rem;
+    overflow-wrap: anywhere;
+  }
+
+  tbody > tr:not(.mobile-list-row) > td {
+    display: block;
+  }
+
+  td::before {
+    color: rgb(15 23 42 / 0.6);
+    content: attr(data-label);
+    font-size: 0.625rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  td:first-child,
+  td:last-child {
+    grid-column: 1 / -1;
+  }
+
+  td:last-child {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    text-align: left;
+  }
+
+  td:last-child::before {
+    flex-basis: 100%;
+  }
+}
+</style>

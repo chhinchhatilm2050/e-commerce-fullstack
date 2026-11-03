@@ -163,9 +163,9 @@
 </script>
 
 <template>
-  <div class="flex flex-col h-[calc(100vh-96px)] gap-3 font-sans text-slate-800 dark:text-slate-100">
+  <div class="flex min-h-[calc(100dvh-96px)] flex-col gap-3 font-sans text-slate-800 dark:text-slate-100 sm:h-[calc(100vh-96px)]">
     <!-- Header Row -->
-    <div class="bg-[#cdd0d5]/70 text-black p-4 rounded-lg shadow-2xs flex items-center justify-between shrink-0 animate-slide-up">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#cdd0d5]/70 p-5 rounded-lg shrink-0 animate-slide-up">
       <div class="flex items-center gap-3">
         <div class="p-2 bg-white text-black/80 shadow-lg rounded-lg">
           <i :class="isTrashView ? 'ri-delete-bin-line ' : 'ri-shopping-bag-3-line '" class="text-black/80 text-2xl"></i>
@@ -177,12 +177,12 @@
           <p class="text-xs text-black/80 mt-0.5">{{ isTrashView ? 'Review deleted customer orders' : 'Review and manage all orders placed by customers' }}</p>
         </div>
       </div>
-      <div class="flex items-center gap-2">
+      <div class="flex flex-wrap items-center gap-2">
         <!-- Refresh Button -->
         <button
           @click="handleRefresh"
           :disabled="orderStore.loading"
-          class="hidden sm:inline-flex items-center gap-1.5 bg-white/50 hover:bg-white/20 text-black/80 text-xs px-3 py-2 rounded-md font-medium transition cursor-pointer disabled:opacity-50 shadow-2xs"
+          class="sm:inline-flex items-center gap-1.5 bg-white/50 hover:bg-white/20 text-black/80 text-xs px-3 py-2 rounded-md font-medium transition cursor-pointer disabled:opacity-50 shadow-2xs"
         >
           <i class="ri-refresh-line text-sm leading-none" :class="{ 'animate-spin': orderStore.loading }"></i>
           <span>Refresh</span>

@@ -74,10 +74,10 @@
           v-else
           v-for="customer in customers"
           :key="customer._id"
-          class="hover:bg-slate-50/60 dark:hover:bg-surface-700/30"
+          class="mobile-list-row hover:bg-slate-50/60 dark:hover:bg-surface-700/30"
         >
           <!-- User Info (Avatar + Name + Email) -->
-          <td class="py-4 px-5">
+          <td data-label="User" class="py-4 px-5">
             <div class="flex items-center gap-3">
               <div class="w-9 h-9 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center font-bold shrink-0 overflow-hidden">
                 <img 
@@ -102,19 +102,19 @@
           </td>
 
           <!-- Role -->
-          <td class="py-4 px-5 text-black/90 capitalize">
+          <td data-label="Role" class="py-4 px-5 text-black/90 capitalize">
             <div class="font-medium">
               {{ customer.role || 'Customer' }}
             </div>
           </td>
 
           <!-- Joined -->
-          <td class="py-4 px-5 text-black/80">
+          <td data-label="Joined" class="py-4 px-5 text-black/80">
             {{ formatDate(customer.createdAt) }}
           </td>
 
           <!-- Orders -->
-          <td class="py-4 px-5">
+          <td data-label="Orders" class="py-4 px-5">
             <span class="font-semibold text-black/95 block">
               {{ customer.orderCount || 0 }} orders
             </span>
@@ -124,7 +124,7 @@
           </td>
 
           <!-- Status Dropdown Column -->
-          <td class="py-4 px-5 relative overflow-visible">
+          <td data-label="Status" class="py-4 px-5 relative overflow-visible">
             <StatusDropdown
               v-model="customer.status"
               :entity-id="customer._id"
@@ -134,7 +134,7 @@
           </td>
 
           <!-- Actions Column -->
-          <td class="py-4 px-5 text-right">
+          <td data-label="Actions" class="py-4 px-5 text-right">
              <template v-if="isTrashView" class="flex items-center justify-end gap-1.5">
               <button
                 @click="emit('restore', { id: customer._id, name: `${customer.firstName} ${customer.lastName}` })"
@@ -179,3 +179,72 @@
     </table>
   </div>
 </template>
+
+<style scoped>
+@media (max-width: 767px) {
+  table {
+    display: block;
+    width: 100%;
+  }
+
+  thead {
+    display: none;
+  }
+
+  tbody {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  tbody > tr.mobile-list-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    overflow: visible;
+    border: 1px solid rgb(148 163 184 / 0.35);
+    border-radius: 0.5rem;
+    background: rgb(255 255 255 / 0.55);
+  }
+
+  tbody > tr:not(.mobile-list-row) {
+    display: block;
+  }
+
+  td {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 0.75rem;
+    overflow-wrap: anywhere;
+  }
+
+  tbody > tr:not(.mobile-list-row) > td {
+    display: block;
+  }
+
+  td::before {
+    color: rgb(15 23 42 / 0.6);
+    content: attr(data-label);
+    font-size: 0.625rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  td:first-child,
+  td:last-child {
+    grid-column: 1 / -1;
+  }
+
+  td:last-child {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    text-align: left;
+  }
+
+  td:last-child::before {
+    flex-basis: 100%;
+  }
+}
+</style>

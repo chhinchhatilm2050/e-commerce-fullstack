@@ -9,7 +9,7 @@
 </script>
 
 <template>
-  <section class="grid shrink-0 grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4 animate-slide-up">
+  <section class="grid shrink-0 grid-cols-2 gap-3 sm:grid-cols-2 xl:grid-cols-4 animate-slide-up">
     <article
       v-for="metric in [
         { label: 'Total Products', value: total, icon: 'ri-box-3-line' },
