@@ -172,7 +172,7 @@
 </script>
 
 <template>
-  <div class="flex flex-col h-[calc(100vh-96px)] gap-4">
+  <div class="flex min-h-[calc(100dvh-96px)] flex-col gap-4 sm:h-[calc(100vh-96px)]">
     <!-- Header Row -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#cdd0d5]/70 p-5 rounded-lg shrink-0 animate-slide-up">
       <div class="flex items-center gap-3">

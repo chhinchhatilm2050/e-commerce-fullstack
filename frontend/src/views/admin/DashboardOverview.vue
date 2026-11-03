@@ -9,16 +9,16 @@
   import RecentUsersProducts from '@/components/admin/productOverview/RecentUsersProducts.vue';
 
   const adminStore = useAdminStore();
-  const { analylicesData, loading, error } = storeToRefs(adminStore);
+  const { analyticsData, loading, error } = storeToRefs(adminStore);
 
   const revenueBadge = computed(() => {
-    const growth = analylicesData.value?.revenueGrowth;
+    const growth = analyticsData.value?.revenueGrowth;
     if (growth === undefined || growth === null) return undefined;
     return growth >= 0 ? `+${growth}%` : `${growth}%`;
   });
 
   const pendingBadge = computed(() => {
-    const pendingCount = analylicesData.value?.pendingOrders ?? 0;
+    const pendingCount = analyticsData.value?.pendingOrders ?? 0;
     return pendingCount > 0 ? 'Action Needed' : 'All Clear';
   });
 
@@ -55,35 +55,35 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 animate-slide-up">
       <AnalyticsCard
         label="Total Revenue"
-        :value="`$${(analylicesData?.totalRevenue ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`"
+        :value="`$${(analyticsData?.totalRevenue ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`"
         icon="ri-money-dollar-circle-line"
         :is-loading="loading"
         :badge-text="revenueBadge"
       />
       <AnalyticsCard
         label="Total Orders"
-        :value="analylicesData?.totalOrders ?? 0"
+        :value="analyticsData?.totalOrders ?? 0"
         icon="ri-shopping-bag-3-line"
         badge-text="+8% this week"
         :is-loading="loading"
       />
       <AnalyticsCard
         label="Pending Orders"
-        :value="analylicesData?.pendingOrders ?? 0"
+        :value="analyticsData?.pendingOrders ?? 0"
         icon="ri-time-line"
         :badge-text="pendingBadge"
         :is-loading="loading"
       />
       <AnalyticsCard
         label="Total Customers"
-        :value="analylicesData?.totalCustomers ?? 0"
+        :value="analyticsData?.totalCustomers ?? 0"
         icon="ri-user-3-line"
         badge-text="+4% active"
         :is-loading="loading"
       />
       <AnalyticsCard
         label="Low Stock"
-        :value="analylicesData?.lowStockCount ?? 0"
+        :value="analyticsData?.lowStockCount ?? 0"
         icon="ri-box-3-line"
         badge-text="1–10 units"
         :is-loading="loading"
@@ -109,15 +109,15 @@
       </div>
     </div>
     <RecentUsersProducts
-      :users="analylicesData?.recentUsers ?? []"
-      :products="analylicesData?.recentProducts ?? []"
+      :users="analyticsData?.recentUsers ?? []"
+      :products="analyticsData?.recentProducts ?? []"
       :loading="loading"
     />
     <StockAlertsPanel
-      :out-of-stock-count="analylicesData?.outOfStockCount ?? 0"
-      :low-stock-count="analylicesData?.lowStockCount ?? 0"
-      :out-of-stock-products="analylicesData?.outOfStockProducts ?? []"
-      :low-stock-products="analylicesData?.lowStockProducts ?? []"
+      :out-of-stock-count="analyticsData?.outOfStockCount ?? 0"
+      :low-stock-count="analyticsData?.lowStockCount ?? 0"
+      :out-of-stock-products="analyticsData?.outOfStockProducts ?? []"
+      :low-stock-products="analyticsData?.lowStockProducts ?? []"
       :loading="loading"
     />
   </div>

@@ -240,7 +240,7 @@
 </script>
 
 <template>
-  <div class="flex h-[calc(100vh-96px)] flex-col gap-4">
+  <div class="flex min-h-[calc(100dvh-96px)] flex-col gap-4 sm:h-[calc(100vh-96px)]">
     <CategoryPageHeader
       v-model:is-trash-view="isTrashView"
       :loading="categoryStore.loading || categoryStore.trashLoading"

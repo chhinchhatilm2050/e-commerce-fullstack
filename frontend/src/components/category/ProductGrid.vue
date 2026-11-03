@@ -12,7 +12,7 @@
     <i class="ri-emotion-unhappy-fill text-2xl"></i> Hmm... We couldn't find any results for " {{searchTerm}} ".
   </div>
 
-  <div v-else class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+  <div v-else class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
     <ProductCard
       v-for="(p, i) in products"
       :key="p._id"

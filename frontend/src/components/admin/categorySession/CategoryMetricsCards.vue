@@ -7,7 +7,7 @@
 </script>
 
 <template>
-  <section class="grid shrink-0 grid-cols-1 gap-3 sm:grid-cols-3 animate-slide-up">
+  <section class="grid shrink-0 grid-cols-2 gap-3 sm:grid-cols-3 animate-slide-up">
     <div class="flex items-center gap-3 rounded-lg border border-slate-200/80 bg-[#cdd0d5]/70 p-4 shadow-xs">
       <span class="flex h-10 w-10 items-center justify-center rounded-full bg-white text-black/70">
         <i class="ri-folders-line text-lg"></i>

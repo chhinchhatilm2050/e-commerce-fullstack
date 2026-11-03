@@ -28,7 +28,10 @@
     },
     {
       title: 'SALES',
-      items: [{ name: 'Orders', path: '/admin/orders', icon: 'ri-shopping-bag-3-line' }],
+      items: [
+        { name: 'Orders', path: '/admin/orders', icon: 'ri-shopping-bag-3-line' },
+        { name: 'Reports', path: '/admin/reports', icon: 'ri-file-chart-line' },
+      ],
     },
     {
       title: 'CUSTOMERS',
