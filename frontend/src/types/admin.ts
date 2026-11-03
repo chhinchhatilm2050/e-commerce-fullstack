@@ -1,9 +1,9 @@
-export interface IAnalyticsRespone {
+export interface IAnalyticsResponse {
   success: boolean;
-  data: IAnalylices
+  data: IAnalytics;
 }
 
-export interface IAnalylices {
+export interface IAnalytics {
   totalRevenue: number,
   totalOrders: number,
   pendingOrders: number,
@@ -51,4 +51,39 @@ export interface ISalesChartData {
 export interface ISalesChartReq {
   success: boolean,
   data: ISalesChartData
+}
+
+export type BusinessReportPeriod = 'month' | 'year';
+
+export interface IBusinessReportParams {
+  period: BusinessReportPeriod;
+  year: number;
+  month?: number;
+}
+
+export interface IBusinessReport {
+  period: BusinessReportPeriod;
+  year: number;
+  month?: number;
+  summary: {
+    totalOrders: number;
+    paidOrders: number;
+    paidRevenue: number;
+    averageOrderValue: number;
+    pendingOrders: number;
+    pendingRevenue: number;
+    cancelledOrders: number;
+    refundedOrders: number;
+    refundedAmount: number;
+    newCustomers: number;
+  };
+  timeline: Array<{ label: string; revenue: number; orders: number }>;
+  orderStatuses: Array<{ _id: string; count: number }>;
+  paymentMethods: Array<{ _id: string; revenue: number; orders: number }>;
+  topProducts: Array<{ _id: string; unitsSold: number; revenue: number }>;
+}
+
+export interface IBusinessReportResponse {
+  success: boolean;
+  data: IBusinessReport;
 }

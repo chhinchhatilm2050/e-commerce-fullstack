@@ -11,7 +11,7 @@
 </script>
 
 <template>
-  <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 shrink-0">
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 shrink-0">
     <!-- Total Customers Card -->
     <div class="bg-[#cdd0d5]/70 p-4 rounded-lg flex flex-col items-center justify-center shadow-xs">
       <div v-if="isLoading" class="animate-pulse flex flex-col items-center justify-center space-y-2 w-full py-1">

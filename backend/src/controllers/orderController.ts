@@ -12,9 +12,44 @@ import {
 } from '../utils/payway.js';
 import type { IPaywayPurchaseParams } from '../utils/payway.js';
 import ProductModel from '../model/product.js';
+import UserModel from '../model/user.js';
 import axios from 'axios';
 import FormData from 'form-data';
 import QueryBuilder from '../utils/queryBuilder.js';
+
+const syncUserOrderStats = async (userId: IOrder['userId']): Promise<void> => {
+  if (!userId) return;
+
+  const [stats] = await OrderModel.aggregate<{
+    orderCount: number;
+    totalSpent: number;
+  }>([
+    {
+      $match: {
+        userId,
+        status: { $ne: 'CANCELLED' },
+        isDeleted: { $ne: true },
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        orderCount: { $sum: 1 },
+        totalSpent: { $sum: '$amount' },
+      },
+    },
+  ]);
+
+  await UserModel.updateOne(
+    { _id: userId },
+    {
+      $set: {
+        orderCount: stats?.orderCount ?? 0,
+        totalSpent: stats?.totalSpent ?? 0,
+      },
+    },
+  );
+};
 
 // 1. CREATE ORDER (CUSTOMER)
 
@@ -120,6 +155,8 @@ export const createOrder = asyncHandler(async (req: Request<unknown, unknown, IO
     customer,
     shippingAddress,
   });
+
+  await syncUserOrderStats(userId);
 
   if (paymentMethod === 'COD') {
     // Reserve stock immediately for COD
@@ -251,6 +288,7 @@ export const checkOrderStatus = asyncHandler(async (req: Request<{ tran_id: stri
       order.status = 'CANCELLED';
       order.rawPaywayResponse = resData;
       await order.save();
+      await syncUserOrderStats(order.userId);
     }
 
     res.status(200).json({
@@ -482,6 +520,7 @@ export const updateOrderStatus = asyncHandler(async (req: Request<{ id: string }
   }
 
   await order.save();
+  await syncUserOrderStats(order.userId);
 
   res.status(200).json({
     success: true,
@@ -525,6 +564,7 @@ export const cancelOrder = asyncHandler(async (req: Request<{ id: string }>, res
 
   order.status = 'CANCELLED';
   await order.save();
+  await syncUserOrderStats(order.userId);
 
   res.status(200).json({
     success: true,
@@ -548,6 +588,8 @@ export const deleteOrder = asyncHandler(async (req: Request<{ id: string }>, res
   if (!order) {
     return next(new AppError('Order not found', 404));
   }
+
+  await syncUserOrderStats(order.userId);
 
   res.status(200).json({
     success: true,

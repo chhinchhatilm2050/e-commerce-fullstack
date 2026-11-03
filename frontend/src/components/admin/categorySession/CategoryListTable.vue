@@ -62,8 +62,8 @@
             <i class="ri-folder-2-line"></i> {{ isTrashView ? 'No deleted categories.' : 'No categories found.' }}
           </td>
         </tr>
-        <tr v-for="category in categories" v-else :key="category._id" class="hover:bg-slate-50/60 dark:hover:bg-surface-700/30 transition-colors">
-          <td class="px-5 py-3">
+        <tr v-for="category in categories" v-else :key="category._id" class="mobile-list-row hover:bg-slate-50/60 dark:hover:bg-surface-700/30 transition-colors">
+          <td data-label="Category" class="px-5 py-3">
             <div class="flex items-center gap-3">
               <img
                 v-if="category.image"
@@ -80,11 +80,11 @@
               </div>
             </div>
           </td>
-          <td class="px-5 py-3 text-black/70">
+          <td data-label="Parent" class="px-5 py-3 text-black/70">
             {{ category.parentId ? category.parentName || parentNames[category.parentId] || 'Unknown parent' : 'Top-level' }}
           </td>
-          <td class="px-5 py-3 text-black/60">{{ category.slug }}</td>
-          <td class="px-5 py-3">
+          <td data-label="Slug" class="px-5 py-3 text-black/60">{{ category.slug }}</td>
+          <td :data-label="isTrashView ? 'Deleted' : 'Status'" class="px-5 py-3">
             <template v-if="!isTrashView">
               <div class="w-22">
                 <BaseDropdown
@@ -97,13 +97,13 @@
             </template>
             <span v-else class="text-black/60">{{ formatDate(category.deletedAt ?? undefined) }}</span>
           </td>
-          <td class="px-5 py-3 text-black/70">{{ formatDate(category.createdAt) }}</td>
-          <td class="px-5 py-3 text-right">
+          <td data-label="Created" class="px-5 py-3 text-black/70">{{ formatDate(category.createdAt) }}</td>
+          <td data-label="Actions" class="px-5 py-3 text-right">
             <template v-if="isTrashView">
               <button
                 type="button"
                 :disabled="mutationLoading"
-                class="rounded-md p-2 text-emerald-700 transition hover:bg-emerald-50 disabled:opacity-50"
+                class="rounded-md p-2 text-black/90 cursor-pointer disabled:opacity-50"
                 title="Restore category"
                 :aria-label="`Restore ${category.name}`"
                 @click="emit('restore', category)"
@@ -113,7 +113,7 @@
               <button
                 type="button"
                 :disabled="mutationLoading"
-                class="rounded-md p-2 text-red-600 transition hover:text-red-700 disabled:opacity-50"
+                class="rounded-md p-2 text-red-600 cursor-pointer transition hover:text-red-700 disabled:opacity-50"
                 title="Delete category permanently"
                 :aria-label="`Delete ${category.name} permanently`"
                 @click="emit('permanent-delete', category)"
@@ -148,3 +148,73 @@
     </table>
   </div>
 </template>
+
+<style scoped>
+@media (max-width: 767px) {
+  table {
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+
+  thead {
+    display: none;
+  }
+
+  tbody {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  tbody > tr.mobile-list-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    overflow: visible;
+    border: 1px solid rgb(148 163 184 / 0.35);
+    border-radius: 0.5rem;
+    background: rgb(255 255 255 / 0.55);
+  }
+
+  tbody > tr:not(.mobile-list-row) {
+    display: block;
+  }
+
+  td {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 0.75rem;
+    overflow-wrap: anywhere;
+  }
+
+  tbody > tr:not(.mobile-list-row) > td {
+    display: block;
+  }
+
+  td::before {
+    color: rgb(15 23 42 / 0.6);
+    content: attr(data-label);
+    font-size: 0.625rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  td:first-child,
+  td:last-child {
+    grid-column: 1 / -1;
+  }
+
+  td:last-child {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    text-align: left;
+  }
+
+  td:last-child::before {
+    flex-basis: 100%;
+  }
+}
+</style>
