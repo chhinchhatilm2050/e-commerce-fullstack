@@ -28,11 +28,18 @@ These measures contribute to mitigating risks covered by the OWASP Top 10; they 
 
 ### Administration
 
-- Review dashboard analytics and sales charts.
-- Manage products, images, stock, and product status.
-- Manage categories and category hierarchy.
-- Review orders and update their status.
-- Manage users and account statuses.
+The admin dashboard provides tools for monitoring store performance and managing the catalog, orders, and customer accounts:
+
+- **Dashboard overview:** View current-month and current-year revenue, current-month revenue growth compared with the previous month, non-cancelled order totals, pending order totals, and customer totals.
+- **Inventory monitoring:** See low-stock and out-of-stock counts, plus lists of up to five low-stock and out-of-stock products. Low stock means 1–10 units remaining. The dashboard also shows up to five recently added products and customers.
+- **Sales charts:** Review monthly revenue, paid order volume, pending order volume, and pending revenue for the current year. A top-products chart ranks up to five products by units sold.
+- **Business reports:** Generate a report for a selected month or year. Reports include order, paid and pending revenue, average order value, cancellations, refunds and refunded amounts, and new customers. They also include a daily or monthly revenue timeline, order-status and payment-method breakdowns, and up to five top-selling products with units and revenue.
+- **Product management:** Manage products, images, stock, and product status.
+- **Category management:** Manage categories and category hierarchy.
+- **Order management:** Review orders and update their status.
+- **Customer management:** Manage users and account statuses.
+
+Revenue figures count non-cancelled orders that are marked paid, as well as cash-on-delivery orders once delivered. Pending figures count unpaid pending or shipped orders, excluding delivered COD orders. These definitions are used by the dashboard and sales reports.
 
 ## Technology
 
